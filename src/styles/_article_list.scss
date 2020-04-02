@@ -1,0 +1,24 @@
+.article-list-item {
+    display: flex;
+}
+
+.article-list-item-content {
+    flex-grow: 1;
+}
+
+.article-list-item-link {
+    display: flex;
+    color: #aaa;
+    text-decoration: inherit;
+    font-size: 45px;
+    flex-basis: 50px;
+
+    @include change-background-when-hover;
+
+    > * {
+        display: block;
+        text-align: center;
+        align-self: center;
+        width: 100%;
+    }
+}

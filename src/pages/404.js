@@ -1,14 +1,40 @@
-import React from "react"
+import React from 'react'
+import { Helmet } from 'react-helmet'
+import { Link, graphql } from 'gatsby'
+import Layout from '../components/layout.js'
 
-import Layout from "../components/layout"
-import SEO from "../components/seo"
+export default function BlogPostTemplate ({
+  data: {
+    site: { siteMetadata: { title: siteTitle } }
+  }
+}) {
+  return (
+    <Layout>
+      <Helmet>
+        <title>そんなページないよ！ | {siteTitle}</title>
+      </Helmet>
 
-const NotFoundPage = () => (
-  <Layout>
-    <SEO title="404: Not found" />
-    <h1>NOT FOUND</h1>
-    <p>You just hit a route that doesn&#39;t exist... the sadness.</p>
-  </Layout>
-)
+      <div className='container'>
+        <main>
+          <h1 style={{ textAlign: 'center' }}>404<br />そんなページないよ！</h1>
+        </main>
 
-export default NotFoundPage
+        <footer>
+          <nav className='article-nav'>
+            <Link to='/'>{siteTitle}</Link>
+          </nav>
+        </footer>
+      </div>
+    </Layout>
+  )
+}
+
+export const query = graphql`
+  query NotFoundPage {
+    site {
+      siteMetadata {
+        title
+      }
+    }
+  }
+`

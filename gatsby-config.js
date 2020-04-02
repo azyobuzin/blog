@@ -1,34 +1,66 @@
+const siteTitle = 'あじょろぐ'
+
 module.exports = {
   siteMetadata: {
-    title: `Gatsby Default Starter`,
-    description: `Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.`,
-    author: `@gatsbyjs`,
+    title: siteTitle,
+    description: '進捗の証',
+    siteUrl: 'https://blog.azyobuzi.net'
   },
   plugins: [
-    `gatsby-plugin-react-helmet`,
+    'gatsby-plugin-sass',
     {
-      resolve: `gatsby-source-filesystem`,
+      resolve: 'gatsby-source-filesystem',
       options: {
-        name: `images`,
-        path: `${__dirname}/src/images`,
-      },
+        name: 'blog',
+        path: `${__dirname}/content/blog`
+      }
     },
-    `gatsby-transformer-sharp`,
-    `gatsby-plugin-sharp`,
     {
-      resolve: `gatsby-plugin-manifest`,
+      resolve: 'gatsby-plugin-feed',
       options: {
-        name: `gatsby-starter-default`,
-        short_name: `starter`,
-        start_url: `/`,
-        background_color: `#663399`,
-        theme_color: `#663399`,
-        display: `minimal-ui`,
-        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
-      },
+        feeds: [
+          {
+            serialize ({ query: { site, allBlogPost } }) {
+              const slugToPath = require('./src/utils/slug-to-path.js')
+              const parseTags = require('./src/utils/parse-tags.js')
+
+              return allBlogPost.edges.map(({ node: post }) => {
+                const url = site.siteMetadata.siteUrl + slugToPath(post.slug)
+                return {
+                  title: post.title,
+                  description: post.description,
+                  url,
+                  guid: url,
+                  categories: parseTags(post.keywords),
+                  date: post.pubdate,
+                  custom_elements: [{ 'content:encoded': post.html }]
+                }
+              })
+            },
+            query: `
+              {
+                allBlogPost {
+                  edges {
+                    node {
+                      slug
+                      title
+                      html
+                      pubdate
+                      keywords
+                      description
+                      preamble
+                    }
+                  }
+                }
+              }
+            `,
+            title: siteTitle,
+            output: '/rss.xml'
+          }
+        ]
+      }
     },
-    // this (optional) plugin enables Progressive Web App + Offline functionality
-    // To learn more, visit: https://gatsby.dev/offline
-    // `gatsby-plugin-offline`,
-  ],
+    'gatsby-plugin-react-helmet',
+    'gatsby-plugin-no-javascript'
+  ]
 }
