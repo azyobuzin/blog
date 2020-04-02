@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet'
 import { Link, graphql } from 'gatsby'
 import Layout from '../components/layout.js'
 import BlogPostMeta from '../components/blog-post-meta.js'
-import parseTags from '../utils/parse-tags.js'
 import slugToPath from '../utils/slug-to-path.js'
 
 export default function BlogPostTemplate ({
@@ -12,8 +11,6 @@ export default function BlogPostTemplate ({
     blogPost: post
   }
 }) {
-  const tags = parseTags(post.keywords)
-
   return (
     <Layout>
       <Helmet>
@@ -24,7 +21,7 @@ export default function BlogPostTemplate ({
         <meta property='og:url' content={siteUrl + slugToPath(post.slug)} />
         <meta property='og:description' content={post.description} />
         <meta property='og:article:published_time' content={post.pubdate} />
-        {tags.map((x, i) => <meta key={`tag-${i}`} property='og:article:tag' content={x} />)}
+        {post.keywords.map((x, i) => <meta key={`tag-${i}`} property='og:article:tag' content={x} />)}
       </Helmet>
 
       <div className='container'>

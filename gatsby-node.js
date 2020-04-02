@@ -10,6 +10,11 @@ exports.createPages = async ({ graphql, actions: { createPage } }) => {
           }
         }
       }
+      tagsGroup: allBlogPost {
+        group(field: keywords) {
+          fieldValue
+        }
+      }
     }
   `)
 
@@ -17,18 +22,29 @@ exports.createPages = async ({ graphql, actions: { createPage } }) => {
     throw result.errors
   }
 
-  const posts = result.data.allBlogPost.edges
+  const blogPostTemplate = path.resolve('./src/templates/blog-post.js')
+
+  result.data.allBlogPost.edges
     .map(x => x.node.slug)
-
-  const blogPost = path.resolve('./src/templates/blog-post.js')
-
-  posts.forEach(slug => {
-    createPage({
-      path: require('./src/utils/slug-to-path.js')(slug),
-      component: blogPost,
-      context: { slug }
+    .forEach(slug => {
+      createPage({
+        path: require('./src/utils/slug-to-path.js')(slug),
+        component: blogPostTemplate,
+        context: { slug }
+      })
     })
-  })
+
+  const tagTemplate = path.resolve('./src/templates/tag.js')
+
+  result.data.tagsGroup.group
+    .map(x => x.fieldValue)
+    .forEach(tag => {
+      createPage({
+        path: `/tags/${tag}/`,
+        component: tagTemplate,
+        context: { tag }
+      })
+    })
 }
 
 exports.onCreateNode = require('./lib/blog-post-nodes.js').onCreateNode

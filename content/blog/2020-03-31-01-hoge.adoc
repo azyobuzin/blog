@@ -1,4 +1,5 @@
 = hoge
+:keywords: hoge, C#, F#Plus, にほんご
 :sectnums:
 :stem:
 

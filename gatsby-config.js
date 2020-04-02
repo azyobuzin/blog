@@ -3,7 +3,7 @@ const siteTitle = 'あじょろぐ'
 module.exports = {
   siteMetadata: {
     title: siteTitle,
-    description: '進捗の証',
+    description: 'azyobuzinの進捗の証',
     siteUrl: 'https://blog.azyobuzi.net'
   },
   plugins: [
@@ -22,7 +22,6 @@ module.exports = {
           {
             serialize ({ query: { site, allBlogPost } }) {
               const slugToPath = require('./src/utils/slug-to-path.js')
-              const parseTags = require('./src/utils/parse-tags.js')
 
               return allBlogPost.edges.map(({ node: post }) => {
                 const url = site.siteMetadata.siteUrl + slugToPath(post.slug)
@@ -31,7 +30,7 @@ module.exports = {
                   description: post.description,
                   url,
                   guid: url,
-                  categories: parseTags(post.keywords),
+                  categories: post.keywords,
                   date: post.pubdate,
                   custom_elements: [{ 'content:encoded': post.html }]
                 }

@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet'
 import { Link, graphql } from 'gatsby'
 import Layout from '../components/layout.js'
 
-export default function BlogPostTemplate ({
+export default function NotFound ({
   data: {
     site: { siteMetadata: { title: siteTitle } }
   }

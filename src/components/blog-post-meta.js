@@ -1,20 +1,24 @@
 import React from 'react'
-import parseTags from '../utils/parse-tags.js'
+import LinkToTag from './link-to-tag.js'
 
 export default function BlogPostMeta ({ post }) {
-  const tags = parseTags(post.keywords)
-
   return (
     <>
       <p className='article-meta'>
         <i className='fa fa-pencil-square-o' aria-hidden='true' title='公開日' />
-        <time datetime={post.pubdate}>{post.pubdate.replace('-', '/')}</time>
+        {' '}
+        <time dateTime={post.pubdate}>{post.pubdate.replace('-', '/')}</time>
       </p>
       {
-        tags.length > 0 && (
+        post.keywords.length > 0 && (
           <p className='article-meta'>
             <i className='fa fa-tags' aria-hidden='true' title='タグ' />
-            {tags.map((x, i) => <span key={i} className='article-tag'>{x}</span>)}
+            {post.keywords.map((x, i) =>
+              <React.Fragment key={i}>
+                {' '}
+                <LinkToTag className='article-tag' tag={x}>{x}</LinkToTag>
+              </React.Fragment>
+            )}
           </p>
         )
       }

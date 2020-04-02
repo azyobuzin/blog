@@ -5,9 +5,11 @@ $main-border-style: solid 1pt #ccc;
     color: inherit;
     text-decoration: inherit;
 
-    @if $underline {
-        &:hover {
+    &:hover {
+        @if $underline {
             text-decoration: underline;
+        } @else {
+            text-decoration: none;
         }
     }
 }

@@ -5,18 +5,24 @@ import Layout from '../components/layout.js'
 import BlogPostList from '../components/blog-post-list.js'
 
 export default function Index ({ data }) {
-  const siteTitle = data.site.siteMetadata.title
+  const site = data.site.siteMetadata
   const posts = data.allBlogPost.edges.map(x => x.node)
 
   return (
     <Layout>
       <Helmet>
-        <title>{siteTitle}</title>
+        <title>{site.title}</title>
+        <meta name='description' content={site.description} />
+        <meta property='og:title' content={site.title} />
+        <meta property='og:type' content='website' />
+        <meta property='og:url' content={site.siteUrl + '/'} />
+        <meta property='og:description' content={site.description} />
       </Helmet>
 
       <div className='container'>
         <header>
-          <h1>{siteTitle}</h1>
+          <h1>{site.title}</h1>
+          <p>{site.description}</p>
         </header>
 
         <BlogPostList posts={posts} />
@@ -30,6 +36,8 @@ export const query = graphql`
     site {
       siteMetadata {
         title
+        description
+        siteUrl
       }
     }
     allBlogPost(sort: {fields: slug, order: DESC}) {
