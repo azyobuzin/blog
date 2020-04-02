@@ -5,6 +5,7 @@ import LinkToPost from '../components/link-to-post.js'
 function BlogPostPreview ({ post }) {
   return (
     <article className='article-list-item'>
+      <hr />
       <div className='article-list-item-content'>
         <header>
           <h1 className='article-title'>
@@ -18,10 +19,6 @@ function BlogPostPreview ({ post }) {
           <p><LinkToPost slug={post.slug}>続きを読む</LinkToPost></p>
         </div>
       </div>
-
-      <LinkToPost className='article-list-item-link' slug={post.slug}>
-        <div><i className='fa fa-angle-right' aria-hidden='true' /></div>
-      </LinkToPost>
     </article>
   )
 }

@@ -33,7 +33,8 @@ export default function BlogPostTemplate ({
         <BlogPostList posts={posts} />
 
         <footer>
-          <nav className='article-nav'>
+          <hr />
+          <nav>
             <Link to='/'>{siteTitle}</Link>
           </nav>
         </footer>

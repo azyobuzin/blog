@@ -14,6 +14,8 @@ stem:[sqrt(4) = 2]
 
 * list
 ** list
+** list
+* list
 * list
 
 [source,ruby]
@@ -28,4 +30,37 @@ end
 <2> URL mapping
 <3> Response block
 
+[source,xml]
+----
+<!DOCTYPE html>
+<title>Title</title>
+
+<style>body {width: 500px;}</style>
+
+<script type="application/javascript">
+  function $init() {return true;}
+</script>
+
+<body>
+  <p checked class="title" id='title'>Title</p>
+  <!-- here goes the rest of the page -->
+</body>
+----
+
 TIP: hoge!
+
+[IMPORTANT] 
+.Feeding the Werewolves
+==== 
+While werewolves are hardy community members, keep in mind the following dietary concerns:
+
+. They are allergic to cinnamon.
+. More than two glasses of orange juice in 24 hours makes them howl in harmony with alarms and sirens.
+. Celery makes them sad.
+====
+
+NOTE: a
+
+CAUTION: b
+
+WARNING: c
