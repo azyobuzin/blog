@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet'
 import { Link, graphql } from 'gatsby'
 import Layout from '../components/layout.js'
 import BlogPostMeta from '../components/blog-post-meta.js'
-import slugToPath from '../utils/slug-to-path.js'
+import slugToPath from '../../lib/slug-to-path.js'
 
 export default function BlogPostTemplate ({
   data: {

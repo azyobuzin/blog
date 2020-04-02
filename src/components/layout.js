@@ -21,6 +21,7 @@ export default function Layout ({ children }) {
       <Helmet>
         <html lang='ja' />
         <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css' integrity='sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=' crossorigin='anonymous' />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swap" />
         <meta property='og:site_name' content={siteTitle} />
       </Helmet>
       {children}

@@ -21,7 +21,7 @@ module.exports = {
         feeds: [
           {
             serialize ({ query: { site, allBlogPost } }) {
-              const slugToPath = require('./src/utils/slug-to-path.js')
+              const slugToPath = require('./lib/slug-to-path.js')
 
               return allBlogPost.edges.map(({ node: post }) => {
                 const url = site.siteMetadata.siteUrl + slugToPath(post.slug)

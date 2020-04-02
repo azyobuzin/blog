@@ -28,7 +28,7 @@ exports.createPages = async ({ graphql, actions: { createPage } }) => {
     .map(x => x.node.slug)
     .forEach(slug => {
       createPage({
-        path: require('./src/utils/slug-to-path.js')(slug),
+        path: require('./lib/slug-to-path.js')(slug),
         component: blogPostTemplate,
         context: { slug }
       })
