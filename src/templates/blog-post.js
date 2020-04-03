@@ -63,6 +63,7 @@ export const query = graphql`
     }
     blogPost(slug: { eq: $slug }) {
       html
+      description
       commitHash
       ...BlogPostMeta
       parent {

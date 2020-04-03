@@ -17,7 +17,6 @@ export default function Index ({ data }) {
         <meta property='og:type' content='website' />
         <meta property='og:url' content={site.siteUrl + '/'} />
         <meta property='og:description' content={site.description} />
-        <meta name='twitter:creator' content={site.social.twitter} />
       </Helmet>
 
       <div className='container'>
