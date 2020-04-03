@@ -1,5 +1,7 @@
 @import "normalize.css/normalize";
 
+$color-secondary: #444d53;
+
 /*!
  * Milligram v1.3.0
  * https://milligram.github.io
@@ -19,6 +21,7 @@
 body {
     margin-top: 3rem;
     margin-bottom: 3rem;
+    font-weight: 400;
 }
 
 ol {
