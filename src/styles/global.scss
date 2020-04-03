@@ -24,13 +24,13 @@ body {
 ol {
     // inside やめろ
     list-style: decimal;
-    margin-left: 1.5rem;
+    margin-left: 3rem;
 }
 
 ul {
     // inside やめろ
     list-style: circle;
-    margin-left: 1.5rem;
+    margin-left: 3rem;
 }
 
 ol p, ul p {
@@ -104,4 +104,9 @@ footer {
         letter-spacing: -0.08rem;
         line-height: 1.35;
     }
+}
+
+.imageblock {
+    margin-bottom: 2.5rem;
+    text-align: center;
 }

@@ -1,9 +1,10 @@
 import React from 'react'
 import { useStaticQuery, graphql } from 'gatsby'
+import LinkToPost from './link-to-post.js'
 import LinkToTag from './link-to-tag.js'
 import moment from 'moment-timezone'
 
-export default function BlogPostMeta ({ post }) {
+export default function BlogPostHeader ({ post, link }) {
   const site = useStaticQuery(graphql`
     {
       site {
@@ -29,7 +30,10 @@ export default function BlogPostMeta ({ post }) {
   }
 
   return (
-    <>
+    <header>
+      <h1>
+        {link ? (<LinkToPost slug={post.slug}>{post.title}</LinkToPost>) : post.title}
+      </h1>
       <div className='article-meta'>
         <i className='fa fa-pencil-square-o' aria-hidden='true' title='公開日' />
         {' '}
@@ -55,6 +59,6 @@ export default function BlogPostMeta ({ post }) {
           </div>
         )
       }
-    </>
+    </header>
   )
 }

@@ -2,13 +2,13 @@ import React from 'react'
 import { Helmet } from 'react-helmet'
 import { Link, graphql } from 'gatsby'
 import Layout from '../components/layout.js'
-import BlogPostMeta from '../components/blog-post-meta.js'
+import BlogPostHeader from '../components/blog-post-header.js'
 import slugToPath from '../../lib/slug-to-path.js'
 import moment from 'moment-timezone'
 
 export default function BlogPostTemplate ({
   data: {
-    site: { siteMetadata: { title: siteTitle, siteUrl, timezone } },
+    site: { siteMetadata: { title: siteTitle, siteUrl, timezone, social: { twitter } } },
     blogPost: post
   }
 }) {
@@ -32,11 +32,7 @@ export default function BlogPostTemplate ({
 
       <div className='container'>
         <article className='article-page'>
-          <header>
-            <h1 className='article-title'>{post.title}</h1>
-            <BlogPostMeta post={post} />
-          </header>
-
+          <BlogPostHeader post={post} link={false} />
           <div className='article-content' dangerouslySetInnerHTML={{ __html: post.html }} />
         </article>
 
@@ -44,6 +40,8 @@ export default function BlogPostTemplate ({
           <hr />
           <nav>
             <Link to='/'>{siteTitle}</Link>
+            {'　|　'}
+            <a href={"https://twitter.com/" + twitter.replace(/^@/, '')}>{twitter}</a>
           </nav>
         </footer>
       </div>
@@ -58,6 +56,9 @@ export const query = graphql`
         title
         siteUrl
         timezone
+        social {
+          twitter
+        }
       }
     }
     blogPost(slug: { eq: $slug }) {

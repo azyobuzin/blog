@@ -1,5 +1,5 @@
 import React from 'react'
-import BlogPostMeta from './blog-post-meta.js'
+import BlogPostHeader from './blog-post-header.js'
 import LinkToPost from '../components/link-to-post.js'
 
 function BlogPostPreview ({ post }) {
@@ -7,12 +7,7 @@ function BlogPostPreview ({ post }) {
     <article className='article-list-item'>
       <hr />
       <div className='article-list-item-content'>
-        <header>
-          <h1 className='article-title'>
-            <LinkToPost slug={post.slug}>{post.title}</LinkToPost>
-          </h1>
-          <BlogPostMeta post={post} />
-        </header>
+        <BlogPostHeader post={post} link={true} />
 
         <div className='article-content'>
           <div dangerouslySetInnerHTML={{ __html: post.preamble }} />
