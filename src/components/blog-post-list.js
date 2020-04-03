@@ -7,7 +7,7 @@ function BlogPostPreview ({ post }) {
     <article className='article-list-item'>
       <hr />
       <div className='article-list-item-content'>
-        <BlogPostHeader post={post} link={true} />
+        <BlogPostHeader post={post} link />
 
         <div className='article-content'>
           <div dangerouslySetInnerHTML={{ __html: post.preamble }} />

@@ -47,4 +47,8 @@ exports.createPages = async ({ graphql, actions: { createPage } }) => {
     })
 }
 
-exports.onCreateNode = require('./lib/blog-post-nodes.js').onCreateNode
+const blogPostNodes = require('./lib/blog-post-nodes.js')
+
+exports.onCreateNode = blogPostNodes.onCreateNode
+
+exports.createSchemaCustomization = blogPostNodes.createSchemaCustomization
