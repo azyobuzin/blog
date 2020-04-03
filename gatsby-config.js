@@ -4,7 +4,10 @@ module.exports = {
   siteMetadata: {
     title: siteTitle,
     description: 'azyobuzinの進捗の証',
-    siteUrl: 'https://blog.azyobuzi.net'
+    siteUrl: 'https://blog.azyobuzi.net',
+    social: {
+      twitter: '@azyobuzin'
+    }
   },
   plugins: [
     'gatsby-plugin-sass',

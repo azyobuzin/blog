@@ -9,12 +9,15 @@ export default function Layout ({ children }) {
       site {
         siteMetadata {
           title
+          social {
+            twitter
+          }
         }
       }
     }
   `)
 
-  const siteTitle = data.site.siteMetadata.title
+  const site = data.site.siteMetadata
 
   return (
     <>
@@ -22,7 +25,9 @@ export default function Layout ({ children }) {
         <html lang='ja' />
         <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css' integrity='sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=' crossorigin='anonymous' />
         <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,500;0,700;1,300;1,700&amp;display=swap' />
-        <meta property='og:site_name' content={siteTitle} />
+        <meta property='og:site_name' content={site.title} />
+        <meta name='twitter:card' content='summary' />
+        <meta name='twitter:creator' content={site.social.twitter} />
       </Helmet>
       {children}
     </>
