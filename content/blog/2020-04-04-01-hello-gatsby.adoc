@@ -50,7 +50,7 @@ Gatsby、こいつだけはないなと思っていたツールでした。そ�
 
 静的サイトジェネレータといえば、 Jekyll を筆頭に、有名なものがいくつかありますが、大体どれも共通の問題があり、それは Frontmatter（文書の先頭の `---` から始まる YAML ブロック）が必要ということです。こっちは AsciiDoc で書くつもりですから、そもそも Header Attribute という機能があります。それにも関わらず、 Jekyll も Hugo も Frontmatter を使うんです。許さない。
 
-そんな状況なので、既存の静的サイトジェネレータに嫌気がさして、自作を始めましたが、ブログとなるとやはりトップページの記事一覧を作ったり、タグがあったりと考えることが多い上、 HTML テンプレートの処理系に与えるヘルパー関数すら無い状況からのスタートだったので、疲れて飽きてしまいました。
+そんな状況なので、既存の静的サイトジェネレータに嫌気がさして、自作を始めましたが、ブログとなるとトップページの記事一覧を作ったり、タグがあったりと考えることが多い上、 HTML テンプレートの処理系に与えるヘルパー関数すら無い状況からのスタートだったので、疲れて飽きてしまいました。
 
 そこで、改めて AsciiDoc を使える静的サイトジェネレータを調べていたとき、 Gatsby + AsciiDoc の組み合わせを見て、ふと Gatsby で AsciiDoc を読み込むプラグインである https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-transformer-asciidoc[gatsby-transformer-asciidoc のソースコード]を読んでみたら、「なんだ、 Gatsby いいじゃん」となって、今に至ります
 
@@ -94,6 +94,7 @@ image::https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200
 [source, javascript]
 ----
 import React from 'react'
+import { graphql } from 'gatsby'
 
 export default function ({ data }) {
   const title = data.site.siteMetadata.title
