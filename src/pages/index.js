@@ -47,13 +47,18 @@ export const query = graphql`
     allBlogPost(sort: {fields: slug, order: DESC}) {
       edges {
         node {
-          slug
-          title
-          pubdate
-          keywords
           preamble
+          ...BlogPostMeta
         }
       }
     }
+  }
+
+  fragment BlogPostMeta on BlogPost {
+    slug
+    title
+    pubdate
+    revdate
+    keywords
   }
 `

@@ -57,11 +57,8 @@ export const query = graphql`
     ) {
       edges {
         node {
-          slug
-          title
-          pubdate
-          keywords
           preamble
+          ...BlogPostMeta
         }
       }
     }

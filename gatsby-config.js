@@ -7,7 +7,9 @@ module.exports = {
     siteUrl: 'https://blog.azyobuzi.net',
     social: {
       twitter: '@azyobuzin'
-    }
+    },
+    repository: 'https://github.com/azyobuzin/blog',
+    timezone: 'Asia/Tokyo'
   },
   plugins: [
     'gatsby-plugin-sass',

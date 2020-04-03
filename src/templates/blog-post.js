@@ -4,13 +4,18 @@ import { Link, graphql } from 'gatsby'
 import Layout from '../components/layout.js'
 import BlogPostMeta from '../components/blog-post-meta.js'
 import slugToPath from '../../lib/slug-to-path.js'
+import moment from 'moment-timezone'
 
 export default function BlogPostTemplate ({
   data: {
-    site: { siteMetadata: { title: siteTitle, siteUrl } },
+    site: { siteMetadata: { title: siteTitle, siteUrl, timezone } },
     blogPost: post
   }
 }) {
+  function toIsoDate (s) {
+    return moment.tz(s, timezone).toISOString(true)
+  }
+
   return (
     <Layout>
       <Helmet>
@@ -20,7 +25,8 @@ export default function BlogPostTemplate ({
         <meta property='og:type' content='article' />
         <meta property='og:url' content={siteUrl + slugToPath(post.slug)} />
         <meta property='og:description' content={post.description} />
-        <meta property='og:article:published_time' content={post.pubdate} />
+        <meta property='og:article:published_time' content={toIsoDate(post.pubdate)} />
+        {post.revdate && <meta property='og:article:modified_time' content={toIsoDate(post.revdate)} />}
         {post.keywords.map((x, i) => <meta key={`tag-${i}`} property='og:article:tag' content={x} />)}
       </Helmet>
 
@@ -51,15 +57,18 @@ export const query = graphql`
       siteMetadata {
         title
         siteUrl
+        timezone
       }
     }
     blogPost(slug: { eq: $slug }) {
-      slug
-      title
       html
-      pubdate
-      keywords
-      description
+      commitHash
+      ...BlogPostMeta
+      parent {
+        ... on File {
+          relativePath
+        }
+      }
     }
   }
 `
