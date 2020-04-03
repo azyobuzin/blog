@@ -1,4 +1,4 @@
-= さよならはてな、こんにちはGatsby
+= さよならはてなブログ、こんにちはGatsby
 :pubdate: 2020-04-04T02:29+09:00
 :sectnums:
 :xrefstyle: short
