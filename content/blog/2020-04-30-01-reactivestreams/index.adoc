@@ -1,4 +1,5 @@
 = プロトコルから比較する Reactive Streams と TPL Dataflow
+:pubdate: 2020-04-30T02:36+09:00
 :keywords: C#
 :sectnums:
 
@@ -9,7 +10,7 @@ link:https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E9%A1%9E%E4%BC%BC
 
 C# においても Reactive Streams は他人事ではなく、 `java.util.concurrent.Flow` と同様のインターフェイスが link:https://github.com/reactive-streams/reactive-streams-dotnet[Reactive.Streams パッケージ]として NuGet で配布されており、標準的なインターフェイスの座を狙っています。また Akka.NET Streams がこのインターフェイスの実装を提供しています。
 
-いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（back pressure）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。キーワードが「C#」となっているように、この記事のサンプルコードは .NET 版の Reactive Streams に基づきます。
+いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（back pressure）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。
 
 == Reactive Streams
 
@@ -18,7 +19,7 @@ C# においても Reactive Streams は他人事ではなく、 `java.util.concu
 インターフェイスを見ていきましょう。 Reactive Streams では、送信者は __Publisher__、受信者は __Subscriber__ と呼ばれます。 Publisher は Rx における Observable に対応し、 Subscriber は Observer に対応します。インターフェイスは次のようになっており、 `IPublisher.Subscribe` に、購読者のコールバックを表す `ISubscriber` インスタンスを渡すことによって、購読を開始します。
 
 .https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/IPublisher.cs[IPublisher]
-[source,C#]
+[source,cs]
 ----
 public interface IPublisher<out T>
 {
@@ -27,7 +28,7 @@ public interface IPublisher<out T>
 ----
 
 .https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscriber.cs[ISubscriber]
-[source,C#]
+[source,cs]
 ----
 public interface ISubscriber<in T>
 {
@@ -45,7 +46,7 @@ public interface ISubscriber<in T>
 Observable と異なり、 Subscribe を呼び出した瞬間にデータが飛んでくる（`ISubscriber.OnNext` が呼び出される）ことはありません。 Publisher は Subscriber がどれだけのデータを受け取る準備があるかを確認してから、データを送信します。 Subscriber は、今どれだけのデータを受け取ることができるかを `OnSubscribe` で受け取った `ISubscription` インスタンスを通じて Publisher に申告します。 `ISubscription` は次のように定義されています。 `Request` メソッドに渡す引数が、どれだけデータを受信できるかを表します。 `Cancel` は先ほど説明した `IDisposable` の代わりとなるものです。
 
 .https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscription.cs[ISubscription]
-[source,C#]
+[source,cs]
 ----
 public interface ISubscription
 {
@@ -75,7 +76,7 @@ Reactive Streams は流量についてプル型とまとめましたが、 TPL D
 まず、データフローブロック共通のインターフェイスである `IDataflowBlock` を導入します。 `Completion` はそのブロックがすべてのデータの処理が完了したら完了する（またはエラーとなる） `Task` を表します。 `Complete` と `Fault` は Reactive Streams の `ISubscriber.OnComplete`、`OnError` に対応するものですが、 Target 以外もこのメソッドを実装します。
 
 .https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.idataflowblock?view=netcore-3.1[IDataflowBlock]
-[source,C#]
+[source,cs]
 ----
 public interface IDataflowBlock
 {
@@ -90,7 +91,7 @@ Source から Target への接続は、リンクと呼ばれます。リンク�
 まずは Source のインターフェイスを見てみます。ユーザーが `LinkTo` を呼び出すことによって、 Source から Target へのリンクが作成されます。戻り値の `IDisposable` を使って、リンクを解除できます。その他のメソッドは Target によって呼び出されます。
 
 .https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.isourceblock-1?view=netcore-3.1[ISourceBlock]
-[source,C#]
+[source,cs]
 ----
 public interface ISourceBlock<out TOutput> : IDataflowBlock
 {
@@ -104,7 +105,7 @@ public interface ISourceBlock<out TOutput> : IDataflowBlock
 対して、 Target のインターフェイスは、データを受信するための `OfferMessage` と、 Source の完了を受け取る `IDataflowBlock.Complete`、`Fault` になります。
 
 .https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.itargetblock-1?view=netcore-3.1[ITargetBlock]
-[source,C#]
+[source,cs]
 ----
 public interface ITargetBlock<in TInput> : IDataflowBlock
 {
@@ -175,22 +176,14 @@ Reactive Streams のプロトコルには、一度 `Request` した数を取り�
 
 == C# で Reactive Streams とどう向き合うか
 
-Rx を生み出した C# ですが、 TPL Dataflow も Reactive Streams も大して盛り上がっていません。以前の記事で、link:https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E3%81%A1%E3%82%87%E3%81%A3%E3%81%A8%E5%A4%A7%E8%A6%8F%E6%A8%A1%E3%81%AA%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB-%E3%83%9E%E3%83%8D%E3%83%BC%E3%82%B8%E3%83%89%E3%82%AD%E3%83%A5%E3%83%BC%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9%E3%81%8B%E3%82%89%E3%82%B8%E3%83%A7%E3%83%96%E3%82%92%E5%8F%96%E3%82%8A%E5%87%BA%E3%81%97%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B%E3%83%AF%E3%83%BC%E3%82%AB%E3%83%BC[マネージドキューサービスを入力とするシステム]を例に挙げたように、流量制限のあるデータ処理の需要は確実にあるはずだと感じています。しかし、今のところ C# での Reactive Streams の実装は Akka.NET Streams のおまけしかありません。
+Rx と並んで登場した Ix (Interactive Extensions) には AsyncEnumerable が含まれていました。 .NET Standard 2.1 では `IAsyncEnumerable` が標準入りを果たしました。 AsyncEnumerable は、常に `Request(1)` を投げる Reactive Streams と見なすこともできます。
 
-この記事は、 TPL Dataflow の盛り上がりのなさを嘆いて、 TPL Dataflow のユースケースを増やすためにライブラリを作っていたところ、 Java で盛り上がっている Reactive Streams との比較が必要と感じて書かれました。そして比較した結果、 TPL Dataflow への気持ちが微妙になってきたので、今後の野心をメモしておきたいと思います。
+**AsyncEnumerable は C# における Reactive Streams の大本命**だと考えています（正確にはこの章を書き始めて気づいた……）。「並列化について」で述べたように、 Reactive Streams はいくら上流にキャパシティを報告したところで、 `OnNext` を並行実行できません。したがって、キャパシティを報告することにあまり意味はなく、 AsyncEnumerable のように常にプル型でも問題ないと考えられます。キャパシティを気にする必要がある、流量の制御できないデータソースからの入力や、ある程度まとまったデータがないとパフォーマンスメリットがない並列化部分の前後にバッファを置くだけで解決できてしまいます。
 
-=== TPL Dataflow と Reactive Streams の相互変換
+一方で、並列処理という観点では TPL Dataflow は非常に良質なライブラリです。並列処理において困る部分が隠蔽されており、本質的な処理を書くことに集中できます。
 
-どちらも同じ目的のために作られたものなので、相互変換手段を用意することで、表現の幅が広がります。現在 Reactive Streams について C# できちんとした実装は、検索した限り見つかりませんでした。また、並列処理の実装のクオリティという点で TPL Dataflow は非常に良質です。 TPL Dataflow という半標準のライブラリを生かしつつ、さまざまなユースケースへ接続していくために、相互変換の実現が必要だと考えています。
+現在の私の野心としては、 AsyncEnumerable のメソッドチェーンの中に、 TPL Dataflow を導入することと、 `IAsyncEnumerable` と `IPublisher` の相互変換です。前者によって、 AsyncEnumerable を並列に処理する表現力が向上します。後者は Akka.NET Streams のような Java 由来のライブラリで Reactive Streams の利用が考えられることから、相互変換が容易に行えると便利だという考えです。これらは現在開発中のライブラリ（link:https://github.com/azyobuzin/BiDaFlow[BiDaFlow]）で実現できればなと考えています。
 
-=== AsyncEnumerable
+== おわりに
 
-Rx と並んで登場した Ix (Interactive Extensions) には AsyncEnumerable が含まれていました。 .NET Standard 2.1 では `IAsyncEnumerable` が標準入りを果たしました。 AsyncEnumerable は、常に `Request(1)` を投げる Reactive Stream と見なすこともできます。
-
-AsyncEnumerable は、次のふたつの使い方が便利そうだと考えています。
-
-. TPL Dataflow の Source として。
-
-メモ: Reactive Streams との大きな違いは、動作を開始するタイミングが明確に決まっていないところです。 Reactive Streams では Cold な Publisher なら `IPublisher.Subscribe` を呼び出したタイミングで動作を開始します。しかし、データフローブロックには明確な開始点はなく、強いて言えばインスタンスを作成した時点になります。したがって Subscribe に相当するものがなく、 TPL Dataflow における Source は、 Reactive Streams の Publisher というよりは、 `ISubscription` であると考えた方がいいです。
-
-メモ: Reactive Streams では単純なパーツをつなぎ合わせて複雑なシステムを作る LINQ, Rx 的な思想、 TPL Dataflow は並列処理をうまくやるために作られた、複雑なパーツをつなぎ合わせてシステムを作る思想。あと RxJava では並列単位でフローを組み立てるが、 TPL Dataflow ではブロック単位で並列化される。しかしそれは Reactive Streams のインターフェイス上不可能ではないはず。
+（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）
