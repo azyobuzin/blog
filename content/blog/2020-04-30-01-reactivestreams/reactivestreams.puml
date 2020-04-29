@@ -1,0 +1,20 @@
+@startuml
+actor User
+User -> Publisher : Subscribe(subscriber)
+activate Publisher
+
+Publisher -> Subscriber : OnSubscribe(subscription)
+
+Publisher -> User
+deactivate Publisher
+
+Subscriber -> Publisher : subscription.Request(1)
+
+Publisher -> Subscriber : OnNext(data)
+
+Subscriber -> Publisher : subscription.Request(1)
+
+Publisher -> Subscriber : OnNext(data)
+
+Publisher -> Subscriber : OnComplete()
+@enduml
