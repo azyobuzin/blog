@@ -168,17 +168,23 @@ TPL Dataflow では、各データフローブロックが並列に処理を行�
 
 == それぞれのメリット、デメリット
 
-**正直そんなに変わらん**、という気持ちがあります。
+=== プロトコル
 
 Reactive Streams のプロトコルには、一度 `Request` した数を取り消せないという問題があります。したがって、状況によって受け入れられるデータ量が増減するようなとき、もっとも保守的な手法、すなわち 1 件受け取っては `Request(1)` を呼び出すという非効率的な方法を取らざるを得なくなります。しかし、これが問題かというと、問題になるユースケースが特に思いつかないです。
 
 一方 TPL Dataflow は、独自でデータフローブロックを実装するのが非常に難しいです。標準で提供されているブロックの組み合わせだけでなんとかしてくださいという感じです。
 
+=== 実装
+
+Reactive Streams は、 Java では RxJava という最強の実装がありますが、 C# には Akka.NET Streams しかない状況です。 Akka.NET Streams は Akka のランタイムを必要とする重厚なものになっており、 RxJava ほど軽い気持ちで導入しにくいという印象があります。
+
+TPL Dataflow は、半標準ライブラリな存在であり、品質も良いです。ただし、提供されているブロックは、有用ではありますが、もしかすると痒いところに手が届かないかもしれないなという品揃えです。ですが、先ほど述べたように、独自でデータフローブロックを実装するのはとても大変です（ある程度妥協できるなら、 link:https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowblock.encapsulate?view=netcore-3.1[`DataflowBlock.Encapsulate`] という便利メソッドがあることは覚えておいてください）。
+
 == C# で Reactive Streams とどう向き合うか
 
 Rx と並んで登場した Ix (Interactive Extensions) には AsyncEnumerable が含まれていました。 .NET Standard 2.1 では link:https://docs.microsoft.com/ja-jp/dotnet/api/system.collections.generic.iasyncenumerable-1?view=netcore-3.1[`IAsyncEnumerable`] が標準入りを果たしました。 AsyncEnumerable は、常に `Request(1)` を投げる Reactive Streams と見なすこともできます。
 
-**AsyncEnumerable は C# における Reactive Streams の大本命**だと考えています（正確にはこの章を書き始めて気づいた……）。「並列化について」で述べたように、 Reactive Streams はいくら上流にキャパシティを報告したところで、 `OnNext` を並行実行できません。したがって、キャパシティを報告することにあまり意味はなく、 AsyncEnumerable のように常にプル型でも問題ないと考えられます。キャパシティを気にする必要がある、流量の制御できないデータソースからの入力や、ある程度まとまったデータがないとパフォーマンスメリットがない並列化部分の前後にバッファを置くだけで解決できてしまいます。
+ここまで Reactive Streams と TPL Dataflow の比較をしてきましたが、**AsyncEnumerable が C# における Reactive Streams の大本命**なのでは、と考えています（正確にはこの章を書き始めて気づいた……）。「並列化について」で述べたように、 Reactive Streams はいくら上流にキャパシティを報告したところで、 `OnNext` を並行実行できません。したがって、キャパシティを報告することにあまり意味はなく、 AsyncEnumerable のように常にプル型でも問題ないと考えられます。キャパシティを気にする必要がある、流量の制御できないデータソースからの入力や、ある程度まとまったデータがないとパフォーマンスメリットがない並列化部分の前後にバッファを置くだけで解決できてしまいます。
 
 一方で、並列処理という観点では TPL Dataflow は非常に良質なライブラリです。並列処理において困る部分が隠蔽されており、本質的な処理を書くことに集中できます。
 
