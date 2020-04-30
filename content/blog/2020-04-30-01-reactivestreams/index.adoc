@@ -176,7 +176,7 @@ Reactive Streams のプロトコルには、一度 `Request` した数を取り�
 
 == C# で Reactive Streams とどう向き合うか
 
-Rx と並んで登場した Ix (Interactive Extensions) には AsyncEnumerable が含まれていました。 .NET Standard 2.1 では `IAsyncEnumerable` が標準入りを果たしました。 AsyncEnumerable は、常に `Request(1)` を投げる Reactive Streams と見なすこともできます。
+Rx と並んで登場した Ix (Interactive Extensions) には AsyncEnumerable が含まれていました。 .NET Standard 2.1 では link:https://docs.microsoft.com/ja-jp/dotnet/api/system.collections.generic.iasyncenumerable-1?view=netcore-3.1[`IAsyncEnumerable`] が標準入りを果たしました。 AsyncEnumerable は、常に `Request(1)` を投げる Reactive Streams と見なすこともできます。
 
 **AsyncEnumerable は C# における Reactive Streams の大本命**だと考えています（正確にはこの章を書き始めて気づいた……）。「並列化について」で述べたように、 Reactive Streams はいくら上流にキャパシティを報告したところで、 `OnNext` を並行実行できません。したがって、キャパシティを報告することにあまり意味はなく、 AsyncEnumerable のように常にプル型でも問題ないと考えられます。キャパシティを気にする必要がある、流量の制御できないデータソースからの入力や、ある程度まとまったデータがないとパフォーマンスメリットがない並列化部分の前後にバッファを置くだけで解決できてしまいます。
 

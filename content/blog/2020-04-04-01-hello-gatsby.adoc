@@ -160,6 +160,8 @@ Gatsby で AsciiDoc を扱うには、公式より https://www.gatsbyjs.org/pack
 
 結局、 https://www.gatsbyjs.org/docs/actions/#createPage[`createPage`] に渡すパスはエスケープせず、 https://www.gatsbyjs.org/docs/gatsby-link/[`<Link>`] に渡すパスはエスケープすることでお茶を濁しました。この方法では、静的サイトとして振る舞う場合は問題なく動作しますが、 SPA として振る舞う場合は死にます。より良い方法があれば教えてください。
 
+追記: Netlify にデプロイしようとしたら「Deployed filenames cannot contain # or ? characters」と怒られてしまいました。静的ファイルをホスティングするだけの分際で無駄な忖度をするんじゃないという気持ちになったので、 Vercel に移行しました。
+
 == さいごに
 
 下手な既存ツールで満足できない人間が、自前でブログを構築しようとすると、要求が膨らんで大変だということがよくわかりました。そんな中で、妥協点として Gatsby を採用しました。いくらか不満はありますが、解決できるだけの柔軟性はあるので、これからも仲良くやっていきたいと思います。
