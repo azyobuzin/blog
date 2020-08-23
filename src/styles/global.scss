@@ -36,7 +36,8 @@ ul {
     margin-left: 3rem;
 }
 
-ol p, ul p {
+ol p,
+ul p {
     margin-bottom: 1rem;
 }
 
@@ -112,4 +113,28 @@ footer {
 .imageblock {
     margin-bottom: 2.5rem;
     text-align: center;
+}
+
+.halign-left {
+    text-align: left;
+}
+
+.halign-right {
+    text-align: right;
+}
+
+.halign-center {
+    text-align: center;
+}
+
+.valign-top {
+    vertical-align: top;
+}
+
+.valign-bottom {
+    vertical-align: bottom;
+}
+
+.valign-middle {
+    vertical-align: middle;
 }
