@@ -1,0 +1,99 @@
+= Cilium で Docker にネットワークポリシーを設定する
+:keywords: Docker
+
+ケチケチしたインターネットライフに Kubernetes は無縁です。
+
+以前、 Docker のネットワークに細かい設定ができないという不満があって、 Kubernetes の調査をしていたこともありました[1]。しかしながら、趣味で動かしている web サーバに Kubernetes を導入するのは、ケチケチした人間には不可能です。メモリ 2GB の VPS に詰め込めるだけのアプリを詰める、そういうことをしている人間にとっては、 Kubernetes の導入はデメリットの方が多くなります。
+
+そんなわけで、私が管理しているサービスは、基本的に Docker Compose で管理されています。しかし、動かしているアプリも増えてきて、 Pleroma のような SSRF 対策[2]も必要なアプリも出てくると、そろそろ真面目にネットワークポリシーを導入して、安心してコンテナを動かしたくなります。しかしまぁどう検索しても Kubernetes の話しか出てこなくてキレそうだったわけですが、 link:https://cilium.io/[Cilium] という仮想ネットワークツールが Docker のプラグインとして動いてくれるみたいなので、実際にどうやって導入するかを検討していきたいと思います。
+
+. link:https://azyobuzin.hatenablog.com/entry/2019/03/21/024504[Kubernetesで隔離Mastodonネットワークを作った]
+. link:https://azyobuzin.hatenablog.com/entry/2019/11/12/005317[比較的安全に Docker で Pleroma サーバーを建てる]
+
+== Docker ネットワークの課題
+
+Docker 標準の bridge ネットワークの表現力を確認して、課題を確認します。
+
+まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 `docker network connect` コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。
+
+.コンテナとネットワークの関係
+image::https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png[コンテナとネットワークの関係]
+
+基本的なネットワークの種類である bridge ネットワークでは、ネットワークごとに次のような設定ができます。
+
+. ネットワーク内のコンテナ間で通信 (Inter Container Connectivity) できるようにするか
+. IP マスカレードを有効にするか = ホストの外に通信できるようにするか
+
+これの何が不満かというと、コンテナ間の通信の可否はネットワーク単位でしか設定できないということです。
+
+例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。
+
+image::https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png[DBを参照するふたつのアプリ]
+
+このような想定をし始めると、 bridge ネットワークに不満を感じてくるでしょう。コンテナ間の通信を制御しているのは iptables なので、 iptables を直接いじってあげればどうにかできなくはないですが、自分でやりたくはないです。
+
+== Cilium とは
+
+Kubernetes で使う仮想ネットワークです。 Kubernetes の仮想ネットワークといえば、クラスタ内がひとつのネットワークになっていて、初期状態では任意の Pod 同士で通信ができるやつです。そして、それを制限する方法として NetworkPolicy リソースがあります。 Cilium はこれを実現します。他にもいくつかこういったネットワークの実装はありますが、 Cilium は eBPF を使って高速だとか、 L7 のポリシーを設定できるだとか、通信監視ツールと連携できるだとかの特徴がありますが、今日注目したいのは Docker から使えるという点です。 Cilium は Kubernetes の NetworkPolicy に相当する機能を単体でも使うことができます。
+
+== Getting Started
+
+Cilium を Docker で使う例は、ドキュメントにこの 1 ページしかありません。ありがとうございました。
+
+link:https://docs.cilium.io/en/v1.8/gettingstarted/docker/[Cilium with Docker & libnetwork ― Cilium 1.8.3 documentation]
+
+Debian 10 で試してみましたが、特に Linux の設定は必要なく、link:https://github.com/cilium/cilium/blob/v1.8.3/examples/getting-started/docker-compose.yml[サンプルの docker-compose.yml] を投入するだけで起動することができました。サンプルを環境変数を展開し、少し改変した docker-compose.yml を次に示します。
+
+.docker-compose.yml
+[source, yaml]
+----
+version: '2'
+
+services:
+  cilium:
+    container_name: cilium
+    image: docker.io/cilium/cilium:v1.8
+    command: cilium-agent --kvstore consul --kvstore-opt consul.address=127.0.0.1:8500
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/cilium:/var/run/cilium
+      - /sys/fs/bpf:/sys/fs/bpf
+      # To access Docker container netns:
+      - /var/run/docker/netns:/var/run/docker/netns:rshared
+      # To create named netns for cilium-health endpoint:
+      - /var/run/netns:/var/run/netns:rshared
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    depends_on:
+      - consul
+
+  cilium_docker:
+    image: docker.io/cilium/docker-plugin:v1.8
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/cilium:/var/run/cilium
+      - /run/docker/plugins:/run/docker/plugins
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    depends_on:
+      - cilium
+
+  consul:
+    # Consul のほかに etcd も選択可能
+    image: consul:1.8
+    command: agent -client=0.0.0.0 -server -bootstrap-expect=1
+    restart: unless-stopped
+    ports:
+      # 分散とかせずクライアント機能しか使わないので 8500 番だけ外に出す
+      - '127.0.0.1:8500:8500'
+----
+
+cilium/docker-plugin イメージを実行すると、勝手に `docker plugin install` に相当する操作をやってくれるので、このコンテナが正常に立ち上がったら準備完了です。
+
+ホスト側にも cilium コマンドがあると便利なので、 `sudo docker cp cilium:/usr/bin/cilium /usr/local/bin/cilium` で取り出しておくといいです。
