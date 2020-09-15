@@ -65,6 +65,13 @@ module.exports = {
       }
     },
     'gatsby-plugin-react-helmet',
-    'gatsby-plugin-no-javascript'
+    'gatsby-plugin-no-javascript',
+    {
+      resolve: 'gatsby-plugin-no-javascript-utils',
+      options: {
+        noInlineStyles: true,
+        removePreloadLinks: true
+      }
+    }
   ]
 }
