@@ -2,7 +2,7 @@
 :pubdate: 2020-09-28T02:29+09:00
 :keywords: C#,Docker
 
-開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。しかしそれぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。
+開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。
 
 == それぞれのメリット、デメリット
 
