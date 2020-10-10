@@ -23,7 +23,7 @@
     "striptags": "^3.1.1"
   },
   "devDependencies": {
-    "standard": "^14.3.3"
+    "standardx": "^5.0.0"
   },
   "scripts": {
     "build": "gatsby build",
@@ -31,8 +31,8 @@
     "start": "npm run develop",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
-    "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint": "standardx",
+    "lint:fix": "standardx --fix"
   },
   "eslintConfig": {
     "settings": {
