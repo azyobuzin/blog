@@ -138,3 +138,11 @@ footer {
 .valign-middle {
     vertical-align: middle;
 }
+
+.quoteblock {
+    margin-bottom: 2.5rem;
+
+    blockquote {
+        margin-bottom: 0;
+    }
+}
