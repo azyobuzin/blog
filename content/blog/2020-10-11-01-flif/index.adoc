@@ -1,4 +1,4 @@
-= 画像可逆圧縮手法 FLIF についてのメモ
+= 画像可逆圧縮形式 FLIF についてのメモ
 :pubdate: 2020-10-11T20:51+09:00
 :sectnums:
 :xrefstyle: short
