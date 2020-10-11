@@ -1,0 +1,12 @@
+digraph {
+    条件A [shape=box, label="プロパティA > X"];
+    条件B [shape=box, label="プロパティB > Y"];
+    条件C [shape=box, label="プロパティC > Z"];
+
+    条件A -> 条件B [label=No]
+    条件A -> 条件C [label=Yes]
+    条件B -> 確率表1 [label=No]
+    条件B -> 確率表2 [label=Yes]
+    条件C -> 確率表3 [label=No]
+    条件C -> 確率表4 [label=Yes]
+}
