@@ -23,7 +23,7 @@ export default function BlogPostTemplate ({
         <meta property='og:article:published_time' content={post.pubdate} />
         {post.revdate && <meta property='og:article:modified_time' content={post.revdate} />}
         {post.keywords.map((x, i) => <meta key={`tag-${i}`} property='og:article:tag' content={x} />)}
-        {post.thumbnail && <meta property="og:image" content={post.thumbnail} />}
+        {post.thumbnail && <meta property='og:image' content={post.thumbnail} />}
       </Helmet>
 
       <div className='container'>
