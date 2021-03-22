@@ -1,0 +1,24 @@
+@startuml
+Actor User
+
+User -> Source : LinkTo(target)
+activate Source
+Source -> User
+deactivate Source
+
+Source -> Target : OfferMessage(1)
+activate Target
+Target -> Source : Accepted
+deactivate Target
+Source -> Target : OfferMessage(2)
+activate Target
+Target -> Source : Postponed
+deactivate Target
+
+Target -> Source : ConsumeMessage(2)
+activate Source
+Source -> Target : data
+deactivate Source
+
+Source -> Target : Complete()
+@enduml

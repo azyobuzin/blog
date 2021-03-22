@@ -1,0 +1,43 @@
+@startuml
+participant Source
+participant Propagator
+participant Target
+
+== Propagator の意思で再送信を試行 ==
+
+[-> Propagator : Start
+activate Propagator
+
+Propagator -> Target : OfferMessage(consumeToAccept: true)
+
+note right
+Source のデータの存在を
+再確認する必要があるので
+consumeToAccept は true
+end note
+
+activate Target
+
+note over Target : Enter IncomingLock
+
+Target -> Propagator : ConsumeMessage
+activate Propagator
+Propagator -> Source : ConsumeMessage
+activate Source
+
+note over Source : Enter OutgoingLock
+
+Source -> Propagator : messageConsumed: true
+deactivate Source
+Propagator -> Target : messageConsumed: true
+deactivate Propagator
+
+note over Target : Exit IncomingLock
+
+Target -> Propagator : Accepted
+deactivate Target
+
+[<- Propagator : End
+deactivate Propagator
+
+@enduml

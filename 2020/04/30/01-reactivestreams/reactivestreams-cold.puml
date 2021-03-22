@@ -1,0 +1,25 @@
+@startuml
+actor User
+User -> Publisher : Subscribe(subscriber)
+activate Publisher
+
+Publisher -> Subscription : new
+activate Subscription
+Subscription -> Publisher
+deactivate Subscription
+
+Publisher -> Subscriber : OnSubscribe(subscription)
+
+Publisher -> User
+deactivate Publisher
+
+Subscriber -> Subscription : Request(1)
+
+Subscription -> Subscriber : OnNext(data)
+
+Subscriber -> Subscription : Request(1)
+
+Subscription -> Subscriber : OnNext(data)
+
+Subscription -> Subscriber : OnComplete()
+@enduml

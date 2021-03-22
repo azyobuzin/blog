@@ -1,0 +1,210 @@
+<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><link rel="stylesheet" href="/styles.62b5f4ac17f055254ba2.css"/><link rel="alternate" type="application/rss+xml" title="あじょろぐ" href="/rss.xml"/><title>結局、理想のネットワークは Docker で実現できなかった | あじょろぐ</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css" integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&amp;display=swap"/><meta property="og:site_name" content="あじょろぐ"/><meta name="twitter:card" content="summary"/><meta name="twitter:creator" content="@azyobuzin"/><meta name="description" content="Cilium の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。"/><meta property="og:title" content="結局、理想のネットワークは Docker で実現できなかった"/><meta property="og:type" content="article"/><meta property="og:url" content="https://blog.azyobuzi.net/2020/09/14/01-cilium/"/><meta property="og:description" content="Cilium の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。"/><meta property="og:article:published_time" content="2020-09-14T22:13+09:00"/><meta property="og:article:modified_time" content="2020-09-14T22:13:10+09:00"/><meta property="og:article:tag" content="Docker"/></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><div class="container"><article class="article-page"><header><h1>結局、理想のネットワークは Docker で実現できなかった</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2020-09-14T22:13:00.000+09:00" title="公開: 2020/09/14 22:13
+最終更新: 2020/09/14 22:13">2020/09/14</time> ― <a href="https://github.com/azyobuzin/blog/commits/6690539a59773f75cf6d1c42e45baac59dd828be/content/blog/2020-09-14-01-cilium.adoc">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/Docker/">Docker</a></div></header><div class="article-content"><div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://cilium.io/">Cilium</a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_イントロダクション">イントロダクション</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>ケチケチしたインターネットライフに Kubernetes は無縁です。</p>
+</div>
+<div class="paragraph">
+<p>以前、 Docker のネットワークに細かい設定ができないという不満があって、 Kubernetes の調査をしていたこともありました[1]。しかしながら、趣味で動かしている web サーバに Kubernetes を導入するのは、ケチケチした人間には不可能です。メモリ 2GB (GMO の株主優待を受けて、スペックアップしました！) の VPS に詰め込めるだけのアプリを詰める、そういうことをしている人間にとっては、 Kubernetes の導入はデメリットの方が多くなります。</p>
+</div>
+<div class="paragraph">
+<p>そんなわけで、私が管理しているサービスは、基本的に Docker Compose で管理されています。しかし、動かしているアプリも増えてきて、 Pleroma のような SSRF 対策[2]も必要なアプリも出てくると、そろそろ真面目にネットワークポリシーを導入して、安心してコンテナを動かしたくなります。</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://azyobuzin.hatenablog.com/entry/2019/03/21/024504">Kubernetesで隔離Mastodonネットワークを作った</a></p>
+</li>
+<li>
+<p><a href="https://azyobuzin.hatenablog.com/entry/2019/11/12/005317">比較的安全に Docker で Pleroma サーバーを建てる</a></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>しかしまぁどう検索しても Kubernetes の話しか出てこなくてキレそうだったわけですが、 <a href="https://cilium.io/">Cilium</a> という仮想ネットワークツールが Docker のプラグインとして動いてくれるみたいなので、検証してみました。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_docker_ネットワークの課題">Docker ネットワークの課題</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Docker 標準の bridge ネットワークの表現力を確認して、課題を確認します。</p>
+</div>
+<div class="paragraph">
+<p>まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 <code>docker network connect</code> コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="コンテナとネットワークの関係">
+</div>
+</div>
+<div class="paragraph">
+<p>基本的なネットワークの種類である bridge ネットワークでは、ネットワークごとに次のような設定ができます。</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>ネットワーク内のコンテナ間で通信 (Inter Container Connectivity) できるようにするか</p>
+</li>
+<li>
+<p>IP マスカレードを有効にするか = ホストの外に通信できるようにするか</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>これの何が不満かというと、コンテナ間の通信の可否はネットワーク単位でしか設定できないということです。</p>
+</div>
+<div class="paragraph">
+<p>例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="DBを参照するふたつのアプリ">
+</div>
+</div>
+<div class="paragraph">
+<p>このような想定をし始めると、 bridge ネットワークに不満を感じてくるでしょう。コンテナ間の通信を制御しているのは iptables なので、 iptables を直接いじってあげればどうにかできなくはないですが、自分でやりたくはないです。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cilium">Cilium</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>とりあえず「docker network policy」でググってみてください。はい、 1 ページ目のすべてが Kubernetes ですね。というわけで、意外と Docker のネットワークを強固にしようという試みはやられていないようです。存在するネットワークプラグインは皆複数ノードをひとつのネットワークとして使えるようにするみたいなやつばかりです。そんな中で、やっと見つけてきたのが Cilium です。</p>
+</div>
+<div class="paragraph">
+<p>Cilium も複数ノードをひとつのネットワークとして使えるようにするやつのひとつです。メインの用途は Kubernetes の仮想ネットワークです。 Kubernetes の仮想ネットワークといえば、クラスタ内がひとつのネットワークになっていて、初期状態では任意の Pod 同士で通信ができるやつです。そして、それを制限する方法として NetworkPolicy リソースがあります。 Cilium はこれを実現します。</p>
+</div>
+<div class="paragraph">
+<p>Cilium が他の仮想ネットワークツールと違うところは、 Kubernetes がなくてもネットワークポリシーが設定できるところです。つまり単体で使い物になる！ ……はずでした。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_getting_started">Getting Started</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Cilium を Docker で使う例は、ドキュメントにこの 1 ページしかありません。ありがとうございました。</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.cilium.io/en/v1.8/gettingstarted/docker/">Cilium with Docker &amp; libnetwork ― Cilium 1.8.3 documentation</a></p>
+</div>
+<div class="paragraph">
+<p>Debian 10 で試してみましたが、特に Linux の設定は必要なく、<a href="https://github.com/cilium/cilium/blob/v1.8.3/examples/getting-started/docker-compose.yml">サンプルの docker-compose.yml</a> を投入するだけで起動することができました。</p>
+</div>
+<div class="paragraph">
+<p>とにかく、この 1 ページを一通り読むと、ポリシー設定を突っ込むところまで体験できます。</p>
+</div>
+<div class="paragraph">
+<p>メモリ使用量は Cilium + Consul で 100MB 弱と、まぁまぁ許容範囲内かなというところでした。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_で何がダメだったの">で、何がダメだったの？</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>ポートバインディング (<code>--publish</code>) が使えない</p>
+</li>
+<li>
+<p>ポリシーが永続化されない</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_1_ポートバインディングが使えない">1. ポートバインディングが使えない</h3>
+<div class="paragraph">
+<p><code>docker run -p 80:80 nginx</code> と書くとホストの 80 番ポートからコンテナの 80 番ポートにつながるやつです。 Cilium の Docker プラグインはこのオプションを実装していないので、指定しても何も起こりません。</p>
+</div>
+<div class="paragraph">
+<p>改造して解決しようかと挑んだものの、別の課題を先になんとかしないといけないことがわかったので面倒になりました。</p>
+</div>
+<div class="paragraph">
+<p>これは現実的な解決策があり、 Traefik を使ったリバースプロキシを host ネットワークに用意すればいいです。 Traefik 2 からは TCP のリバースプロキシもできるようになったので、 HTTP に限らず何でもいけます。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_ポリシーが永続化されない">2. ポリシーが永続化されない</h3>
+<div class="paragraph">
+<p>これが致命的。</p>
+</div>
+<div class="paragraph">
+<p>ポリシーを設定しても永続化してくれません。 Consul や etcd がそこにあるのにどうして記憶してくれないの？</p>
+</div>
+<div class="paragraph">
+<p>永続化されないということは Cilium が起動したときにポリシーを設定する必要があります。これが問題になるのは、特にマシンや Docker デーモンを再起動したときです。 Cilium が起動するのを待ち、ポリシーを設定するようなサイドカーを用意しておかないと、正しくポリシーが適用されません。このようなサイドカーの実装を考え始めると、どんどん制御ループ、つまり Kubernetes のコンセプトに近づいていきます。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_結局">結局</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://azyobuzin.hatenablog.com/entry/2019/03/04/144245">K3s に最初に食いついた</a>人間なので、諦めて K3s と仲良くするのが一番いいのかもしれません。うっ……。</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>働かざる者Kubeからずというように、個人の趣味プロジェクトでKubernetesを使うべきではない</p>
+</div>
+</blockquote>
+<div class="attribution">
+&#8212; <a href="https://twitter.com/azyobuzin/status/1251774353579978758">@azyobuzin</a>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_おまけ_ipv6_を使う">おまけ: IPv6 を使う</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://docs.cilium.io/en/v1.8/gettingstarted/docker/">サンプル</a>をいくらか改造すると IPv6 も使えるようになります。</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Vagrantfile の <code>cilium_opts</code> から <code>--enable-ipv6=false</code> を削除する</p>
+</li>
+<li>
+<p><code>cilium-net</code> を作成するコマンドで <code>--ipv6</code> を指定する</p>
+<div class="listingblock">
+<div class="content">
+<pre class="undefined highlight"><code>docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>これでコンテナに IPv6 アドレスが振られるようになります。が、 NAT が設定されないので外に出ていったパケットが帰ってこられなくなります。これは Cilium の Issue に積まれていますが、なかなか修正される様子がないです。ワークアラウンドとしては、自分で ip6tables を設定してねということです。</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="undefined highlight"><code>ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE</code></pre>
+</div>
+</div>
+</blockquote>
+<div class="attribution">
+&#8212; <a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium</a>
+</div>
+</div>
+</div>
+</div></div></article><footer><hr/><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin">@azyobuzin</a></nav></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div></body></html>
