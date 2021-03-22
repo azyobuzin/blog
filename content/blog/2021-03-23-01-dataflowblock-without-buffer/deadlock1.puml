@@ -1,0 +1,28 @@
+@startuml
+participant Source
+participant Propagator
+participant Target
+
+== (1) 単純な送信 + (2) Propagator の意思で再送信を試行 ==
+
+[-> Source : (1) Start
+
+note over Source : (1) Enter OutgoingLock
+
+[-> Propagator : (2) Start
+
+Propagator -> Target : (2) OfferMessage(consumeToAccept: true)
+
+note over Target : (2) Enter IncomingLock
+
+Target -> Propagator : (2) ConsumeMessage
+Propagator -> Source : (2) ConsumeMessage
+
+note over Source : (2) Wait OutgoingLock
+
+Source -> Propagator : (1) OfferMessage(consumeToAccept: false)
+Propagator -> Target : (1) OfferMessage(consumeToAccept: false)
+
+note over Target : (1) Wait IncomingLock
+
+@enduml

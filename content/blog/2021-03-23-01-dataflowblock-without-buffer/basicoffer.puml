@@ -1,0 +1,77 @@
+@startuml
+participant Source
+participant Target
+
+== 単純な送信 ==
+
+[-> Source : Start
+activate Source
+
+note over Source : Enter OutgoingLock
+
+Source -> Target : OfferMessage(consumeToAccept: false)
+activate Target
+
+note over Target : Enter IncomingLock
+note over Target : Exit IncomingLock
+
+Target -> Source : Accepted
+deactivate Target
+
+note over Source : Exit OutgoingLock
+
+[<- Source : End
+deactivate Source
+
+== 受信を確定する前に、再確認をしてほしい場合 ==
+
+[-> Source : Start
+activate Source
+
+note over Source : Enter OutgoingLock
+
+Source -> Target : OfferMessage(consumeToAccept: true)
+activate Target
+
+note over Target : Enter IncomingLock
+
+Target -> Source : ConsumeMessage
+activate Source
+
+note over Source : Already entered OutgoingLock
+
+Source -> Target : messageConsumed: true
+deactivate Source
+
+note over Target : Exit IncomingLock
+
+Target -> Source : Accepted
+deactivate Target
+
+note over Source : Exit OutgoingLock
+
+[<- Source : End
+deactivate Source
+
+== 延期したメッセージを再受信する場合 ==
+
+Target <-] : Start
+activate Target
+
+note over Target : Enter IncomingLock
+
+Target -> Source : ConsumeMessage
+activate Source
+
+note over Source : Enter OutgoingLock
+note over Source : Exit OutgoingLock
+
+Source -> Target : messageConsumed: true
+deactivate Source
+
+note over Target : Exit IncomingLock
+
+Target ->] : End
+deactivate Target
+
+@enduml

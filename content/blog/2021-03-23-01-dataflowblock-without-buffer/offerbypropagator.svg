@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="532px" preserveAspectRatio="none" style="width:774px;height:532px;" version="1.1" viewBox="0 0 774 532" width="774px" zoomAndPan="magnify"><defs><filter height="300%" id="f16rrgep6xz8uz" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="68.2656" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="77.5" y="279.3594"/><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="361.5938" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="273.5" y="112.5625"/><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="126.5313" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="278.5" y="250.2266"/><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="283.1953" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="552.5" y="161.8281"/><line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="82" x2="82" y1="38.2969" y2="492.1563"/><line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="278.5" x2="278.5" y1="38.2969" y2="492.1563"/><line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="557" x2="557" y1="38.2969" y2="492.1563"/><rect fill="#FEFECE" filter="url(#f16rrgep6xz8uz)" height="30.2969" style="stroke: #A80036; stroke-width: 1.5;" width="63" x="49" y="3"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="49" x="56" y="22.9951">Source</text><rect fill="#FEFECE" filter="url(#f16rrgep6xz8uz)" height="30.2969" style="stroke: #A80036; stroke-width: 1.5;" width="63" x="49" y="491.1563"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="49" x="56" y="511.1514">Source</text><rect fill="#FEFECE" filter="url(#f16rrgep6xz8uz)" height="30.2969" style="stroke: #A80036; stroke-width: 1.5;" width="90" x="231.5" y="3"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="76" x="238.5" y="22.9951">Propagator</text><rect fill="#FEFECE" filter="url(#f16rrgep6xz8uz)" height="30.2969" style="stroke: #A80036; stroke-width: 1.5;" width="90" x="231.5" y="491.1563"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="76" x="238.5" y="511.1514">Propagator</text><rect fill="#FEFECE" filter="url(#f16rrgep6xz8uz)" height="30.2969" style="stroke: #A80036; stroke-width: 1.5;" width="59" x="526" y="3"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="45" x="533" y="22.9951">Target</text><rect fill="#FEFECE" filter="url(#f16rrgep6xz8uz)" height="30.2969" style="stroke: #A80036; stroke-width: 1.5;" width="59" x="526" y="491.1563"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="45" x="533" y="511.1514">Target</text><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="68.2656" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="77.5" y="279.3594"/><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="361.5938" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="273.5" y="112.5625"/><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="126.5313" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="278.5" y="250.2266"/><rect fill="#FFFFFF" filter="url(#f16rrgep6xz8uz)" height="283.1953" style="stroke: #A80036; stroke-width: 1.0;" width="10" x="552.5" y="161.8281"/><rect fill="#EEEEEE" filter="url(#f16rrgep6xz8uz)" height="3" style="stroke: #EEEEEE; stroke-width: 1.0;" width="759.5" x="3" y="68.8633"/><line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="762.5" y1="68.8633" y2="68.8633"/><line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="762.5" y1="71.8633" y2="71.8633"/><rect fill="#EEEEEE" filter="url(#f16rrgep6xz8uz)" height="23.1328" style="stroke: #000000; stroke-width: 2.0;" width="238" x="263.75" y="58.2969"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="219" x="269.75" y="74.3638">Propagator の意思で再送信を試行</text><polygon fill="#A80036" points="261.5,108.5625,271.5,112.5625,261.5,116.5625,265.5,112.5625" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="3" x2="267.5" y1="112.5625" y2="112.5625"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="32" x="10" y="107.4966">Start</text><polygon fill="#A80036" points="540.5,157.8281,550.5,161.8281,540.5,165.8281,544.5,161.8281" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="283.5" x2="546.5" y1="161.8281" y2="161.8281"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="250" x="290.5" y="156.7622">OfferMessage(consumeToAccept: true)</text><path d="M567,125.5625 L567,180.5625 L753,180.5625 L753,135.5625 L743,125.5625 L567,125.5625 " fill="#FBFB77" filter="url(#f16rrgep6xz8uz)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M743,125.5625 L743,135.5625 L753,135.5625 L743,125.5625 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="153" x="573" y="142.6294">Source のデータの存在を</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="156" x="573" y="157.7622">再確認する必要があるので</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="165" x="573" y="172.895">consumeToAccept は true</text><path d="M482,194.9609 L482,219.9609 L628,219.9609 L628,204.9609 L618,194.9609 L482,194.9609 " fill="#FBFB77" filter="url(#f16rrgep6xz8uz)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M618,194.9609 L618,204.9609 L628,204.9609 L618,194.9609 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="125" x="488" y="212.0278">Enter IncomingLock</text><polygon fill="#A80036" points="299.5,246.2266,289.5,250.2266,299.5,254.2266,295.5,250.2266" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="293.5" x2="551.5" y1="250.2266" y2="250.2266"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="118" x="305.5" y="245.1606">ConsumeMessage</text><polygon fill="#A80036" points="98.5,275.3594,88.5,279.3594,98.5,283.3594,94.5,279.3594" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="92.5" x2="277.5" y1="279.3594" y2="279.3594"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="118" x="104.5" y="274.2935">ConsumeMessage</text><path d="M8,292.3594 L8,317.3594 L154,317.3594 L154,302.3594 L144,292.3594 L8,292.3594 " fill="#FBFB77" filter="url(#f16rrgep6xz8uz)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M144,292.3594 L144,302.3594 L154,302.3594 L144,292.3594 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="125" x="14" y="309.4263">Enter OutgoingLock</text><polygon fill="#A80036" points="266.5,343.625,276.5,347.625,266.5,351.625,270.5,347.625" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="82.5" x2="272.5" y1="347.625" y2="347.625"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="162" x="89.5" y="342.5591">messageConsumed: true</text><polygon fill="#A80036" points="540.5,372.7578,550.5,376.7578,540.5,380.7578,544.5,376.7578" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="283.5" x2="546.5" y1="376.7578" y2="376.7578"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="162" x="290.5" y="371.6919">messageConsumed: true</text><path d="M488,389.7578 L488,414.7578 L623,414.7578 L623,399.7578 L613,389.7578 L488,389.7578 " fill="#FBFB77" filter="url(#f16rrgep6xz8uz)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M613,389.7578 L613,399.7578 L623,399.7578 L613,389.7578 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="114" x="494" y="406.8247">Exit IncomingLock</text><polygon fill="#A80036" points="294.5,441.0234,284.5,445.0234,294.5,449.0234,290.5,445.0234" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="288.5" x2="556.5" y1="445.0234" y2="445.0234"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="60" x="300.5" y="439.9575">Accepted</text><polygon fill="#A80036" points="14,470.1563,4,474.1563,14,478.1563,10,474.1563" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="8" x2="277.5" y1="474.1563" y2="474.1563"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="24" x="20" y="469.0903">End</text><!--
+@startuml
+participant Source
+participant Propagator
+participant Target
+
+== Propagator の意思で再送信を試行 ==
+
+[-> Propagator : Start
+activate Propagator
+
+Propagator -> Target : OfferMessage(consumeToAccept: true)
+
+note right
+Source のデータの存在を
+再確認する必要があるので
+consumeToAccept は true
+end note
+
+activate Target
+
+note over Target : Enter IncomingLock
+
+Target -> Propagator : ConsumeMessage
+activate Propagator
+Propagator -> Source : ConsumeMessage
+activate Source
+
+note over Source : Enter OutgoingLock
+
+Source -> Propagator : messageConsumed: true
+deactivate Source
+Propagator -> Target : messageConsumed: true
+deactivate Propagator
+
+note over Target : Exit IncomingLock
+
+Target -> Propagator : Accepted
+deactivate Target
+
+[<- Propagator : End
+deactivate Propagator
+
+@enduml
+
+PlantUML version 1.2018.13(Tue Nov 27 02:11:51 JST 2018)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.10+9-Ubuntu-0ubuntu1.20.04
+Operating System: Linux
+OS Version: 5.4.72-microsoft-standard-WSL2
+Default Encoding: UTF-8
+Language: en
+Country: null
+--></g></svg>
