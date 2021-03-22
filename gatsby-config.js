@@ -1,3 +1,4 @@
+const path = require('path')
 const siteTitle = 'あじょろぐ'
 
 module.exports = {
@@ -17,7 +18,7 @@ module.exports = {
       resolve: 'gatsby-source-filesystem',
       options: {
         name: 'blog',
-        path: `${__dirname}/content/blog`
+        path: path.resolve(__dirname, 'content/blog')
       }
     },
     {
