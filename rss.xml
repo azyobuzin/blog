@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[あじょろぐ]]></title><description><![CDATA[azyobuzinの進捗の証]]></description><link>https://blog.azyobuzi.net</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 22 Mar 2021 19:03:41 GMT</lastBuildDate><item><title><![CDATA[バッファのない PropagatorBlock はつくれないという話]]></title><description><![CDATA[また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[あじょろぐ]]></title><description><![CDATA[azyobuzinの進捗の証]]></description><link>https://blog.azyobuzi.net</link><generator>GatsbyJS</generator><lastBuildDate>Sun, 11 Apr 2021 15:42:13 GMT</lastBuildDate><item><title><![CDATA[バッファのない PropagatorBlock はつくれないという話]]></title><description><![CDATA[また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？
 
 
 例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。
@@ -1989,7 +1989,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &lt;/div&gt;
 &lt;/blockquote&gt;
 &lt;div class=&quot;attribution&quot;&gt;
-&amp;#8212; &lt;a href=&quot;https://mstdn.maud.io/@azyobuzin/103884235813994300&quot;&gt;@&lt;a href=&quot;mailto:azyobuzin@mstdn.maud.io&quot;&gt;azyobuzin@mstdn.maud.io&lt;/a&gt;&lt;/a&gt;
+&amp;#8212; &lt;a href=&quot;https://mstdn.maud.io/@azyobuzin/103884235813994300&quot;&gt;@azyobuzin@mstdn.maud.io&lt;/a&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/li&gt;
