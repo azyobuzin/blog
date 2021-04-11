@@ -23,7 +23,7 @@ Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き�
 
 . なぜ Qiita ではないのか
 +
-[quote, 'https://mstdn.maud.io/@azyobuzin/103884235813994300[@azyobuzin@mstdn.maud.io]']
+[quote, 'https://mstdn.maud.io/@azyobuzin/103884235813994300[@\azyobuzin@mstdn.maud.io]']
 --
 Qiita なんて承認欲求が通常のブログより満たせる以外のメリット何一つないのに、その一点のメリットに負けた人たちが使うサービスでしょゲラゲラって言ってる
 --
