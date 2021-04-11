@@ -27,7 +27,7 @@
     "webpack": "4"
   },
   "scripts": {
-    "build": "gatsby build",
+    "build": "gatsby build && rm -rf public/*.js public/*.json public/page-data",
     "develop": "gatsby develop",
     "start": "npm run develop",
     "serve": "gatsby serve",
