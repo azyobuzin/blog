@@ -49,7 +49,7 @@ ISourceBlock&amp;lt;T&amp;gt; CreateSource()
 
 
 というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし resultBlock にバッファがなければ、 CreateSource の戻り値を利用する（リンクする）とき、初めて sources からデータが取り出されます。やりたいですね。"/><meta property="og:article:published_time" content="2021-03-23T03:44+09:00"/><meta property="og:article:modified_time" content="2021-03-23T03:44:04+09:00"/><meta property="og:article:tag" content="C#"/><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png"/></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><div class="container"><article class="article-page"><header><h1>バッファのない PropagatorBlock はつくれないという話</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2021-03-23T03:44:00.000+09:00" title="公開: 2021/03/23 03:44
-最終更新: 2021/03/23 03:44">2021/03/23</time> ― <a href="https://github.com/azyobuzin/blog/commits/dec79669da75a585abe296bc2ba8ce1c3ec27999/content/blog/2021-03-23-01-dataflowblock-without-buffer/index.adoc">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div id="preamble">
+最終更新: 2021/03/23 03:44">2021/03/23</time> ― <a href="https://github.com/azyobuzin/blog/commits/dec79669da75a585abe296bc2ba8ce1c3ec27999/content/blog/2021-03-23-01-dataflowblock-without-buffer/index.adoc" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
 <p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？</p>
@@ -144,4 +144,4 @@ ISourceBlock&amp;lt;T&amp;gt; CreateSource()
 <p>結局この記事で何が言いたかったかというと、拙作の TPL Dataflow 補助ライブラリの <a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow</a> で、バッファなしの <code>TransformBlock</code> を提供していたのですが、デッドロックの可能性を排除できなかったので、機能を削除することにしました。悲しい。</p>
 </div>
 </div>
-</div></div></article><footer><hr/><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin">@azyobuzin</a></nav></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div></body></html>
+</div></div></article><footer><hr/><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div></body></html>
