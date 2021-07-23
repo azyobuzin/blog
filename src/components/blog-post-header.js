@@ -42,7 +42,7 @@ export default function BlogPostHeader ({ post, link }) {
         </time>
         {
           historyUrl && (
-            <>{' ― '}<a href={historyUrl}>History</a></>
+            <>{' ― '}<a href={historyUrl} rel='external'>History</a></>
           )
         }
       </div>

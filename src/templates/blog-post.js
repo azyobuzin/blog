@@ -37,7 +37,9 @@ export default function BlogPostTemplate ({
           <nav>
             <Link to='/'>{siteTitle}</Link>
             {'　|　'}
-            <a href={'https://twitter.com/' + twitter.replace(/^@/, '')}>{twitter}</a>
+            <a href={'https://twitter.com/' + twitter.replace(/^@/, '')} rel='author external'>
+              {twitter}
+            </a>
           </nav>
         </footer>
       </div>

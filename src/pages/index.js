@@ -28,7 +28,7 @@ export default function Index ({ data }) {
         <BlogPostList posts={posts} />
 
         <hr />
-        <p><a href='https://azyobuzin.hatenablog.com/'>もっと古い記事（はてなブログ）</a></p>
+        <p><a href='https://azyobuzin.hatenablog.com/' rel='external'>もっと古い記事（はてなブログ）</a></p>
       </div>
     </Layout>
   )
