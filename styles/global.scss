@@ -1,5 +1,3 @@
-@import "node_modules/normalize.css/normalize";
-
 $color-secondary: #444d53;
 
 /*!
@@ -45,6 +43,10 @@ code,
 kbd,
 samp {
   font-family: "Roboto Mono", monospace;
+}
+
+figure {
+  margin: 0;
 }
 
 article header {
@@ -147,6 +149,25 @@ footer {
   }
 }
 
-div.title {
+div.title,
+figure p,
+figcaption {
   text-align: center;
+}
+
+// pre > code と同じスタイルを pre > samp に適用
+samp {
+  background: $color-tertiary;
+  border-radius: 0.4rem;
+  font-size: 86%;
+  margin: 0 0.2rem;
+  padding: 0.2rem 0.5rem;
+  white-space: nowrap;
+}
+
+pre > samp {
+  border-radius: 0;
+  display: block;
+  padding: 1rem 1.5rem;
+  white-space: pre;
 }

@@ -28,12 +28,16 @@ export function h(
 ): HastElement
 
 export function h(
-  selector: string | Function | null | undefined,
+  selector: Function | string | null | undefined,
   // @eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   properties?: any,
   ...children: any[]
 ): Element {
   return typeof selector === "function"
     ? selector({ children, ...properties })
-    : hastscript(selector as any, properties, children)
+    : hastscript(
+        selector as any,
+        properties,
+        children.filter((x) => x != null && x !== true && x !== false)
+      )
 }

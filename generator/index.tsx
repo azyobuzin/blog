@@ -1,6 +1,7 @@
-import { join } from "path"
+import { cp, mkdir } from "fs/promises"
+import { join, resolve } from "path"
 import { Element, h } from "./lib/jsx"
-import { readPosts } from "./lib/posts"
+import { Post, readPosts } from "./lib/posts"
 import { renderHtml } from "./lib/render-html"
 import Index from "./pages/Index"
 import NotFound from "./pages/NotFound"
@@ -10,7 +11,7 @@ import TagPage from "./pages/TagPage"
 const postsDir = process.argv[2]
 const outDir = process.argv[3]
 
-if (!postsDir || !outDir) {
+if (typeof postsDir !== "string" || typeof outDir !== "string") {
   console.warn("Usage: generator POSTS_DIR OUT_DIR")
   process.exit(1)
 }
@@ -20,29 +21,56 @@ readPosts(postsDir)
     const pages: Record<string, Element> = {
       "index.html": <Index posts={posts} />,
       "404.html": <NotFound />,
+      ...postPages(posts),
+      ...tagPages(posts),
     }
 
-    for (const post of posts) {
-      pages[`${post.slug}/index.html`] = <PostPage post={post} />
-    }
-
-    const tags = new Set<string>(posts.flatMap((x) => x.tags))
-    for (const tag of tags) {
-      pages[`tags/${tag}/index.html`] = (
-        <TagPage tag={tag} posts={posts.filter((x) => x.tags.includes(tag))} />
-      )
-    }
-
-    await Promise.all(
-      Object.entries(pages).map(async ([outPath, page]) => {
-        await renderHtml(page, join(outDir, outPath))
-        console.log(outPath)
-      })
-    )
-
-    // TODO: その他のファイルをコピー
+    return await Promise.all([renderToHtmlFiles(pages), copyStaticFiles(posts)])
   })
   .catch((err) => {
     console.error(err)
     process.exit(2)
   })
+
+function postPages(posts: Post[]): Record<string, Element> {
+  return Object.fromEntries(
+    posts.map((post) => [`${post.slug}/index.html`, <PostPage post={post} />])
+  )
+}
+
+function tagPages(posts: Post[]): Record<string, Element> {
+  const tags = new Set<string>(posts.flatMap((x) => x.tags))
+  return Object.fromEntries(
+    Array.from(tags, (tag) => {
+      const postsByTag = posts.filter((x) => x.tags.includes(tag))
+      return [
+        `tags/${tag}/index.html`,
+        <TagPage tag={tag} posts={postsByTag} />,
+      ]
+    })
+  )
+}
+
+async function renderToHtmlFiles(
+  pages: Record<string, Element>
+): Promise<void> {
+  for (const [outPath, page] of Object.entries(pages)) {
+    await renderHtml(page, join(outDir, outPath))
+    console.log(outPath)
+  }
+}
+
+async function copyStaticFiles(posts: Post[]): Promise<void> {
+  for (const post of posts) {
+    const srcDir = resolve(postsDir, post.slug)
+    const dstDir = resolve(outDir, post.slug)
+
+    await mkdir(dstDir, { recursive: true })
+
+    await cp(srcDir, dstDir, {
+      recursive: true,
+      force: true,
+      filter: (srcPath) => resolve(srcPath) !== resolve(srcDir, "index.md"),
+    })
+  }
+}

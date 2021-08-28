@@ -17,7 +17,7 @@ TL;DR: Xamarin.Android のグローバル例外ハンドラは `AppDomain.Unhand
 
 実行するとアプリが終了し、 logcat にはこのようなログが残ります。
 
-```
+```samp
 E AndroidRuntime: FATAL EXCEPTION: main
 E AndroidRuntime: Process: com.example.ochiruapplication, PID: 6823
 E AndroidRuntime: java.lang.RuntimeException
@@ -42,13 +42,20 @@ E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.j
 
 さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる `RuntimeInit.commonInit` に次のようなプログラムが入っています。
 
+<figure>
+<figcaption>
+
+[RuntimeInit.commonInit の一部](https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb)
+
+</figcaption>
+
 ```java
 LoggingHandler loggingHandler = new LoggingHandler();
 RuntimeHooks.setUncaughtExceptionPreHandler(loggingHandler);
 Thread.setDefaultUncaughtExceptionHandler(new KillApplicationHandler(loggingHandler));
 ```
 
-https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb
+</figure>
 
 Java が管理するスレッドで発生した例外は、スレッド自体に例外ハンドラを設定していなければ `Thread.setDefaultUncaughtExceptionHandler` で設定したハンドラで処理されます。 Android では `RuntimeInit$KillApplicationHandler` が設定されており、これが最後の砦をやっています。また、 Android には Java 標準の `Thread` クラスにはない `setUncaughtExceptionPreHandler` があり、もしデフォルトのハンドラがアプリのコードによって書き換えられたとしても、 `RuntimeInit$LoggingHandler` だけは呼び出されて、 logcat に例外ログが吐きだされるようになっています。
 
@@ -60,7 +67,7 @@ Java が管理するスレッドで発生した例外は、スレッド自体に
 
 同じことを Xamarin.Android でやってみましょう。 `MainActivity.OnStart` に `throw new Exception();` を仕込んで実行すると、このようなログが得られます。
 
-```
+```samp
 E AndroidRuntime: FATAL EXCEPTION: main
 E AndroidRuntime: Process: com.companyname.ochiruappxamarin, PID: 9701
 E AndroidRuntime: java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
@@ -122,13 +129,20 @@ I MonoDroid:
 
 では後半のログを出しているのは一体誰なのでしょうか？ 答えは `Thread.getDefaultUncaughtExceptionHandler()`（C# では `Java.Lang.Thread.DefaultUncaughtExceptionHandler`）を取得してみるとわかります。 Xamarin.Android の初期化メソッドが存在する `mono.android.Runtime` クラスの静的コンストラクタで、デフォルト例外ハンドラを独自に設定しています。
 
+<figure>
+<figcaption>
+
+[Runtime.java の一部](https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15)
+
+</figcaption>
+
 ```java
 static {
     Thread.setDefaultUncaughtExceptionHandler (new XamarinUncaughtExceptionHandler (Thread.getDefaultUncaughtExceptionHandler ()));
 }
 ```
 
-https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15
+</figure>
 
 このハンドラでは、 Xamarin.Android 独自の処理をしたあと、もともと設定してあったハンドラに処理を投げています。つまり、処理順は PreHandler である `LoggingHandler` が呼び出されたあと、 Xamarin.Android 独自の処理をして、最後に `KillApplicationHandler` を実行する、という順番になります。
 
@@ -142,7 +156,7 @@ Xamarin.Android 独自の処理の中身は [`JNIEnv.PropagateUncaughtException`
 
 前回の実験コードの `throw new Exception();` を `new Thread(() => throw new Exception()).Start();` に書き換えて試してみましょう。実行すると logcat のエラーログはこんな感じになりました。
 
-```
+```samp
 F mono-rt : [ERROR] FATAL UNHANDLED EXCEPTION: System.Exception: Exception of type 'System.Exception' was thrown.
 F mono-rt :   at OchiruAppXamarin.MainActivity+<>c.<OnStart>b__2_0 () [0x00000] in <605572ca36544c48913788216f21b753>:0
 F mono-rt :   at System.Threading.ThreadHelper.ThreadStart_Context (System.Object state) [0x00014] in <1b39a03c32ec46258a7821e202e0269f>:0

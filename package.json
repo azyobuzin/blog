@@ -3,9 +3,8 @@
   "private": true,
   "version": "0.2.0",
   "dependencies": {
-    "highlight.js": "^10.7.3",
-    "milligram": "^1.4.1",
-    "normalize.css": "^5.0.0"
+    "highlight.js": "^11.2.0",
+    "milligram": "^1.4.1"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.0.0-rc.0",

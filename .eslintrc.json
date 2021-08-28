@@ -1,18 +1,12 @@
 {
   "root": true,
   "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "standard-with-typescript",
+    "standard-jsx",
     "plugin:import/typescript",
     "prettier"
   ],
   "plugins": ["import"],
-  "env": {
-    "node": true
-  },
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
   "rules": {
     "sort-imports": [
       "error",
@@ -26,7 +20,8 @@
         "alphabetize": { "order": "asc" }
       }
     ],
-    "@typescript-eslint/ban-types": "off",
-    "@typescript-eslint/no-explicit-any": "off"
+    "react/jsx-key": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/sort-type-union-intersection-members": "error"
   }
 }

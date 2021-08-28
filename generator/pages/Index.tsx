@@ -1,5 +1,5 @@
-import BlogPostList from "../components/BlogPostList"
 import Layout from "../components/Layout"
+import PostList from "../components/PostList"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
 import { Component, h } from "../lib/jsx"
 import type { Post } from "../lib/posts"
@@ -26,7 +26,7 @@ const Index: Component<{ posts: Post[] }> = ({ posts }) => {
           <p>{DESCRIPTION}</p>
         </header>
 
-        <BlogPostList posts={posts} />
+        <PostList posts={posts} />
 
         <hr />
         <p>

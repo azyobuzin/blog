@@ -1,14 +1,14 @@
 import { Component, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
-import BlogPostHeader from "./BlogPostHeader"
 import LinkToPost from "./LinkToPost"
+import PostHeader from "./PostHeader"
 
-const BlogPostPreview: Component<{ post: Post }> = ({ post }) => {
+const PostPreview: Component<{ post: Post }> = ({ post }) => {
   return (
     <article className="article-list-item">
       <hr />
       <div className="article-list-item-content">
-        <BlogPostHeader post={post} link />
+        <PostHeader post={post} link />
 
         <div className="article-content">
           {post.preamble}
@@ -21,14 +21,14 @@ const BlogPostPreview: Component<{ post: Post }> = ({ post }) => {
   )
 }
 
-const BlogPostList: Component<{ posts: Post[] }> = ({ posts }) => {
+const PostList: Component<{ posts: Post[] }> = ({ posts }) => {
   return (
     <main className="article-list">
       {posts.map((x) => (
-        <BlogPostPreview post={x} />
+        <PostPreview post={x} />
       ))}
     </main>
   )
 }
 
-export default BlogPostList
+export default PostList

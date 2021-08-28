@@ -1,33 +1,35 @@
-import BlogPostHeader from "../components/BlogPostHeader"
+import { toText } from "hast-util-to-text"
 import Layout from "../components/Layout"
-import { SITE_TITLE } from "../lib/constants"
+import PostHeader from "../components/PostHeader"
+import { SITE_TITLE, SITE_URL } from "../lib/constants"
 import { Component, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
 
 const PostPage: Component<{ post: Post }> = ({ post }) => {
-  const canonical = `${SITE_TITLE}/${post.slug}/`
+  const titleText = toText(post.title)
+  const canonical = `${SITE_URL}/${SITE_TITLE}/${post.slug}/`
 
   return (
     <Layout
       head={
         <>
           <title>
-            {post.title} | {SITE_TITLE}
+            {titleText} | {SITE_TITLE}
           </title>
           <link rel="canonical" href={canonical} />
           <meta name="description" content={post.description} />
-          <meta property="og:title" content={post.title} />
+          <meta property="og:title" content={titleText} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={canonical} />
           <meta property="og:description" content={post.description} />
           <meta property="og:article:published_time" content={post.pubdate} />
-          {post.revdate && (
+          {post.revdate != null && (
             <meta property="og:article:modified_time" content={post.revdate} />
           )}
           {post.tags.map((x) => (
             <meta property="og:article:tag" content={x} />
           ))}
-          {post.thumbnail && (
+          {post.thumbnail != null && (
             <meta property="og:image" content={post.thumbnail} />
           )}
         </>
@@ -35,7 +37,7 @@ const PostPage: Component<{ post: Post }> = ({ post }) => {
     >
       <div className="container">
         <article className="article-page">
-          <BlogPostHeader post={post} link={false} />
+          <PostHeader post={post} link={false} />
           <div className="article-content">{post.content}</div>
         </article>
 

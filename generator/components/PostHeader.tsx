@@ -5,18 +5,20 @@ import { Post } from "../lib/posts"
 import LinkToPost from "./LinkToPost"
 import LinkToTag from "./LinkToTag"
 
-const BlogPostHeader: Component<{ post: Post; link: boolean }> = ({
+const PostHeader: Component<{ post: Post; link: boolean }> = ({
   post,
   link,
 }) => {
   const pubdate = moment.tz(post.pubdate, TIMEZONE)
-  const revdate = post.revdate ? moment.tz(post.revdate, TIMEZONE) : null
+  const revdate =
+    post.revdate != null ? moment.tz(post.revdate, TIMEZONE) : null
   const dateFormat = "YYYY/MM/DD"
   const displayFormat = "YYYY/MM/DD HH:mm"
   let dateDetails =
     "公開: " +
     pubdate.format(post.pubdate.includes("T") ? displayFormat : dateFormat)
-  if (revdate) dateDetails += "\n最終更新: " + revdate.format(displayFormat)
+  if (revdate != null)
+    dateDetails += "\n最終更新: " + revdate.format(displayFormat)
 
   const historyUrl =
     post.commitHash != null
@@ -41,7 +43,7 @@ const BlogPostHeader: Component<{ post: Post; link: boolean }> = ({
         <time dateTime={pubdate.toISOString(true)} title={dateDetails}>
           {pubdate.format(dateFormat)}
         </time>
-        {historyUrl && (
+        {historyUrl != null && (
           <>
             {" ― "}
             <a href={historyUrl} rel="external">
@@ -67,4 +69,4 @@ const BlogPostHeader: Component<{ post: Post; link: boolean }> = ({
   )
 }
 
-export default BlogPostHeader
+export default PostHeader
