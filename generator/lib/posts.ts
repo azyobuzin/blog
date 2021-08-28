@@ -2,21 +2,28 @@ import { execFile } from "child_process"
 import { stat } from "fs/promises"
 import * as path from "path"
 import glob from "glob"
-import type { Element, Node as HastNode, Root as HastRoot } from "hast"
+import type {
+  Element,
+  Node as HastNode,
+  Root as HastRoot,
+  Text as HastText,
+} from "hast"
 import { classnames } from "hast-util-classnames"
-import { toText } from "hast-util-to-text"
+import { hasProperty } from "hast-util-has-property"
+import { heading as isHastHeading } from "hast-util-heading"
+import { isElement as isHastElement } from "hast-util-is-element"
+import { HastParent, toText } from "hast-util-to-text"
 import type { Parent as MdastParent, Root as MdastRoot } from "mdast"
 import { toHast } from "mdast-util-to-hast"
 import rehypeHighlight from "rehype-highlight"
 import rehypeKatex from "rehype-katex"
+import rehypeRaw from "rehype-raw"
 import remarkExtractFrontmatter from "remark-extract-frontmatter"
 import remarkFrontmatter from "remark-frontmatter"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
-// @ts-expect-error remark-sectionize の型定義がない
-import remarkSectionize from "remark-sectionize"
 import { read as readVFile } from "to-vfile"
 import { FrozenProcessor, Plugin, unified } from "unified"
 import { map } from "unist-util-map"
@@ -44,7 +51,9 @@ export interface Post {
 interface Frontmatter {
   pubdate?: string
   tags?: string[]
+  /** セクション番号を表示するか */
   sectnums?: boolean
+  /** meta タグの説明文 */
   description?: string
   thumbnail?: string
 }
@@ -135,6 +144,7 @@ const extractTitle: Plugin<[], MdastRoot> = () => {
   }
 }
 
+// TODO: HTML でやらないと h タグ手書きが対処できない
 const sectionNumbering: Plugin<[], MdastRoot> = () => {
   return (tree: MdastRoot, file: VFile) => {
     if ((file.data.frontmatter as Frontmatter | undefined)?.sectnums !== true)
@@ -172,7 +182,7 @@ const sampElement: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     visit(
       tree,
-      (node) => isHastElement(node) && node.tagName === "code",
+      (node) => isHastElement(node, "code"),
       (node) => {
         const el = node as Element
         const isSamp = (
@@ -188,13 +198,7 @@ const sampElement: Plugin<[], HastRoot> = () => {
 const assignNoHighlight: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     visit(tree, "element", (node, _index, parent): void => {
-      if (
-        !isHastElement(node) ||
-        !isHastElement(parent) ||
-        node.tagName !== "code" ||
-        parent.tagName !== "pre"
-      )
-        return
+      if (!isHastElement(node, "code") || !isHastElement(parent, "pre")) return
 
       const hasLangClass = (
         classnames(node.properties?.className as any) as string[]
@@ -208,16 +212,86 @@ const assignNoHighlight: Plugin<[], HastRoot> = () => {
 /** コードブロックのスタイルは milligram に任せるので、 hljs のスタイルを消す */
 const removeHljsClass: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
-    visit(
-      tree,
-      (node) =>
-        isHastElement(node) &&
-        node.tagName === "code" &&
-        node.properties?.className != null,
-      (node) => {
-        classnames(node as Element, { hljs: false, "no-highlight": false })
+    visit(tree, (node) => {
+      if (isHastElement(node, "code") && node.properties?.className != null)
+        classnames(node, { hljs: false, "no-highlight": false })
+    })
+  }
+}
+
+// TODO: img の alt に figcaption をセットする
+
+/** 図表番号 */
+const figureNumbering: Plugin<[], HastRoot> = () => {
+  return (tree: HastRoot) => {
+    const counter = new Map<string, number>()
+    const numById = new Map<string, string>()
+
+    visit(tree, (node) => {
+      if (!isHastElement(node, "figure") || !hasProperty(node, "dataNum"))
+        return
+
+      const prefix = node.properties!.dataNum as string
+
+      const num = (counter.get(prefix) ?? 0) + 1
+      counter.set(prefix, num)
+
+      const id = node.properties!.id as string | undefined
+      if (id != null) numById.set(id, `${prefix} ${num}`)
+
+      // figcaption を書き換える
+      for (const child of node.children) {
+        if (isHastElement(child, "figcaption")) {
+          const textNode: HastText = {
+            type: "text",
+            value: `${prefix} ${num}: `,
+          }
+          child.children.unshift(textNode)
+          break
+        }
       }
-    )
+    })
+
+    // a タグを書き換える
+    visit(tree, (node) => {
+      if (
+        !isHastElement(node, "a") ||
+        !hasProperty(node, "href") ||
+        !isChildrenEmpty(node)
+      )
+        return
+
+      const href = node.properties!.href as string
+      if (!href.startsWith("#")) return
+
+      const figNumStr = numById.get(href.substring(1))
+      if (figNumStr != null) {
+        const textNode: HastText = { type: "text", value: figNumStr }
+        node.children = [textNode]
+      }
+    })
+  }
+}
+
+function isChildrenEmpty(el: Element): boolean {
+  return traverse(el)
+
+  function traverse(parent: HastParent): boolean {
+    for (const child of parent.children) {
+      switch (child.type as string) {
+        case "root":
+          if (!traverse(child as unknown as HastRoot)) return false
+          break
+        case "element":
+          return false
+        case "text": {
+          const v = (child as HastText).value
+          if (v != null && v.length > 0) return false
+          break
+        }
+      }
+    }
+    return true
   }
 }
 
@@ -235,12 +309,11 @@ const toPost: Plugin<[], HastRoot> = function () {
     let thumbnail = frontmatter?.thumbnail
     if (thumbnail != null) thumbnail = new URL(thumbnail, baseUrl).href
 
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Use `as` to avoid type error
     let preamble: HastRoot = {
       type: "root",
       children: tree.children.slice(
         0,
-        tree.children.findIndex((x) => (x as Element).tagName === "section")
+        tree.children.findIndex((x) => isHastHeading(x))
       ),
     }
     preamble = map(preamble, transformPreamble) as HastRoot
@@ -259,7 +332,10 @@ const toPost: Plugin<[], HastRoot> = function () {
     }
 
     function transformPreamble(node: HastNode): HastNode {
-      if (isHastElement(node) && node.properties != null) {
+      if (
+        (isHastElement as (node: any) => node is Element)(node) &&
+        node.properties != null
+      ) {
         const newProps = { ...node.properties }
 
         // リンクを絶対URLにする
@@ -293,12 +369,13 @@ const processor = unified()
   .use(extractTitle)
   .use(sectionNumbering)
   .use(remarkMath)
-  .use(remarkSectionize)
   .use(remarkRehype, { allowDangerousHtml: true })
+  .use(rehypeRaw)
   .use(sampElement)
   .use(assignNoHighlight)
   .use(rehypeHighlight)
   .use(removeHljsClass)
+  .use(figureNumbering)
   .use(rehypeKatex)
   .use(toPost)
   .freeze() as FrozenProcessor<MdastRoot, HastRoot, HastRoot, Post>
@@ -334,8 +411,4 @@ async function getGitCommit(
       }
     )
   })
-}
-
-function isHastElement(node?: HastNode | null): node is Element {
-  return node != null && node.type === "element"
 }

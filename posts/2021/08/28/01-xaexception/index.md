@@ -43,11 +43,7 @@ E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.j
 さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる `RuntimeInit.commonInit` に次のようなプログラムが入っています。
 
 <figure>
-<figcaption>
-
-[RuntimeInit.commonInit の一部](https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb)
-
-</figcaption>
+<figcaption><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">RuntimeInit.commonInit の一部</a></figcaption>
 
 ```java
 LoggingHandler loggingHandler = new LoggingHandler();
@@ -130,11 +126,7 @@ I MonoDroid:
 では後半のログを出しているのは一体誰なのでしょうか？ 答えは `Thread.getDefaultUncaughtExceptionHandler()`（C# では `Java.Lang.Thread.DefaultUncaughtExceptionHandler`）を取得してみるとわかります。 Xamarin.Android の初期化メソッドが存在する `mono.android.Runtime` クラスの静的コンストラクタで、デフォルト例外ハンドラを独自に設定しています。
 
 <figure>
-<figcaption>
-
-[Runtime.java の一部](https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15)
-
-</figcaption>
+<figcaption><a href="https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15">Runtime.java の一部</a></figcaption>
 
 ```java
 static {

@@ -40,29 +40,17 @@ TPL Dataflow のソースコードを読むと、 TargetBlock または Propagat
 
 では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。
 
-<figure>
-
-![Source から Target へデータを送信する様子](basicoffer.svg)
-
-</figure>
+<figure><img src="basicoffer.svg" alt="Source から Target へデータを送信する様子" /></figure>
 
 もう複数のロックがあるという時点で嫌ですね。
 
 ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。
 
-<figure>
-
-![Propagator が送信を開始する様子](offerbypropagator.svg)
-
-</figure>
+<figure><img src="offerbypropagator.svg" alt="Propagator が送信を開始する様子" /></figure>
 
 そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。
 
-<figure>
-
-![デッドロックが発生する例](deadlock1.svg)
-
-</figure>
+<figure><img src="deadlock1.svg" /></figure>
 
 見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。
 

@@ -46,7 +46,7 @@ samp {
 }
 
 figure {
-  margin: 0;
+  margin: 2.5rem 0;
 }
 
 article header {
@@ -150,9 +150,12 @@ footer {
 }
 
 div.title,
-figure p,
-figcaption {
+figure {
   text-align: center;
+}
+
+figure pre {
+  text-align: start;
 }
 
 // pre > code と同じスタイルを pre > samp に適用
