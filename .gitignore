@@ -57,6 +57,7 @@ typings/
 # gatsby files
 .cache/
 public
+dist
 
 # Mac files
 .DS_Store
@@ -70,3 +71,4 @@ yarn-error.log
 
 .now
 .vercel
+.parcel-cache
