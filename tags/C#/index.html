@@ -1,74 +1,30 @@
-<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><link rel="stylesheet" href="/styles.729c1ce2c994bfb58483.css"/><link rel="alternate" type="application/rss+xml" title="あじょろぐ" href="/rss.xml"/><title>C# | あじょろぐ</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css" integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&amp;display=swap"/><meta property="og:site_name" content="あじょろぐ"/><meta name="twitter:card" content="summary"/><meta name="twitter:creator" content="@azyobuzin"/></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><div class="container"><header><h1>C#</h1><p class="breadcrumb"><a href="/">ホーム</a> &gt; <i class="fa fa-tag" aria-hidden="true" title="タグ"></i> C#</p></header><main class="article-list"><article class="article-list-item"><hr/><div class="article-list-item-content"><header><h1><a href="/2021/08/27/01-xaexception/">Xamarin.Android アプリが例外で落ちるということ</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2021-08-27T03:24:00.000+09:00" title="公開: 2021/08/27 03:24
-最終更新: 2021/08/27 03:24">2021/08/27</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a> <a class="button button-outline article-tag" href="/tags/Android/">Android</a></div></header><div class="article-content"><div><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>TL;DR: Xamarin.Android のグローバル例外ハンドラは <code>AppDomain.UnhandledException</code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（<a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211</a>）。</p>
-</div>
-</div>
-</div></div><p><a href="/2021/08/27/01-xaexception/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr/><div class="article-list-item-content"><header><h1><a href="/2021/03/23/01-dataflowblock-without-buffer/">バッファのない PropagatorBlock はつくれないという話</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2021-03-23T03:44:00.000+09:00" title="公開: 2021/03/23 03:44
-最終更新: 2021/03/23 03:44">2021/03/23</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？</p>
-</div>
-<div class="paragraph">
+<!doctype html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fork-awesome/1.2.0/css/fork-awesome.min.css" integrity="sha512-aupidr80M36SeyviA/hZ2uEPnvt2dTJfyjm9y6z1MgaV13TgzmDiFdsH3cvSNG27mRIj7gJ2gNeg1HeySJyE3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&#x26;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&#x26;display=swap"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>C# | あじょろぐ</title></head><body><div class="container"><header><h1>C#</h1><p class="breadcrumb"><a href="/">ホーム</a> > <i class="fa fa-tag" aria-hidden="true" title="タグ"></i> C#</p></header><main class="article-list"><article class="article-list-item"><hr><div class="article-list-item-content"><header><h1><a href="/2021/08/28/01-xaexception/">Xamarin.Android アプリが例外で落ちるということ</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2021-08-27T03:24:00.000+09:00" title="公開: 2021/08/27 03:24
+最終更新: 2021/08/29 01:22">2021/08/27</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a> <a class="button button-outline article-tag" href="/tags/Android/">Android</a></div></header><div class="article-content"><p>TL;DR: Xamarin.Android のグローバル例外ハンドラは <code>AppDomain.UnhandledException</code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（<a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211</a>）。</p>
+<p><a href="/2021/08/28/01-xaexception/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr><div class="article-list-item-content"><header><h1><a href="/2021/03/23/01-dataflowblock-without-buffer/">バッファのない PropagatorBlock はつくれないという話</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2021-03-23T03:44:00.000+09:00" title="公開: 2021/03/23 03:44
+最終更新: 2021/09/01 01:02">2021/03/23</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？</p>
 <p>例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="undefined highlight"><code data-lang="cs"><span class="hljs-function">ISourceBlock&lt;T&gt; <span class="hljs-title">CreateSource</span>(<span class="hljs-params"></span>)</span>
+<pre><code class="language-cs"><span class="hljs-function">ISourceBlock&#x3C;T> <span class="hljs-title">CreateSource</span>(<span class="hljs-params"></span>)</span>
 {
-    IEnumerable&lt;ISourceBlock&lt;T&gt;&gt; sources = <span class="hljs-comment">/* ... */</span>;
+    IEnumerable&#x3C;ISourceBlock&#x3C;T>> sources = <span class="hljs-comment">/* ... */</span>;
 
-    <span class="hljs-keyword">var</span> resultBlock = <span class="hljs-keyword">new</span> BufferBlock&lt;T&gt;(<span class="hljs-keyword">new</span> DataflowBlockOptions() { BoundedCapacity = <span class="hljs-number">1</span> });
+    <span class="hljs-keyword">var</span> resultBlock = <span class="hljs-keyword">new</span> BufferBlock&#x3C;T>(<span class="hljs-keyword">new</span> DataflowBlockOptions() { BoundedCapacity = <span class="hljs-number">1</span> });
     <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">var</span> s <span class="hljs-keyword">in</span> sources) s.LinkTo(resultBlock);
 
     <span class="hljs-keyword">return</span> resultBlock;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
+}
+</code></pre>
 <p>どうでしょう？ <code>resultBlock</code> は、1件はバッファに持ってしまうので、後段のブロックがどうであれ、ソースからは必ず1件多く取り出されてしまいます。</p>
-</div>
-<div class="paragraph">
 <p>1件くらいいいじゃない？ それは <code>sources</code> 次第でしょう。</p>
-</div>
-<div class="paragraph">
 <p>というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし <code>resultBlock</code> にバッファがなければ、 <code>CreateSource</code> の戻り値を利用する（リンクする）とき、初めて <code>sources</code> からデータが取り出されます。やりたいですね。</p>
-</div>
-</div>
-</div></div><p><a href="/2021/03/23/01-dataflowblock-without-buffer/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr/><div class="article-list-item-content"><header><h1><a href="/2020/09/28/01-vs-docker-compose/">Visual Studio と VSCode どちらでも使える Docker Compose 環境</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2020-09-28T02:29:00.000+09:00" title="公開: 2020/09/28 02:29
-最終更新: 2020/09/28 02:34">2020/09/28</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a> <a class="button button-outline article-tag" href="/tags/Docker/">Docker</a></div></header><div class="article-content"><div><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。</p>
-</div>
-</div>
-</div></div><p><a href="/2020/09/28/01-vs-docker-compose/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr/><div class="article-list-item-content"><header><h1><a href="/2020/05/03/01-projectref/">ProjectReference にバージョン範囲を指定したい</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2020-05-03T04:07:00.000+09:00" title="公開: 2020/05/03 04:07
-最終更新: 2020/05/03 04:12">2020/05/03</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に <code>&lt;ProjectReference&gt;</code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を <code>dotnet pack</code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン<strong>以上</strong>という依存関係になります。</p>
-</div>
-<div class="paragraph">
-<p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 <strong>以上</strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 <code>&lt;ProjectReference&gt;</code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。</p>
-</div>
-</div>
-</div></div><p><a href="/2020/05/03/01-projectref/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr/><div class="article-list-item-content"><header><h1><a href="/2020/04/30/01-reactivestreams/">プロトコルから比較する Reactive Streams と TPL Dataflow</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2020-04-30T02:36:00.000+09:00" title="公開: 2020/04/30 02:36
-最終更新: 2020/04/30 23:03">2020/04/30</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>以前、<a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「いまさら使う TPL Dataflow」</a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
-<a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E9%A1%9E%E4%BC%BC%E5%93%81%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83">「類似品との比較」</a>で述べたように、 TPL Dataflow は、プッシュ型とプル型の両方の性質を持っており、送信者（<em>Producer</em>）が、受信者（<em>Consumer</em>）が処理しきれないほど大量のデータをプッシュしようとするとき、受信者がそのデータの受信を遅延させることで、データフロー内を流れるデータ量を制御します。</p>
-</div>
-<div class="paragraph">
-<p>一方で、このような、大量のデータや時系列データ（イベント列）を入力し、データフロー内を流れるデータ量を制御しながら、並列にデータを加工する仕組みは、一般的に、特に Java のコミュニティでは <a href="https://www.reactive-streams.org/">Reactive Streams</a> と呼ばれています。 Reactive Streams に用いられるインターフェイスは Java 9 で <code>java.util.concurrent.Flow</code> として標準ライブラリ入りしており、 RxJava や Akka Streams がこのインターフェイスの実装を提供しています（実際には、互換性のため <a href="https://github.com/reactive-streams/reactive-streams-jvm">reactive-streams パッケージ</a>を通じて実装しています）。</p>
-</div>
-<div class="paragraph">
+<p><a href="/2021/03/23/01-dataflowblock-without-buffer/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr><div class="article-list-item-content"><header><h1><a href="/2020/09/28/01-vs-docker-compose/">Visual Studio と VSCode どちらでも使える Docker Compose 環境</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-09-28T02:29:00.000+09:00" title="公開: 2020/09/28 02:29
+最終更新: 2021/09/01 01:02">2020/09/28</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a> <a class="button button-outline article-tag" href="/tags/Docker/">Docker</a></div></header><div class="article-content"><p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。</p>
+<p><a href="/2020/09/28/01-vs-docker-compose/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr><div class="article-list-item-content"><header><h1><a href="/2020/05/03/01-projectref/">ProjectReference にバージョン範囲を指定したい</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-05-03T04:07:00.000+09:00" title="公開: 2020/05/03 04:07
+最終更新: 2021/09/01 01:02">2020/05/03</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に <code>&#x3C;ProjectReference></code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を <code>dotnet pack</code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン<strong>以上</strong>という依存関係になります。</p>
+<p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 <strong>以上</strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 <code>&#x3C;ProjectReference></code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。</p>
+<p><a href="/2020/05/03/01-projectref/">続きを読む</a></p></div></div></article><article class="article-list-item"><hr><div class="article-list-item-content"><header><h1><a href="/2020/04/30/01-reactivestreams/">プロトコルから比較する Reactive Streams と TPL Dataflow</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-04-30T02:36:00.000+09:00" title="公開: 2020/04/30 02:36
+最終更新: 2021/09/01 01:02">2020/04/30</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>以前、<a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「<cite>いまさら使う TPL Dataflow</cite>」</a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
+<a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E9%A1%9E%E4%BC%BC%E5%93%81%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83">「<cite>類似品との比較</cite>」</a>で述べたように、 TPL Dataflow は、プッシュ型とプル型の両方の性質を持っており、送信者（<i>Producer</i>）が、受信者（<i>Consumer</i>）が処理しきれないほど大量のデータをプッシュしようとするとき、受信者がそのデータの受信を遅延させることで、データフロー内を流れるデータ量を制御します。</p>
+<p>一方で、このような、大量のデータや時系列データ（イベント列）を入力し、データフロー内を流れるデータ量を制御しながら、並列にデータを加工する仕組みは、一般的に、特に Java のコミュニティでは <a href="https://www.reactive-streams.org/"><dfn>Reactive Streams</dfn></a> と呼ばれています。 Reactive Streams に用いられるインターフェイスは Java 9 で <code>java.util.concurrent.Flow</code> として標準ライブラリ入りしており、 RxJava や Akka Streams がこのインターフェイスの実装を提供しています（実際には、互換性のため <a href="https://github.com/reactive-streams/reactive-streams-jvm">reactive-streams パッケージ</a>を通じて実装しています）。</p>
 <p>C# においても Reactive Streams は他人事ではなく、 <code>java.util.concurrent.Flow</code> と同様のインターフェイスが <a href="https://github.com/reactive-streams/reactive-streams-dotnet">Reactive.Streams パッケージ</a>として NuGet で配布されており、標準的なインターフェイスの座を狙っています。また Akka.NET Streams がこのインターフェイスの実装を提供しています。</p>
-</div>
-<div class="paragraph">
-<p>いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（back pressure）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。</p>
-</div>
-</div>
-</div></div><p><a href="/2020/04/30/01-reactivestreams/">続きを読む</a></p></div></div></article></main><footer><hr/><nav><a href="/">あじょろぐ</a></nav></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div></body></html>
+<p>いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（<i>back pressure</i>）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。</p>
+<p><a href="/2020/04/30/01-reactivestreams/">続きを読む</a></p></div></div></article></main><footer><hr><nav><a href="/">あじょろぐ</a></nav></footer></div></body></html>

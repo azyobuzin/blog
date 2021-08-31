@@ -1,149 +1,76 @@
-<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><link rel="stylesheet" href="/styles.729c1ce2c994bfb58483.css"/><link rel="alternate" type="application/rss+xml" title="あじょろぐ" href="/rss.xml"/><title>ProjectReference にバージョン範囲を指定したい | あじょろぐ</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css" integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&amp;display=swap"/><meta property="og:site_name" content="あじょろぐ"/><meta name="twitter:card" content="summary"/><meta name="twitter:creator" content="@azyobuzin"/><meta name="description" content="複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &amp;lt;ProjectReference&amp;gt; を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を dotnet pack してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン以上という依存関係になります。
+<!doctype html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fork-awesome/1.2.0/css/fork-awesome.min.css" integrity="sha512-aupidr80M36SeyviA/hZ2uEPnvt2dTJfyjm9y6z1MgaV13TgzmDiFdsH3cvSNG27mRIj7gJ2gNeg1HeySJyE3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&#x26;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&#x26;display=swap"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>ProjectReference にバージョン範囲を指定したい | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/あじょろぐ/2020/05/03/01-projectref/"><meta name="description" content="複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に <ProjectReference> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を dotnet pack してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン以上という依存関係になります。
 
+ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 以上で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 <ProjectReference> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。"><meta property="og:title" content="ProjectReference にバージョン範囲を指定したい"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/あじょろぐ/2020/05/03/01-projectref/"><meta property="og:description" content="複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に <ProjectReference> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を dotnet pack してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン以上という依存関係になります。
 
-ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 以上で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 &amp;lt;ProjectReference&amp;gt; を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。"/><meta property="og:title" content="ProjectReference にバージョン範囲を指定したい"/><meta property="og:type" content="article"/><meta property="og:url" content="https://blog.azyobuzi.net/2020/05/03/01-projectref/"/><meta property="og:description" content="複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &amp;lt;ProjectReference&amp;gt; を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を dotnet pack してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン以上という依存関係になります。
-
-
-ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 以上で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 &amp;lt;ProjectReference&amp;gt; を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。"/><meta property="og:article:published_time" content="2020-05-03T04:07+09:00"/><meta property="og:article:modified_time" content="2020-05-03T04:12:42+09:00"/><meta property="og:article:tag" content="C#"/></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><div class="container"><article class="article-page"><header><h1>ProjectReference にバージョン範囲を指定したい</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2020-05-03T04:07:00.000+09:00" title="公開: 2020/05/03 04:07
-最終更新: 2020/05/03 04:12">2020/05/03</time> ― <a href="https://github.com/azyobuzin/blog/commits/e2cebed9a96d337145e6152b1189402dd55123df/content/blog/2020-05-03-01-projectref.adoc" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に <code>&lt;ProjectReference&gt;</code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を <code>dotnet pack</code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン<strong>以上</strong>という依存関係になります。</p>
-</div>
-<div class="paragraph">
-<p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 <strong>以上</strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 <code>&lt;ProjectReference&gt;</code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_サンプルプロジェクト">サンプルプロジェクト</h2>
-<div class="sectionbody">
-<div class="paragraph">
+ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 以上で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 <ProjectReference> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。"><meta property="og:article:published_time" content="2020-05-03T04:07+09:00"><meta property="og:article:modified_time" content="2021-09-01T01:02:14+09:00"><meta property="og:article:tag" content="C#"></head><body><div class="container"><article class="article-page"><header><h1>ProjectReference にバージョン範囲を指定したい</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-05-03T04:07:00.000+09:00" title="公開: 2020/05/03 04:07
+最終更新: 2021/09/01 01:02">2020/05/03</time> ― <a href="https://github.com/azyobuzin/blog/commits/b8152b1b3052491c89af0fa0843beb8cadd34cc9/posts/2020/05/03/01-projectref" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に <code>&#x3C;ProjectReference></code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を <code>dotnet pack</code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン<strong>以上</strong>という依存関係になります。</p>
+<p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 <strong>以上</strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 <code>&#x3C;ProjectReference></code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。</p>
+<h2>サンプルプロジェクト</h2>
 <p>文章でだらだらと説明されても読みたくないのはわかります。ので、実際の csproj を示しておきます。</p>
-</div>
-<div class="listingblock">
-<div class="title">A/A.csproj</div>
-<div class="content">
-<pre class="undefined highlight"><code data-lang="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Project</span> <span class="hljs-attr">Sdk</span>=<span class="hljs-string">&quot;Microsoft.NET.Sdk&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">PropertyGroup</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">TargetFramework</span>&gt;</span>netstandard2.0<span class="hljs-tag">&lt;/<span class="hljs-name">TargetFramework</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">Version</span>&gt;</span>1.0.0<span class="hljs-tag">&lt;/<span class="hljs-name">Version</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">PropertyGroup</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">Project</span>&gt;</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">B/B.csproj</div>
-<div class="content">
-<pre class="undefined highlight"><code data-lang="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Project</span> <span class="hljs-attr">Sdk</span>=<span class="hljs-string">&quot;Microsoft.NET.Sdk&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">PropertyGroup</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">TargetFramework</span>&gt;</span>netstandard2.0<span class="hljs-tag">&lt;/<span class="hljs-name">TargetFramework</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">PropertyGroup</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">ItemGroup</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">ProjectReference</span> <span class="hljs-attr">Include</span>=<span class="hljs-string">&quot;..\A\A.csproj&quot;</span> /&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">ItemGroup</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">Project</span>&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>ここで、 B に対して <code>dotnet pack</code> を実行したときの nuspec の <code>&lt;dependencies&gt;</code> はこのようになります。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="undefined highlight"><code data-lang="xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">group</span> <span class="hljs-attr">targetFramework</span>=<span class="hljs-string">&quot;.NETStandard2.0&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;A&quot;</span> <span class="hljs-attr">version</span>=<span class="hljs-string">&quot;1.0.0&quot;</span> <span class="hljs-attr">exclude</span>=<span class="hljs-string">&quot;Build,Analyzers&quot;</span> /&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">group</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
+<figure>
+<figcaption>A/A.csproj</figcaption>
+<pre><code class="language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Project</span> <span class="hljs-attr">Sdk</span>=<span class="hljs-string">"Microsoft.NET.Sdk"</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">PropertyGroup</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">TargetFramework</span>></span>netstandard2.0<span class="hljs-tag">&#x3C;/<span class="hljs-name">TargetFramework</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">Version</span>></span>1.0.0<span class="hljs-tag">&#x3C;/<span class="hljs-name">Version</span>></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">PropertyGroup</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">Project</span>></span>
+</code></pre>
+</figure>
+<figure>
+<figcaption>B/B.csproj</figcaption>
+<pre><code class="language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Project</span> <span class="hljs-attr">Sdk</span>=<span class="hljs-string">"Microsoft.NET.Sdk"</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">PropertyGroup</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">TargetFramework</span>></span>netstandard2.0<span class="hljs-tag">&#x3C;/<span class="hljs-name">TargetFramework</span>></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">PropertyGroup</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">ItemGroup</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">ProjectReference</span> <span class="hljs-attr">Include</span>=<span class="hljs-string">"..\A\A.csproj"</span> /></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">ItemGroup</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">Project</span>></span>
+</code></pre>
+</figure>
+<p>ここで、 B に対して <code>dotnet pack</code> を実行したときの nuspec の <code>&#x3C;dependencies></code> はこのようになります。</p>
+<pre><code class="language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">dependencies</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">group</span> <span class="hljs-attr">targetFramework</span>=<span class="hljs-string">".NETStandard2.0"</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"A"</span> <span class="hljs-attr">version</span>=<span class="hljs-string">"1.0.0"</span> <span class="hljs-attr">exclude</span>=<span class="hljs-string">"Build,Analyzers"</span> /></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">group</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependencies</span>></span>
+</code></pre>
 <p><code>version="1.0.0"</code> という指定は、「1.0.0 以上」と解釈されます。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_目標設定">目標設定</h2>
-<div class="sectionbody">
-<div class="paragraph">
+<h2>目標設定</h2>
 <p>ここでは、 Semantic Versioning という前提で、 B が依存するのは A v1.0.0 以上 2.0.0 未満、としましょう。こうすれば、 B が A の Public API のみに依存しているならば、 B はこの依存関係が解決できる限り、必ず動作するといえます。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_一筋縄で実現できたらブログ書いてない">一筋縄で実現できたらブログ書いてない</h2>
-<div class="sectionbody">
-<div class="paragraph">
+<h2>一筋縄で実現できたらブログ書いてない</h2>
 <p>はい。これは NuGet の Issue (<a href="https://github.com/NuGet/Home/issues/5556">NuGet/Home#5556</a>) に挙がっており、現在も実現されていません。しかし頑張ればできないこともない状況になっています。</p>
-</div>
-<div class="paragraph">
-<p>必要なものは <a href="https://dotnet.microsoft.com/download/dotnet/5.0">.NET 5.0 Preview SDK</a> (執筆時点で 5.0.100-preview.3.20216.6) です。最新の NuGet を搭載している SDK を使うと、 csproj に少し手を入れるだけで、 <code>&lt;ProjectReference&gt;</code> に対する依存関係に介入できるようになります。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_目標をクリアする_csproj">目標をクリアする csproj</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>仕組みとかいいからとりあえず使いたいって人は、これをコピペしてください。バージョンの指定方法は、 NuGet のドキュメント (<a href="https://docs.microsoft.com/ja-jp/nuget/concepts/package-versioning#version-ranges">Version ranges</a>) を確認してください。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="undefined highlight"><code data-lang="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Project</span> <span class="hljs-attr">Sdk</span>=<span class="hljs-string">&quot;Microsoft.NET.Sdk&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">PropertyGroup</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">TargetFramework</span>&gt;</span>netstandard2.0<span class="hljs-tag">&lt;/<span class="hljs-name">TargetFramework</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">PropertyGroup</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">ItemGroup</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">ProjectReference</span> <span class="hljs-attr">Include</span>=<span class="hljs-string">&quot;..\A\A.csproj&quot;</span> /&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">ItemGroup</span>&gt;</span>
+<p>必要なものは <a href="https://dotnet.microsoft.com/download/dotnet/5.0">.NET 5.0 Preview SDK</a> (執筆時点で 5.0.100-preview.3.20216.6) です。最新の NuGet を搭載している SDK を使うと、 csproj に少し手を入れるだけで、 <code>&#x3C;ProjectReference></code> に対する依存関係に介入できるようになります。</p>
+<h2>目標をクリアする csproj</h2>
+<p>仕組みとかいいからとりあえず使いたいって人は、これをコピペしてください。バージョンの指定方法は、 NuGet のドキュメント (<a href="https://docs.microsoft.com/ja-jp/nuget/concepts/package-versioning#version-ranges"><cite>Version ranges</cite></a>) を確認してください。</p>
+<pre><code class="language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">Project</span> <span class="hljs-attr">Sdk</span>=<span class="hljs-string">"Microsoft.NET.Sdk"</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">PropertyGroup</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">TargetFramework</span>></span>netstandard2.0<span class="hljs-tag">&#x3C;/<span class="hljs-name">TargetFramework</span>></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">PropertyGroup</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">ItemGroup</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">ProjectReference</span> <span class="hljs-attr">Include</span>=<span class="hljs-string">"..\A\A.csproj"</span> /></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">ItemGroup</span>></span>
 
-  <span class="hljs-comment">&lt;!-- 以下を追加 --&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">Target</span> <span class="hljs-attr">Name</span>=<span class="hljs-string">&quot;SetDependencyVersion&quot;</span> <span class="hljs-attr">AfterTargets</span>=<span class="hljs-string">&quot;_GetProjectReferenceVersions&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">ItemGroup</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">_ProjectReferencesWithVersions</span> <span class="hljs-attr">Update</span>=<span class="hljs-string">&quot;..\A\A.csproj&quot;</span> <span class="hljs-attr">ProjectVersion</span>=<span class="hljs-string">&quot;[1.0.0,2.0.0)&quot;</span> /&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-name">ItemGroup</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">Target</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">Project</span>&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>出力される nuspec の <code>&lt;dependencies&gt;</code> はこんな感じになります。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="undefined highlight"><code data-lang="xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">group</span> <span class="hljs-attr">targetFramework</span>=<span class="hljs-string">&quot;.NETStandard2.0&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;A&quot;</span> <span class="hljs-attr">version</span>=<span class="hljs-string">&quot;[1.0.0, 2.0.0)&quot;</span> <span class="hljs-attr">exclude</span>=<span class="hljs-string">&quot;Build,Analyzers&quot;</span> /&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">group</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span></code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_仕組み">仕組み</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><code>dotnet pack</code> (MSBuild で <code>Pack</code> ターゲットを実行する) では、 <code>&lt;ProjectReference&gt;</code> Item があったら、そのプロジェクトのバージョンを読み込み、 <code>&lt;_ProjectReferencesWithVersions&gt;</code> という Item を作成します。そこで、その処理が行われる <code>_GetProjectReferenceVersions</code> ターゲットの後に、読み込まれたバージョンを上書きするようなターゲットを作成することで、好きなバージョンに書き換えることができます。</p>
-</div>
-<div class="paragraph">
+  <span class="hljs-comment">&#x3C;!-- 以下を追加 --></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">Target</span> <span class="hljs-attr">Name</span>=<span class="hljs-string">"SetDependencyVersion"</span> <span class="hljs-attr">AfterTargets</span>=<span class="hljs-string">"_GetProjectReferenceVersions"</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">ItemGroup</span>></span>
+      <span class="hljs-tag">&#x3C;<span class="hljs-name">_ProjectReferencesWithVersions</span> <span class="hljs-attr">Update</span>=<span class="hljs-string">"..\A\A.csproj"</span> <span class="hljs-attr">ProjectVersion</span>=<span class="hljs-string">"[1.0.0,2.0.0)"</span> /></span>
+    <span class="hljs-tag">&#x3C;/<span class="hljs-name">ItemGroup</span>></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">Target</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">Project</span>></span>
+</code></pre>
+<p>出力される nuspec の <code>&#x3C;dependencies></code> はこんな感じになります。</p>
+<pre><code class="language-xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">dependencies</span>></span>
+  <span class="hljs-tag">&#x3C;<span class="hljs-name">group</span> <span class="hljs-attr">targetFramework</span>=<span class="hljs-string">".NETStandard2.0"</span>></span>
+    <span class="hljs-tag">&#x3C;<span class="hljs-name">dependency</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"A"</span> <span class="hljs-attr">version</span>=<span class="hljs-string">"[1.0.0, 2.0.0)"</span> <span class="hljs-attr">exclude</span>=<span class="hljs-string">"Build,Analyzers"</span> /></span>
+  <span class="hljs-tag">&#x3C;/<span class="hljs-name">group</span>></span>
+<span class="hljs-tag">&#x3C;/<span class="hljs-name">dependencies</span>></span>
+</code></pre>
+<h2>仕組み</h2>
+<p><code>dotnet pack</code> (MSBuild で <code>Pack</code> ターゲットを実行する) では、 <code>&#x3C;ProjectReference></code> Item があったら、そのプロジェクトのバージョンを読み込み、 <code>&#x3C;_ProjectReferencesWithVersions></code> という Item を作成します。そこで、その処理が行われる <code>_GetProjectReferenceVersions</code> ターゲットの後に、読み込まれたバージョンを上書きするようなターゲットを作成することで、好きなバージョンに書き換えることができます。</p>
 <p>ここまでは古い SDK でもできたのですが、古い SDK では <code>ProjectVersion</code> 属性にバージョンの<strong>範囲</strong>が指定されることを想定していませんでした。つまり <code>1.0.0</code> は受け付けるけど、 <code>[1.0.0,2.0.0)</code> は受け付けてくれなかったわけです。新しい SDK では、範囲を指定してもエラーにならないようになったので、このようなハックでお茶を濁せるようになりました。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_今後もっと簡単になるか">今後もっと簡単になるか？</h2>
-<div class="sectionbody">
-<div class="paragraph">
+<h2>今後もっと簡単になるか？</h2>
 <p><a href="https://github.com/NuGet/Home/issues/5556">NuGet/Home#5556</a> を監視していきましょう。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_nuget_に対するぼやき">NuGet に対するぼやき</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>依存関係解決の戦略がデフォルトで「条件を満たす最小バージョン」な所為で、依存バージョンをすぐ「以上」にしてしまうのは NuGet の悪いところだなぁと思っています。そのおかげで lock ファイルを使わなくても、あまり崩壊しないという利点はありますが、少なくともリビジョンリリースは自動で最新にしてほしくない？ という思いがあります。</p>
-</div>
-</div>
-</div></div></article><footer><hr/><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div></body></html>
+<h2>NuGet に対するぼやき</h2>
+<p>依存関係解決の戦略がデフォルトで「条件を満たす最小バージョン」な所為で、依存バージョンをすぐ「以上」にしてしまうのは NuGet の悪いところだなぁと思っています。そのおかげで lock ファイルを使わなくても、あまり崩壊しないという利点はありますが、少なくともリビジョンリリースは自動で最新にしてほしくない？ という思いがあります。</p></div></article><footer><hr><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></body></html>

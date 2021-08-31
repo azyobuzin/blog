@@ -1,147 +1,72 @@
-<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><link rel="stylesheet" href="/styles.729c1ce2c994bfb58483.css"/><link rel="alternate" type="application/rss+xml" title="あじょろぐ" href="/rss.xml"/><title>バッファのない PropagatorBlock はつくれないという話 | あじょろぐ</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css" integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&amp;display=swap"/><meta property="og:site_name" content="あじょろぐ"/><meta name="twitter:card" content="summary"/><meta name="twitter:creator" content="@azyobuzin"/><meta name="description" content="また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？
-
+<!doctype html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fork-awesome/1.2.0/css/fork-awesome.min.css" integrity="sha512-aupidr80M36SeyviA/hZ2uEPnvt2dTJfyjm9y6z1MgaV13TgzmDiFdsH3cvSNG27mRIj7gJ2gNeg1HeySJyE3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&#x26;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&#x26;display=swap"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>バッファのない PropagatorBlock はつくれないという話 | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/あじょろぐ/2021/03/23/01-dataflowblock-without-buffer/"><meta name="description" content="また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？
 
 例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。
 
-
-
-ISourceBlock&amp;lt;T&amp;gt; CreateSource()
+ISourceBlock<T> CreateSource()
 {
-    IEnumerable&amp;lt;ISourceBlock&amp;lt;T&amp;gt;&amp;gt; sources = /* ... */;
+    IEnumerable<ISourceBlock<T>> sources = /* ... */;
 
-    var resultBlock = new BufferBlock&amp;lt;T&amp;gt;(new DataflowBlockOptions() { BoundedCapacity = 1 });
+    var resultBlock = new BufferBlock<T>(new DataflowBlockOptions() { BoundedCapacity = 1 });
     foreach (var s in sources) s.LinkTo(resultBlock);
 
     return resultBlock;
 }
 
 
-
 どうでしょう？ resultBlock は、1件はバッファに持ってしまうので、後段のブロックがどうであれ、ソースからは必ず1件多く取り出されてしまいます。
-
 
 1件くらいいいじゃない？ それは sources 次第でしょう。
 
-
-というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし resultBlock にバッファがなければ、 CreateSource の戻り値を利用する（リンクする）とき、初めて sources からデータが取り出されます。やりたいですね。"/><meta property="og:title" content="バッファのない PropagatorBlock はつくれないという話"/><meta property="og:type" content="article"/><meta property="og:url" content="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/"/><meta property="og:description" content="また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？
-
+というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし resultBlock にバッファがなければ、 CreateSource の戻り値を利用する（リンクする）とき、初めて sources からデータが取り出されます。やりたいですね。"><meta property="og:title" content="バッファのない PropagatorBlock はつくれないという話"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/あじょろぐ/2021/03/23/01-dataflowblock-without-buffer/"><meta property="og:description" content="また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？
 
 例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。
 
-
-
-ISourceBlock&amp;lt;T&amp;gt; CreateSource()
+ISourceBlock<T> CreateSource()
 {
-    IEnumerable&amp;lt;ISourceBlock&amp;lt;T&amp;gt;&amp;gt; sources = /* ... */;
+    IEnumerable<ISourceBlock<T>> sources = /* ... */;
 
-    var resultBlock = new BufferBlock&amp;lt;T&amp;gt;(new DataflowBlockOptions() { BoundedCapacity = 1 });
+    var resultBlock = new BufferBlock<T>(new DataflowBlockOptions() { BoundedCapacity = 1 });
     foreach (var s in sources) s.LinkTo(resultBlock);
 
     return resultBlock;
 }
 
 
-
 どうでしょう？ resultBlock は、1件はバッファに持ってしまうので、後段のブロックがどうであれ、ソースからは必ず1件多く取り出されてしまいます。
-
 
 1件くらいいいじゃない？ それは sources 次第でしょう。
 
-
-というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし resultBlock にバッファがなければ、 CreateSource の戻り値を利用する（リンクする）とき、初めて sources からデータが取り出されます。やりたいですね。"/><meta property="og:article:published_time" content="2021-03-23T03:44+09:00"/><meta property="og:article:modified_time" content="2021-03-23T03:44:04+09:00"/><meta property="og:article:tag" content="C#"/><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png"/></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><div class="container"><article class="article-page"><header><h1>バッファのない PropagatorBlock はつくれないという話</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time dateTime="2021-03-23T03:44:00.000+09:00" title="公開: 2021/03/23 03:44
-最終更新: 2021/03/23 03:44">2021/03/23</time> ― <a href="https://github.com/azyobuzin/blog/commits/dec79669da75a585abe296bc2ba8ce1c3ec27999/content/blog/2021-03-23-01-dataflowblock-without-buffer/index.adoc" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？</p>
-</div>
-<div class="paragraph">
+というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし resultBlock にバッファがなければ、 CreateSource の戻り値を利用する（リンクする）とき、初めて sources からデータが取り出されます。やりたいですね。"><meta property="og:article:published_time" content="2021-03-23T03:44+09:00"><meta property="og:article:modified_time" content="2021-09-01T01:02:14+09:00"><meta property="og:article:tag" content="C#"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png"></head><body><div class="container"><article class="article-page"><header><h1>バッファのない PropagatorBlock はつくれないという話</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2021-03-23T03:44:00.000+09:00" title="公開: 2021/03/23 03:44
+最終更新: 2021/09/01 01:02">2021/03/23</time> ― <a href="https://github.com/azyobuzin/blog/commits/b8152b1b3052491c89af0fa0843beb8cadd34cc9/posts/2021/03/23/01-dataflowblock-without-buffer" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？</p>
 <p>例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="undefined highlight"><code data-lang="cs"><span class="hljs-function">ISourceBlock&lt;T&gt; <span class="hljs-title">CreateSource</span>(<span class="hljs-params"></span>)</span>
+<pre><code class="language-cs"><span class="hljs-function">ISourceBlock&#x3C;T> <span class="hljs-title">CreateSource</span>(<span class="hljs-params"></span>)</span>
 {
-    IEnumerable&lt;ISourceBlock&lt;T&gt;&gt; sources = <span class="hljs-comment">/* ... */</span>;
+    IEnumerable&#x3C;ISourceBlock&#x3C;T>> sources = <span class="hljs-comment">/* ... */</span>;
 
-    <span class="hljs-keyword">var</span> resultBlock = <span class="hljs-keyword">new</span> BufferBlock&lt;T&gt;(<span class="hljs-keyword">new</span> DataflowBlockOptions() { BoundedCapacity = <span class="hljs-number">1</span> });
+    <span class="hljs-keyword">var</span> resultBlock = <span class="hljs-keyword">new</span> BufferBlock&#x3C;T>(<span class="hljs-keyword">new</span> DataflowBlockOptions() { BoundedCapacity = <span class="hljs-number">1</span> });
     <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">var</span> s <span class="hljs-keyword">in</span> sources) s.LinkTo(resultBlock);
 
     <span class="hljs-keyword">return</span> resultBlock;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
+}
+</code></pre>
 <p>どうでしょう？ <code>resultBlock</code> は、1件はバッファに持ってしまうので、後段のブロックがどうであれ、ソースからは必ず1件多く取り出されてしまいます。</p>
-</div>
-<div class="paragraph">
 <p>1件くらいいいじゃない？ それは <code>sources</code> 次第でしょう。</p>
-</div>
-<div class="paragraph">
 <p>というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし <code>resultBlock</code> にバッファがなければ、 <code>CreateSource</code> の戻り値を利用する（リンクする）とき、初めて <code>sources</code> からデータが取り出されます。やりたいですね。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_タイトルオチ">タイトルオチ</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>もうタイトルでオチてますが、このような PropagatorBlock はデータフローブロックのプロトコル上、おそらく作れません。プロトコルについては<a href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/">以前</a>ざっくりと紹介しましたが、今回はこのプロトコルと、既存のブロックの実装で使われているロックが鍵となります。</p>
-</div>
-<div class="paragraph">
+<h2>タイトルオチ</h2>
+<p>もうタイトルでオチてますが、このような PropagatorBlock はデータフローブロックのプロトコル上、おそらく作れません。プロトコルについては<a href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" title="プロトコルから比較する Reactive Streams と TPL Dataflow">以前</a>ざっくりと紹介しましたが、今回はこのプロトコルと、既存のブロックの実装で使われているロックが鍵となります。</p>
 <p>TPL Dataflow のブロック間の通信は、完全に直列です。ある SourceBlock からは同時に1件しか送信しないし、ある TargetBlock は同時に1件しか受信できません。その制御は <code>lock</code> ステートメントで行われています（絶対ボトルネックじゃん）。</p>
-</div>
-<div class="paragraph">
 <p>PropagatorBlock は Source と Target 両方の性質を持っており、 Target で受信したデータを加工して Source がデータを出力します。 Target 部は1件ずつ受信を行い、加工を行うタスクへ投げ、加工が終わったデータは Source 部のキューに積まれ、 Source 部は1件ずつ送信を行います。つまり PropagatorBlock においては Target と Source は並列に動いています。</p>
-</div>
-<div class="paragraph">
 <p>TPL Dataflow のソースコードを読むと、 TargetBlock または PropagatorBlock の Target 部を直列化するために使用されるロックを <code>IncomingLock</code>、 SourceBlock または PropagatorBlock の Source 部を直列化するために使用されるロックを <code>OutgoingLock</code> と呼んでいるので、この名称を使っていきます。</p>
-</div>
-<div class="paragraph">
 <p>では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="basicoffer.svg" alt="Source から Target へデータを送信する様子">
-</div>
-</div>
-<div class="paragraph">
+<figure><img src="basicoffer.svg" alt="Source から Target へデータを送信する様子"></figure>
 <p>もう複数のロックがあるという時点で嫌ですね。</p>
-</div>
-<div class="paragraph">
 <p>ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="offerbypropagator.svg" alt="Propagator が送信を開始する様子">
-</div>
-</div>
-<div class="paragraph">
+<figure><img src="offerbypropagator.svg" alt="Propagator が送信を開始する様子"></figure>
 <p>そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="deadlock1.svg" alt="デッドロックが発生する例">
-</div>
-</div>
-<div class="paragraph">
+<figure><img src="deadlock1.svg"></figure>
 <p>見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。</p>
-</div>
-<div class="paragraph">
 <p>ただ、このデッドロックは実は回避できます。「(1) OfferMessage」のところで Propagator が「(2) ConsumeMessage」を実行中でまだ返ってきてないぞと判断して、このメッセージを延期させてしまえば、 OutgoingLock が外れるので先に進むことができます。</p>
-</div>
-<div class="paragraph">
 <p>今の例では、 Source, Propagator, Target が 1:1:1 だったので回避できました。が、1:N:1、つまりひとつの Source が複数の Propagator に接続されていて、さらにその Propagator たちがひとつの Target に接続されている場合はどうでしょう。先程の図の (1) が Propagator1 で、 (2) が Propagator2 で起こっていたら、 Propagator 同士はお互いを知らないので調停することができません。</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_まとめ">まとめ</h2>
-<div class="sectionbody">
-<div class="paragraph">
+<h2>まとめ</h2>
 <p>バッファを持たない PropagatorBlock は、デッドロックを起こす運命にあります。回避可能なケースは Source, Propagator, Target が 1:1:1 の関係にあるときです。例えば、 <a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowblock.linkto?view=net-5.0#System_Threading_Tasks_Dataflow_DataflowBlock_LinkTo__1_System_Threading_Tasks_Dataflow_ISourceBlock___0__System_Threading_Tasks_Dataflow_ITargetBlock___0__System_Predicate___0__"><code>LinkTo</code> メソッドの <code>predicate</code> 引数を持つオーバーロード</a>は、内部で PropagatorBlock を作成しています。しかしこのブロックは外部へ公開されず、あくまでリンクのために隠蔽されています。通常のブロックとして、複数のファンイン、ファンアウトを持てるという要件を満たそうとすると、不可能になります。</p>
-</div>
-<div class="paragraph">
-<p>結局この記事で何が言いたかったかというと、拙作の TPL Dataflow 補助ライブラリの <a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow</a> で、バッファなしの <code>TransformBlock</code> を提供していたのですが、デッドロックの可能性を排除できなかったので、機能を削除することにしました。悲しい。</p>
-</div>
-</div>
-</div></div></article><footer><hr/><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div></body></html>
+<p>結局この記事で何が言いたかったかというと、拙作の TPL Dataflow 補助ライブラリの <a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow</a> で、バッファなしの <code>TransformBlock</code> を提供していたのですが、デッドロックの可能性を排除できなかったので、機能を削除することにしました。悲しい。</p></div></article><footer><hr><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></body></html>
