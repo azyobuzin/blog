@@ -101,16 +101,22 @@ a タグの中身が空ならば、図表番号に置き換える。
 ```html
 <div class="admonitionblock important">
   <div class="icon">Important</div>
-  <p>重要なこと</p>
+  <div class="content">
+    <p>重要なこと</p>
+  </div>
 </div>
 
 <div class="admonitionblock caution">
   <div class="icon">Caution</div>
-  <p>注意深く行動すること</p>
+  <div class="content">
+    <p>注意深く行動すること</p>
+  </div>
 </div>
 
 <div class="admonitionblock warning">
   <div class="icon">Warning</div>
-  <p>従わないとやばいことになる可能性があること</p>
+  <div class="content">
+    <p>従わないとやばいことになる可能性があること</p>
+  </div>
 </div>
 ```
