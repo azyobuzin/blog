@@ -17,7 +17,6 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
             {titleText} | {SITE_TITLE}
           </title>
           <link rel="canonical" href={canonical} />
-          <meta name="description" content={post.description} />
           <meta property="og:title" content={titleText} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={canonical} />

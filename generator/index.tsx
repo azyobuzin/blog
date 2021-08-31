@@ -34,7 +34,7 @@ readPosts(postsDir)
 
 /** unlisted タグがついた記事はトップページに表示しない */
 function filterUnlisted(posts: Post[]): Post[] {
-  return posts.filter(x => !x.tags.includes("unlisted"))
+  return posts.filter((x) => !x.tags.includes("unlisted"))
 }
 
 function postPages(posts: Post[]): Record<string, Element> {

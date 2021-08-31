@@ -46,6 +46,8 @@ export interface Post {
   thumbnail?: string
   content: HastRoot
   preamble: HastRoot
+  /** preamble に全文入っていれば false */
+  truncated: boolean
   commitHash?: string
 }
 
@@ -356,13 +358,14 @@ const toPost: Plugin<[], HastRoot> = function () {
     let thumbnail = frontmatter?.thumbnail
     if (thumbnail != null) thumbnail = new URL(thumbnail, baseUrl).href
 
-    let preamble: HastRoot = {
-      type: "root",
-      children: tree.children.slice(
-        0,
-        tree.children.findIndex((x) => isHastHeading(x))
-      ),
-    }
+    const headingIndex = tree.children.findIndex((x) => isHastHeading(x))
+    let preamble: HastRoot =
+      headingIndex < 0
+        ? tree
+        : {
+            type: "root",
+            children: tree.children.slice(0, headingIndex),
+          }
     preamble = map(preamble, transformPreamble) as HastRoot
 
     return {
@@ -375,6 +378,7 @@ const toPost: Plugin<[], HastRoot> = function () {
       thumbnail: frontmatter?.thumbnail,
       content: tree,
       preamble,
+      truncated: headingIndex >= 0,
       commitHash: file.data.commitHash as string | undefined,
     }
 

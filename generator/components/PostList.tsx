@@ -12,9 +12,11 @@ const PostPreview: VFC<{ post: Post }> = ({ post }) => {
 
         <div className="article-content">
           {post.preamble}
-          <p>
-            <LinkToPost slug={post.slug}>続きを読む</LinkToPost>
-          </p>
+          {post.truncated && (
+            <p>
+              <LinkToPost slug={post.slug}>続きを読む</LinkToPost>
+            </p>
+          )}
         </div>
       </div>
     </article>

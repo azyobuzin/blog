@@ -1,6 +1,6 @@
 ---
 pubdate: 2021-09-01T02:57+09:00
-tags: [unlisted,日記]
+tags: [unlisted, 日記]
 ---
 
 # 日記 2021-08-31
@@ -12,7 +12,7 @@ tags: [unlisted,日記]
 - Spotify で [<cite>Re:STAGE! THE BEST</cite>](https://open.spotify.com/album/34SnXC9zBsqRvOaO8ZmE0w?si=Tsnrb79ZQy-AvOgRWeMLrQ&dl_branch=1) を聞いてた。8月最後の思い出は<cite>リステDD</cite>を見たことになったので、その余韻を感じていたところでベストアルバムを発見した模様。
 - [神戸屋のプリンくりぃむぱん](https://www.kobeya.co.jp/products/kashi/shiawase_pudding_creampan)がおいしかった。見た目よりもしっとりしている。
 - 進捗がなさすぎてやばいと嘆きながら何もできない精神状態だったので、このブログの Markdown 化作業を終わらせた。そして1時になっていた。
-    - Markdown に移行した理由と、サイトジェネレータの構成についてブログに書いておきたいけど、そんな余裕がなさそう。移行した理由は、 HTML を書きたかったからというのが大きい。 Asciidoctor を使う限り Asciidoctor の構文に縛られるし、微妙な HTML を吐き出すし、それなら吐き出される HTML を制御したいと思った。 Markdown、特に CommonMark は機能不足も甚だしいが、その代わりに1つの記法が大体1つの HTML タグにマッピングできて素直なので、 Markdown を HTML の糖衣構文として使って、不満があれば [HTML Block](https://spec.commonmark.org/0.29/#html-blocks) を手書きすればいいという結論に至った。だって AsciiDoc による構造化文書を作りたいのではなく、 Web に置く HTML を作るのが目的なんだもの。
+  - Markdown に移行した理由と、サイトジェネレータの構成についてブログに書いておきたいけど、そんな余裕がなさそう。移行した理由は、 HTML を書きたかったからというのが大きい。 Asciidoctor を使う限り Asciidoctor の構文に縛られるし、微妙な HTML を吐き出すし、それなら吐き出される HTML を制御したいと思った。 Markdown、特に CommonMark は機能不足も甚だしいが、その代わりに1つの記法が大体1つの HTML タグにマッピングできて素直なので、 Markdown を HTML の糖衣構文として使って、不満があれば [HTML Block](https://spec.commonmark.org/0.29/#html-blocks) を手書きすればいいという結論に至った。だって AsciiDoc による構造化文書を作りたいのではなく、 Web に置く HTML を作るのが目的なんだもの。
 
 研究のプログラムを見ると拒絶反応が出るのを、本当にどうしたらいいのか。
 
