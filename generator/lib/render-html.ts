@@ -5,6 +5,7 @@ import rehypeStringify from "rehype-stringify"
 import { write } from "to-vfile"
 import { Plugin, unified } from "unified"
 import { VFile } from "vfile"
+import { rehypeCustomElements } from "../custom-elements"
 import type { Element } from "./jsx"
 
 export async function renderHtml(
@@ -26,6 +27,7 @@ const fromElement: Plugin<[], HastRoot> = function () {
 
 const processor = unified()
   .use(fromElement)
+  .use(rehypeCustomElements)
   .use(rehypeStringify, {
     allowDangerousHtml: true,
   })

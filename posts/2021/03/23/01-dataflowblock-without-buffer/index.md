@@ -30,7 +30,7 @@ ISourceBlock<T> CreateSource()
 
 ## タイトルオチ
 
-もうタイトルでオチてますが、このような PropagatorBlock はデータフローブロックのプロトコル上、おそらく作れません。プロトコルについては[以前](https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/)ざっくりと紹介しましたが、今回はこのプロトコルと、既存のブロックの実装で使われているロックが鍵となります。
+もうタイトルでオチてますが、このような PropagatorBlock はデータフローブロックのプロトコル上、おそらく作れません。プロトコルについては[以前](https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/ "プロトコルから比較する Reactive Streams と TPL Dataflow")ざっくりと紹介しましたが、今回はこのプロトコルと、既存のブロックの実装で使われているロックが鍵となります。
 
 TPL Dataflow のブロック間の通信は、完全に直列です。ある SourceBlock からは同時に1件しか送信しないし、ある TargetBlock は同時に1件しか受信できません。その制御は `lock` ステートメントで行われています（絶対ボトルネックじゃん）。
 

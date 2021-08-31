@@ -2,10 +2,10 @@ import { toText } from "hast-util-to-text"
 import Layout from "../components/Layout"
 import PostHeader from "../components/PostHeader"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
-import { Component, h } from "../lib/jsx"
+import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
 
-const PostPage: Component<{ post: Post }> = ({ post }) => {
+const PostPage: VFC<{ post: Post }> = ({ post }) => {
   const titleText = toText(post.title)
   const canonical = `${SITE_URL}/${SITE_TITLE}/${post.slug}/`
 
@@ -37,7 +37,7 @@ const PostPage: Component<{ post: Post }> = ({ post }) => {
     >
       <div className="container">
         <article className="article-page">
-          <PostHeader post={post} link={false} />
+          <PostHeader post={post} link={false} showHistory />
           <div className="article-content">{post.content}</div>
         </article>
 

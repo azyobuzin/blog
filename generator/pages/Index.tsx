@@ -1,12 +1,12 @@
 import Layout from "../components/Layout"
 import PostList from "../components/PostList"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
-import { Component, h } from "../lib/jsx"
+import { VFC, h } from "../lib/jsx"
 import type { Post } from "../lib/posts"
 
 const DESCRIPTION = "azyobuzinの進捗の証"
 
-const Index: Component<{ posts: Post[] }> = ({ posts }) => {
+const Index: VFC<{ posts: Post[] }> = ({ posts }) => {
   return (
     <Layout
       head={

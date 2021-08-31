@@ -1,7 +1,7 @@
 import { SITE_TITLE } from "../lib/constants"
-import { Component, Node, h } from "../lib/jsx"
+import { FC, Node, h } from "../lib/jsx"
 
-const Layout: Component<{ head?: Node; children: Node }> = (props) => {
+const Layout: FC<{ head?: Node }> = (props) => {
   return {
     type: "root",
     children: [

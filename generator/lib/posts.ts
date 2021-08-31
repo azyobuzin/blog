@@ -11,6 +11,7 @@ import type {
 import { classnames } from "hast-util-classnames"
 import { hasProperty } from "hast-util-has-property"
 import { heading as isHastHeading } from "hast-util-heading"
+import { headingRank } from "hast-util-heading-rank"
 import { isElement as isHastElement } from "hast-util-is-element"
 import { HastParent, toText } from "hast-util-to-text"
 import type { Parent as MdastParent, Root as MdastRoot } from "mdast"
@@ -144,36 +145,52 @@ const extractTitle: Plugin<[], MdastRoot> = () => {
   }
 }
 
-// TODO: HTML でやらないと h タグ手書きが対処できない
-const sectionNumbering: Plugin<[], MdastRoot> = () => {
-  return (tree: MdastRoot, file: VFile) => {
-    if ((file.data.frontmatter as Frontmatter | undefined)?.sectnums !== true)
-      return
+/** セクション番号 */
+const sectionNumbering: Plugin<[], HastRoot> = () => {
+  return (tree: HastRoot, file: VFile) => {
+    const enabled =
+      (file.data.frontmatter as Frontmatter | undefined)?.sectnums === true
 
     const currentSection: Record<number, number> = {}
-    let depth = 0
+    let prevDepth = 0
+    const sectionById = new Map<string, string>()
 
-    visit(tree, "heading", (node) => {
-      const heading = node
-      const deeper = heading.depth > depth
-      depth = heading.depth
+    visit(tree, "element", (node) => {
+      const depth = headingRank(node)
+      if (depth == null) return
+
+      const deeper = depth > prevDepth
+      prevDepth = depth
 
       if (deeper) {
-        currentSection[depth] = 1
+        currentSection[prevDepth] = 1
       } else {
-        currentSection[depth]++
+        currentSection[prevDepth]++
       }
 
       let sectnum = ""
-      for (let i = 1; i <= depth; i++) {
+      for (let i = 1; i <= prevDepth; i++) {
         const x = currentSection[i]
         if (x != null) sectnum += x.toString() + "."
       }
 
-      heading.children.unshift({ type: "text", value: sectnum + " " })
+      if (enabled) {
+        node.children.unshift({ type: "text", value: sectnum + " " })
+      }
+
+      const id = node.properties?.id
+      if (id != null) {
+        sectionById.set(
+          id as string,
+          "Section " + sectnum.substring(0, sectnum.length - 1)
+        )
+      }
 
       return SKIP
     })
+
+    // a タグを書き換える
+    assignTextToAnchor(tree, sectionById)
   }
 }
 
@@ -197,7 +214,7 @@ const sampElement: Plugin<[], HastRoot> = () => {
 /** rehype-hightlight は `<pre><code>` すべてをハイライトしようとするので、抑制する */
 const assignNoHighlight: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
-    visit(tree, "element", (node, _index, parent): void => {
+    visit(tree, (node, _index, parent): void => {
       if (!isHastElement(node, "code") || !isHastElement(parent, "pre")) return
 
       const hasLangClass = (
@@ -219,7 +236,30 @@ const removeHljsClass: Plugin<[], HastRoot> = () => {
   }
 }
 
-// TODO: img の alt に figcaption をセットする
+/** img の alt に figcaption をセットする */
+const assignAlt: Plugin<[], HastRoot> = () => {
+  return (tree: HastRoot) => {
+    visit(tree, (node, _index, parent) => {
+      if (!isHastElement(node, "img") || !isHastElement(parent, "figure"))
+        return
+
+      const currentAlt = node.properties?.alt
+      if (typeof currentAlt === "string" && currentAlt.length > 0) return
+
+      let alt: string | undefined
+      for (const child of parent.children) {
+        if (isHastElement(child, "figcaption")) {
+          alt = toText(child)
+          break
+        }
+      }
+
+      if (alt == null) return
+
+      node.properties = { ...node.properties, alt }
+    })
+  }
+}
 
 /** 図表番号 */
 const figureNumbering: Plugin<[], HastRoot> = () => {
@@ -253,24 +293,31 @@ const figureNumbering: Plugin<[], HastRoot> = () => {
     })
 
     // a タグを書き換える
-    visit(tree, (node) => {
-      if (
-        !isHastElement(node, "a") ||
-        !hasProperty(node, "href") ||
-        !isChildrenEmpty(node)
-      )
-        return
-
-      const href = node.properties!.href as string
-      if (!href.startsWith("#")) return
-
-      const figNumStr = numById.get(href.substring(1))
-      if (figNumStr != null) {
-        const textNode: HastText = { type: "text", value: figNumStr }
-        node.children = [textNode]
-      }
-    })
+    assignTextToAnchor(tree, numById)
   }
+}
+
+function assignTextToAnchor(
+  tree: HastRoot,
+  nameById: Map<string, string>
+): void {
+  visit(tree, (node) => {
+    if (
+      !isHastElement(node, "a") ||
+      !hasProperty(node, "href") ||
+      !isChildrenEmpty(node)
+    )
+      return
+
+    const href = node.properties!.href as string
+    if (!href.startsWith("#")) return
+
+    const figNumStr = nameById.get(href.substring(1))
+    if (figNumStr != null) {
+      const textNode: HastText = { type: "text", value: figNumStr }
+      node.children = [textNode]
+    }
+  })
 }
 
 function isChildrenEmpty(el: Element): boolean {
@@ -367,14 +414,15 @@ const processor = unified()
     throws: true,
   })
   .use(extractTitle)
-  .use(sectionNumbering)
   .use(remarkMath)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
+  .use(sectionNumbering)
   .use(sampElement)
   .use(assignNoHighlight)
   .use(rehypeHighlight)
   .use(removeHljsClass)
+  .use(assignAlt)
   .use(figureNumbering)
   .use(rehypeKatex)
   .use(toPost)

@@ -1,8 +1,8 @@
 import Layout from "../components/Layout"
 import { SITE_TITLE } from "../lib/constants"
-import { Component, h } from "../lib/jsx"
+import { VFC, h } from "../lib/jsx"
 
-const NotFound: Component = () => {
+const NotFound: VFC = () => {
   return (
     <Layout head={<title>そんなページないよ！ | {SITE_TITLE}</title>}>
       <div className="container">

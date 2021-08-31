@@ -1,10 +1,10 @@
 import Layout from "../components/Layout"
 import PostList from "../components/PostList"
 import { SITE_TITLE } from "../lib/constants"
-import { Component, h } from "../lib/jsx"
+import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
 
-const TagPage: Component<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
+const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
   return (
     <Layout
       head={

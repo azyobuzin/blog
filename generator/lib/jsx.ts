@@ -3,27 +3,30 @@ import { Child, Properties, h as hastscript } from "hastscript"
 
 export type Node = Child
 export type Element = HastElement | HastRoot
-export type Component<P = {}> = (props: P) => Element
+export type VFC<P = {}> = (props: P) => Element
+export type FC<P = {}> = VFC<P & { children: Node }>
 
-export function h<P = {}>(
-  component: Component<P>,
+export function h<P>(
+  component: VFC<P>,
   properties: Omit<P, "children">,
   ...children: P extends { children: infer C }
-    ? C extends any[]
+    ? C extends unknown[]
       ? C
       : never
     : []
 ): Element
 
+export function h(component: VFC<{}>): Element
+
 export function h(
   selector: null | undefined,
-  properties?: Properties,
+  properties?: Properties | null,
   ...children: Child[]
 ): HastRoot
 
 export function h(
   selector: string,
-  properties?: Properties,
+  properties?: Properties | null,
   ...children: Child[]
 ): HastElement
 

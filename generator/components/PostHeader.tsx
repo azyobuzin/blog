@@ -1,13 +1,14 @@
 import moment from "moment-timezone"
 import { TIMEZONE } from "../lib/constants"
-import { Component, h } from "../lib/jsx"
+import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
 import LinkToPost from "./LinkToPost"
 import LinkToTag from "./LinkToTag"
 
-const PostHeader: Component<{ post: Post; link: boolean }> = ({
+const PostHeader: VFC<{ post: Post; link: boolean; showHistory: boolean }> = ({
   post,
   link,
+  showHistory,
 }) => {
   const pubdate = moment.tz(post.pubdate, TIMEZONE)
   const revdate =
@@ -21,7 +22,7 @@ const PostHeader: Component<{ post: Post; link: boolean }> = ({
     dateDetails += "\n最終更新: " + revdate.format(displayFormat)
 
   const historyUrl =
-    post.commitHash != null
+    showHistory && post.commitHash != null
       ? `https://github.com/azyobuzin/blog/commits/${post.commitHash}/posts/${post.slug}`
       : null
 

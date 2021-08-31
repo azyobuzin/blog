@@ -6,7 +6,7 @@ thumbnail: https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/2
 
 # 画像可逆圧縮形式 FLIF についてのメモ
 
-[FLIF (Free Lossless Image Format)](https://flif.info/) は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。
+[<dfn>FLIF</dfn> (Free Lossless Image Format)](https://flif.info/) は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。
 
 ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。
 
@@ -31,7 +31,7 @@ FLIF は、このような辞書型圧縮 + ハフマン符号の構成ではな
 
 ## FLIF ファイルの構成
 
-FLIF ファイルは、大きく次のように構成されます。区切り方は [FLIF16 Specification](https://flif.info/spec.html) に従っています。
+FLIF ファイルは、大きく次のように構成されます。区切り方は [<cite>FLIF16 Specification</cite>](https://flif.info/spec.html) に従っています。
 
 <dl>
 <dt>Main Header</dt><dd>画像の大きさやチャンネル数が記述されます。</dd>
@@ -189,7 +189,7 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 ## 符号化
 
-それでは、予測値の誤差をどのようにビット表現に変換しているのかについて説明していきましょう。 FLIF ではこの符号化手法のことを MANIAC (Meta-Adaptive Near-zero Integer Arithmetic Coding) と呼んでいます。ここでは、算術符号 (Arithmetic Coding)、適応的算術符号 (Adaptive Arithmtic Coding)、 Near-zero Integer Coding、 Meta-Adaptive に分割して説明していきたいと思います。
+それでは、予測値の誤差をどのようにビット表現に変換しているのかについて説明していきましょう。 FLIF ではこの符号化手法のことを <dfn>MANIAC</dfn> (Meta-Adaptive Near-zero Integer Arithmetic Coding) と呼んでいます。ここでは、算術符号 (Arithmetic Coding)、適応的算術符号 (Adaptive Arithmtic Coding)、 Near-zero Integer Coding、 Meta-Adaptive に分割して説明していきたいと思います。
 
 ### 算術符号
 
@@ -221,8 +221,8 @@ Range Coder では、正しく符号化結果を記録できるだけの長さ�
 
 詳細なアルゴリズムについては、私よりもうまい説明に任せたいと思います。
 
-- [圧縮アルゴリズム (10) 算術符号化](http://fussy.web.fc2.com/algo/compress10_arithmetic.htm) (Fussy's HOMEPAGE)
-- [Algorithms with Python / レンジコーダ (range coder)](http://www.nct9.ne.jp/m_hiroi/light/pyalgo36.html)
+- [<cite>圧縮アルゴリズム (10) 算術符号化</cite>](http://fussy.web.fc2.com/algo/compress10_arithmetic.htm) (Fussy's HOMEPAGE)
+- [<cite>Algorithms with Python / レンジコーダ (range coder)</cite>](http://www.nct9.ne.jp/m_hiroi/light/pyalgo36.html)
 
 <h4 id="sec-context">コンテキスト</h4>
 

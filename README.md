@@ -79,3 +79,38 @@ a タグの中身が空ならば、図表番号に置き換える。
 ```html
 <a href="#fig-x">図 1</a>
 ```
+
+#### Admonitions
+
+```html
+<ab-important>
+  <p>重要なこと</p>
+</ab-important>
+
+<ab-caution>
+  <p>注意深く行動すること</p>
+</ab-caution>
+
+<ab-warning>
+  <p>従わないとやばいことになる可能性があること</p>
+</ab-warning>
+```
+
+↓
+
+```html
+<div class="admonitionblock important">
+  <div class="icon">Important</div>
+  <p>重要なこと</p>
+</div>
+
+<div class="admonitionblock caution">
+  <div class="icon">Caution</div>
+  <p>注意深く行動すること</p>
+</div>
+
+<div class="admonitionblock warning">
+  <div class="icon">Warning</div>
+  <p>従わないとやばいことになる可能性があること</p>
+</div>
+```

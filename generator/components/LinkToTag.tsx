@@ -1,9 +1,8 @@
-import { Component, Node, h } from "../lib/jsx"
+import { FC, h } from "../lib/jsx"
 
-const LinkToTag: Component<{
+const LinkToTag: FC<{
   tag: string
   className?: string
-  children: Node
 }> = ({ tag, children, ...rest }) => {
   return (
     <a
