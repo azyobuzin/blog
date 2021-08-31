@@ -1,0 +1,5 @@
+#!/bin/bash
+slug=$([ -z $1 ] && echo "01" || echo $1)
+dir="posts/$(date '+%Y/%m/%d')/${slug}"
+mkdir -p "${dir}"
+touch "${dir}/index.md"

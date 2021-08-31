@@ -19,7 +19,7 @@ if (typeof postsDir !== "string" || typeof outDir !== "string") {
 readPosts(postsDir)
   .then(async (posts) => {
     const pages: Record<string, Element> = {
-      "index.html": <Index posts={posts} />,
+      "index.html": <Index posts={filterUnlisted(posts)} />,
       "404.html": <NotFound />,
       ...postPages(posts),
       ...tagPages(posts),
@@ -31,6 +31,11 @@ readPosts(postsDir)
     console.error(err)
     process.exit(2)
   })
+
+/** unlisted タグがついた記事はトップページに表示しない */
+function filterUnlisted(posts: Post[]): Post[] {
+  return posts.filter(x => !x.tags.includes("unlisted"))
+}
 
 function postPages(posts: Post[]): Record<string, Element> {
   return Object.fromEntries(
