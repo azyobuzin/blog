@@ -13,7 +13,8 @@ import { hasProperty } from "hast-util-has-property"
 import { heading as isHastHeading } from "hast-util-heading"
 import { headingRank } from "hast-util-heading-rank"
 import { isElement as isHastElement } from "hast-util-is-element"
-import { HastParent, toText } from "hast-util-to-text"
+import { selectAll } from "hast-util-select"
+import { toText } from "hast-util-to-text"
 import type { Parent as MdastParent, Root as MdastRoot } from "mdast"
 import { toHast } from "mdast-util-to-hast"
 import rehypeHighlight from "rehype-highlight"
@@ -199,17 +200,7 @@ const sectionNumbering: Plugin<[], HastRoot> = () => {
 /** language-samp を samp タグにする */
 const sampElement: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
-    visit(
-      tree,
-      (node) => isHastElement(node, "code"),
-      (node) => {
-        const el = node as Element
-        const isSamp = (
-          classnames(el.properties?.className as any) as string[]
-        ).includes("language-samp")
-        if (isSamp) el.tagName = "samp"
-      }
-    )
+    for (const el of selectAll("code.language-samp", tree)) el.tagName = "samp"
   }
 }
 
@@ -303,44 +294,12 @@ function assignTextToAnchor(
   tree: HastRoot,
   nameById: Map<string, string>
 ): void {
-  visit(tree, (node) => {
-    if (
-      !isHastElement(node, "a") ||
-      !hasProperty(node, "href") ||
-      !isChildrenEmpty(node)
-    )
-      return
-
-    const href = node.properties!.href as string
-    if (!href.startsWith("#")) return
-
-    const figNumStr = nameById.get(href.substring(1))
+  for (const el of selectAll("a[href^=#]:empty", tree)) {
+    const figNumStr = nameById.get((el.properties!.href as string).substring(1))
     if (figNumStr != null) {
       const textNode: HastText = { type: "text", value: figNumStr }
-      node.children = [textNode]
+      el.children = [textNode]
     }
-  })
-}
-
-function isChildrenEmpty(el: Element): boolean {
-  return traverse(el)
-
-  function traverse(parent: HastParent): boolean {
-    for (const child of parent.children) {
-      switch (child.type as string) {
-        case "root":
-          if (!traverse(child as unknown as HastRoot)) return false
-          break
-        case "element":
-          return false
-        case "text": {
-          const v = (child as HastText).value
-          if (v != null && v.length > 0) return false
-          break
-        }
-      }
-    }
-    return true
   }
 }
 
