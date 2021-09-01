@@ -16,11 +16,15 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
       <div className="container">
         <header>
           <h1>{tag}</h1>
-          <p className="breadcrumb">
-            <a href="/">ホーム</a>
+          <p className="breadcrumb" role="list">
+            <a href="/" role="listitem">
+              ホーム
+            </a>
             {" > "}
-            <i className="fa fa-tag" aria-hidden="true" title="タグ" />
-            {" " + tag}
+            <span role="listitem" aria-current="page">
+              <i className="fa fa-tag" aria-hidden="true" title="タグ" />
+              {" " + tag}
+            </span>
           </p>
         </header>
 

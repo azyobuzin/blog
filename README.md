@@ -99,21 +99,21 @@ a タグの中身が空ならば、図表番号に置き換える。
 ↓
 
 ```html
-<div class="admonitionblock important">
+<div class="admonitionblock important" role="note">
   <div class="icon">Important</div>
   <div class="content">
     <p>重要なこと</p>
   </div>
 </div>
 
-<div class="admonitionblock caution">
+<div class="admonitionblock caution" role="note">
   <div class="icon">Caution</div>
   <div class="content">
     <p>注意深く行動すること</p>
   </div>
 </div>
 
-<div class="admonitionblock warning">
+<div class="admonitionblock warning" role="note">
   <div class="icon">Warning</div>
   <div class="content">
     <p>従わないとやばいことになる可能性があること</p>

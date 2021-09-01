@@ -6,7 +6,7 @@ import PostHeader from "./PostHeader"
 const PostPreview: VFC<{ post: Post }> = ({ post }) => {
   return (
     <article className="article-list-item">
-      <hr />
+      <hr aria-hidden="true" />
       <div className="article-list-item-content">
         <PostHeader post={post} link showHistory={false} />
 
@@ -25,7 +25,7 @@ const PostPreview: VFC<{ post: Post }> = ({ post }) => {
 
 const PostList: VFC<{ posts: Post[] }> = ({ posts }) => {
   return (
-    <main className="article-list">
+    <main className="article-list" role="feed">
       {posts.map((x) => (
         <PostPreview post={x} />
       ))}
