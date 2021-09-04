@@ -1,22 +1,25 @@
-import { Element as HastElement, Root as HastRoot } from "hast"
+import type { Element as HastElement, Root as HastRoot } from "hast"
 import { Child, Properties, h as hastscript } from "hastscript"
 
 export type Node = Child
 export type Element = HastElement | HastRoot
-export type VFC<P = {}> = (props: P) => Element
-export type FC<P = {}> = VFC<P & { children: Node }>
+export type VFC<P = {}, R extends Element = Element> = (props: P) => R
+export type FC<P = {}, R extends Element = Element> = VFC<
+  P & { children: Node },
+  R
+>
 
-export function h<P>(
-  component: VFC<P>,
+export function h<P, R extends Element>(
+  component: VFC<P, R>,
   properties: Omit<P, "children">,
   ...children: P extends { children: infer C }
     ? C extends unknown[]
       ? C
       : never
     : []
-): Element
+): R
 
-export function h(component: VFC<{}>): Element
+export function h<R extends Element>(component: VFC<{}, R>): R
 
 export function h(
   selector: null | undefined,

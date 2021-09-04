@@ -7,7 +7,7 @@ import { Post } from "../lib/posts"
 
 const PostPage: VFC<{ post: Post }> = ({ post }) => {
   const titleText = toText(post.title)
-  const canonical = `${SITE_URL}/${SITE_TITLE}/${post.slug}/`
+  const canonical = `${SITE_URL}/${post.slug}/`
 
   return (
     <Layout
@@ -17,10 +17,16 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
             {titleText} | {SITE_TITLE}
           </title>
           <link rel="canonical" href={canonical} />
+          {post.description != null && (
+            <meta name="description" content={post.description} />
+          )}
           <meta property="og:title" content={titleText} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={canonical} />
-          <meta property="og:description" content={post.description} />
+          <meta
+            property="og:description"
+            content={post.description ?? toText(post.preamble)}
+          />
           <meta property="og:article:published_time" content={post.pubdate} />
           {post.revdate != null && (
             <meta property="og:article:modified_time" content={post.revdate} />

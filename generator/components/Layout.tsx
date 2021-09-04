@@ -12,21 +12,15 @@ const Layout: FC<{ head?: Node }> = (props) => {
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link
             rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
-            integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-          />
-          <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/fork-awesome/1.2.0/css/fork-awesome.min.css"
-            integrity="sha512-aupidr80M36SeyviA/hZ2uEPnvt2dTJfyjm9y6z1MgaV13TgzmDiFdsH3cvSNG27mRIj7gJ2gNeg1HeySJyE3Q=="
+            href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css"
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
           />
           <link
             rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&amp;display=swap"
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
           />
           <link rel="stylesheet" href="/global.css" />
           <meta property="og:site_name" content={SITE_TITLE} />

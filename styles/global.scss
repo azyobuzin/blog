@@ -1,5 +1,7 @@
 $color-secondary: #444d53;
 
+@import "../node_modules/normalize.css/normalize.css";
+
 /*!
   * Milligram v1.4.1
   * https://milligram.io
@@ -43,6 +45,10 @@ code,
 kbd,
 samp {
   font-family: "Roboto Mono", monospace;
+}
+
+cite {
+  font-style: normal;
 }
 
 figure {

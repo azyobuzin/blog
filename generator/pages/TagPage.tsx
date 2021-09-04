@@ -1,16 +1,28 @@
 import Layout from "../components/Layout"
 import PostList from "../components/PostList"
-import { SITE_TITLE } from "../lib/constants"
+import { SITE_TITLE, SITE_URL } from "../lib/constants"
 import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
+import { tagUrl } from "../lib/url"
 
 const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
+  const canonical = SITE_URL + tagUrl(tag)
+
   return (
     <Layout
       head={
-        <title>
-          {tag} | {SITE_TITLE}
-        </title>
+        <>
+          <title>
+            {tag} | {SITE_TITLE}
+          </title>
+          <link rel="canonical" href={canonical} />
+          <meta property="og:url" content={canonical} />
+          <link
+            rel="alternate"
+            href={tagUrl(tag) + "feed.atom"}
+            type="application/atom+xml"
+          />
+        </>
       }
     >
       <div className="container">

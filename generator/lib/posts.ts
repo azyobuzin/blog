@@ -32,6 +32,7 @@ import { map } from "unist-util-map"
 import { SKIP, visit } from "unist-util-visit"
 import type { VFile } from "vfile"
 import yaml from "yaml"
+import { rehypeCustomElements } from "../custom-elements"
 import { SITE_URL } from "./constants"
 
 const CONTENT_FILE_NAME = "index.md"
@@ -43,7 +44,7 @@ export interface Post {
   pubdate: string
   revdate?: string
   tags: string[]
-  description: string
+  description?: string
   thumbnail?: string
   content: HastRoot
   preamble: HastRoot
@@ -325,7 +326,7 @@ const toPost: Plugin<[], HastRoot> = function () {
             type: "root",
             children: tree.children.slice(0, headingIndex),
           }
-    preamble = map(preamble, transformPreamble) as HastRoot
+    preamble = removeRelativeLink(preamble, baseUrl)
 
     return {
       slug,
@@ -333,36 +334,12 @@ const toPost: Plugin<[], HastRoot> = function () {
       pubdate: frontmatter?.pubdate ?? slug.split("/").slice(0, 3).join("-"),
       revdate: file.data.revdate as string | undefined,
       tags: frontmatter?.tags ?? [],
-      description: frontmatter?.description ?? toText(preamble),
-      thumbnail: frontmatter?.thumbnail,
+      description: frontmatter?.description,
+      thumbnail,
       content: tree,
       preamble,
       truncated: headingIndex >= 0,
       commitHash: file.data.commitHash as string | undefined,
-    }
-
-    function transformPreamble(node: HastNode): HastNode {
-      if (
-        (isHastElement as (node: any) => node is Element)(node) &&
-        node.properties != null
-      ) {
-        const newProps = { ...node.properties }
-
-        // リンクを絶対URLにする
-        for (const key of ["href", "src"]) {
-          const href = newProps[key]
-          if (typeof href === "string") {
-            newProps[key] = new URL(href, baseUrl).href
-          }
-        }
-
-        // id 属性を削除する
-        delete newProps.id
-
-        const newEl: Element = { ...node, properties: newProps }
-        return newEl
-      }
-      return node
     }
   }
 }
@@ -387,6 +364,7 @@ const processor = unified()
   .use(removeHljsClass)
   .use(assignAlt)
   .use(figureNumbering)
+  .use(rehypeCustomElements)
   .use(rehypeKatex)
   .use(toPost)
   .freeze() as FrozenProcessor<MdastRoot, HastRoot, HastRoot, Post>
@@ -422,4 +400,33 @@ async function getGitCommit(
       }
     )
   })
+}
+
+export function removeRelativeLink<T extends HastNode>(
+  node: T,
+  baseUrl: URL | string
+): T {
+  return map(node, (node) => {
+    if (
+      (isHastElement as (node: any) => node is Element)(node) &&
+      node.properties != null
+    ) {
+      const newProps = { ...node.properties }
+
+      // リンクを絶対URLにする
+      for (const key of ["href", "src"]) {
+        const href = newProps[key]
+        if (typeof href === "string") {
+          newProps[key] = new URL(href, baseUrl).href
+        }
+      }
+
+      // id 属性を削除する
+      delete newProps.id
+
+      const newEl: Element = { ...node, properties: newProps }
+      return newEl
+    }
+    return { ...node }
+  }) as T
 }

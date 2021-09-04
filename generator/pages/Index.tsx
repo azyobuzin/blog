@@ -12,11 +12,13 @@ const Index: VFC<{ posts: Post[] }> = ({ posts }) => {
       head={
         <>
           <title>{SITE_TITLE}</title>
+          <link rel="canonical" href={SITE_URL + "/"} />
           <meta name="description" content={DESCRIPTION} />
           <meta property="og:title" content={SITE_TITLE} />
           <meta property="og:type" content="website" />
           <meta property="og:url" content={SITE_URL + "/"} />
           <meta property="og:description" content={DESCRIPTION} />
+          <link rel="alternate" href="/feed.atom" type="application/atom+xml" />
         </>
       }
     >
