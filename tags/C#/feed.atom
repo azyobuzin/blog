@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/C%23/feed.atom</id><link href="https://blog.azyobuzi.net/tags/C%23/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/C%23/" rel="alternate" type="text/html" /><title>C# | あじょろぐ</title><updated>2021-09-01T01:02:14+09:00</updated><entry><category term="C#" label="C#" /><category term="Android" label="Android" /><content type="html">&#x3C;p>TL;DR: Xamarin.Android のグローバル例外ハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（&#x3C;a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211&#x3C;/a>）。&#x3C;/p>
+&#x3C;h2>はじめに&#x3C;/h2>
+&#x3C;p>ハンドルされない例外は、アプリにとって異常事態ですから、さっさと&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/916d24b7d83a79853dd1d1cf060d327f98c46e77/src/java-runtime/java/mono/android/Seppuku.java">切腹&#x3C;/a>する必要があります。 Xamarin.Android アプリでは、 Java の例外と .NET の例外が入り混じり、境界ではそれぞれの例外に相互変換されています。では、相互変換を繰り返し、最終的に誰にもキャッチされなかった例外は、どのように処理されるのでしょうか？ そして、もし最後の砦、グローバル例外ハンドラを設定するなら、どこに設定するのが良いのでしょうか？&#x3C;/p>
+&#x3C;h2>普通の Android アプリの死に方&#x3C;/h2>
+&#x3C;p>まずはピュア Java の Android アプリを例外で落としてみましょう。適当な場所に &#x3C;code>throw new RuntimeException();&#x3C;/code> と書けばいいだけですね。今回は &#x3C;code>MainActivity.onStart&#x3C;/code> に仕込んでみます。これで起動した瞬間に落ちるはずです。&#x3C;/p>
+&#x3C;p>実行するとアプリが終了し、 logcat にはこのようなログが残ります。&#x3C;/p>
+&#x3C;pre>&#x3C;samp class="language-samp">E AndroidRuntime: FATAL EXCEPTION: main
+E AndroidRuntime: Process: com.example.ochiruapplication, PID: 6823
+E AndroidRuntime: java.lang.RuntimeException
+E AndroidRuntime:        at com.example.ochiruapplication.MainActivity.onStart(MainActivity.java:18)
+E AndroidRuntime:        at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1425)
+E AndroidRuntime:        at android.app.Activity.performStart(Activity.java:7825)
+E AndroidRuntime:        at android.app.ActivityThread.handleStartActivity(ActivityThread.java:3294)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:221)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:201)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:173)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:107)
+E AndroidRuntime:        at android.os.Looper.loop(Looper.java:214)
+E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7356)
+E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+&#x3C;/samp>&#x3C;/pre>
+&#x3C;p>さて、例外の中身を知っているのは例外を起こしたプロセスだけですから、このログを吐き出した犯人を探すことで、 Android のグローバル例外ハンドラを探すことができそうです。 &#x3C;a href="https://cs.android.com/">Android Code Search&#x3C;/a> で「FATAL EXCEPTION」と検索すると、&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=80;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">それっぽい行&#x3C;/a>が見つかりました。&#x3C;/p>
+&#x3C;p>さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる &#x3C;code>RuntimeInit.commonInit&#x3C;/code> に次のようなプログラムが入っています。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">RuntimeInit.commonInit の一部&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">LoggingHandler&#x3C;/span> &#x3C;span class="hljs-variable">loggingHandler&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">LoggingHandler&#x3C;/span>();
+RuntimeHooks.setUncaughtExceptionPreHandler(loggingHandler);
+Thread.setDefaultUncaughtExceptionHandler(&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">KillApplicationHandler&#x3C;/span>(loggingHandler));
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>Java が管理するスレッドで発生した例外は、スレッド自体に例外ハンドラを設定していなければ &#x3C;code>Thread.setDefaultUncaughtExceptionHandler&#x3C;/code> で設定したハンドラで処理されます。 Android では &#x3C;code>RuntimeInit$KillApplicationHandler&#x3C;/code> が設定されており、これが最後の砦をやっています。また、 Android には Java 標準の &#x3C;code>Thread&#x3C;/code> クラスにはない &#x3C;code>setUncaughtExceptionPreHandler&#x3C;/code> があり、もしデフォルトのハンドラがアプリのコードによって書き換えられたとしても、 &#x3C;code>RuntimeInit$LoggingHandler&#x3C;/code> だけは呼び出されて、 logcat に例外ログが吐きだされるようになっています。&#x3C;/p>
+&#x3C;p>&#x3C;code>KillApplicationHandler&#x3C;/code> は、 &#x3C;code>ActivityManager&#x3C;/code> サービスに後処理（アクティビティを終了させ、必要ならばクラッシュダイアログを表示する）を任せて、プロセスを終了します。&#x3C;/p>
+&#x3C;p>まとめ: Xamarin ではないピュアな Android アプリでは、基本的にすべてのスレッドを Java が管理しているので、 &#x3C;code>Thread.setDefaultUncaughtExceptionHandler&#x3C;/code> で設定したハンドラによって未ハンドルの例外が処理されます。 Android ではハンドラとして &#x3C;code>com.android.internal.os.RuntimeInit$KillApplicationHandler&#x3C;/code> が設定されており、アクティビティとプロセスの終了を担っています。&#x3C;/p>
+&#x3C;h2>Xamarin アプリを例外で落とす&#x3C;/h2>
+&#x3C;p>同じことを Xamarin.Android でやってみましょう。 &#x3C;code>MainActivity.OnStart&#x3C;/code> に &#x3C;code>throw new Exception();&#x3C;/code> を仕込んで実行すると、このようなログが得られます。&#x3C;/p>
+&#x3C;pre>&#x3C;samp class="language-samp">E AndroidRuntime: FATAL EXCEPTION: main
+E AndroidRuntime: Process: com.companyname.ochiruappxamarin, PID: 9701
+E AndroidRuntime: java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:502)
+E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+E AndroidRuntime: Caused by: java.lang.reflect.InvocationTargetException
+E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+E AndroidRuntime: 	... 1 more
+E AndroidRuntime: Caused by: java.lang.Exception
+E AndroidRuntime: 	at crc64a14461782825e2ee.MainActivity.n_onStart(Native Method)
+E AndroidRuntime: 	at crc64a14461782825e2ee.MainActivity.onStart(MainActivity.java:55)
+E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1425)
+E AndroidRuntime: 	at android.app.Activity.performStart(Activity.java:7825)
+E AndroidRuntime: 	at android.app.ActivityThread.handleStartActivity(ActivityThread.java:3294)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:221)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:201)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:173)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:107)
+E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:214)
+E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7356)
+E AndroidRuntime: 	... 3 more
+I MonoDroid: UNHANDLED EXCEPTION:
+I MonoDroid: Java.Lang.RuntimeException: java.lang.reflect.InvocationTargetException ---> Java.Lang.Reflect.InvocationTargetException: Exception of type 'Java.Lang.Reflect.InvocationTargetException' was thrown. ---> Java.Lang.Exception: Exception of type 'Java.Lang.Exception' was thrown.
+I MonoDroid:   at OchiruAppXamarin.MainActivity.OnStart () [0x0000d] in &#x26;#x3C;c931122de5944a1da7dcf64a7158eefa>:0
+I MonoDroid:   at Android.App.Activity.n_OnStart (System.IntPtr jnienv, System.IntPtr native__this) [0x00008] in &#x26;#x3C;db0280fb1b254cf889f3a750ac3ea0bb>:0
+I MonoDroid:   at (wrapper dynamic-method) Android.Runtime.DynamicMethodNameCounter.5(intptr,intptr)
+I MonoDroid:    --- End of inner exception stack trace ---
+I MonoDroid:    --- End of inner exception stack trace ---
+I MonoDroid:   --- End of managed Java.Lang.RuntimeException stack trace ---
+I MonoDroid: java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+I MonoDroid: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:502)
+I MonoDroid: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+I MonoDroid: Caused by: java.lang.reflect.InvocationTargetException
+I MonoDroid: 	at java.lang.reflect.Method.invoke(Native Method)
+I MonoDroid: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+I MonoDroid: 	... 1 more
+I MonoDroid: Caused by: java.lang.Exception
+I MonoDroid: 	at crc64a14461782825e2ee.MainActivity.n_onStart(Native Method)
+I MonoDroid: 	at crc64a14461782825e2ee.MainActivity.onStart(MainActivity.java:55)
+I MonoDroid: 	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1425)
+I MonoDroid: 	at android.app.Activity.performStart(Activity.java:7825)
+I MonoDroid: 	at android.app.ActivityThread.handleStartActivity(ActivityThread.java:3294)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:221)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:201)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:173)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+I MonoDroid: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+I MonoDroid: 	at android.os.Handler.dispatchMessage(Handler.java:107)
+I MonoDroid: 	at android.os.Looper.loop(Looper.java:214)
+I MonoDroid: 	at android.app.ActivityThread.main(ActivityThread.java:7356)
+I MonoDroid: 	... 3 more
+I MonoDroid:
+&#x3C;/samp>&#x3C;/pre>
+&#x3C;p>見覚えのある前半と、見覚えのない後半ですね。ということは、 &#x3C;code>RuntimeInit$LoggingHandler&#x3C;/code> は呼び出されるようです。 Java のスレッドで例外が発生しているので、 .NET の例外は JNI を通して Java 側にスローされていきます。なので Java のスレッドの例外ハンドラが処理しているのは不思議ではないですね。&#x3C;/p>
+&#x3C;p>では後半のログを出しているのは一体誰なのでしょうか？ 答えは &#x3C;code>Thread.getDefaultUncaughtExceptionHandler()&#x3C;/code>（C# では &#x3C;code>Java.Lang.Thread.DefaultUncaughtExceptionHandler&#x3C;/code>）を取得してみるとわかります。 Xamarin.Android の初期化メソッドが存在する &#x3C;code>mono.android.Runtime&#x3C;/code> クラスの静的コンストラクタで、デフォルト例外ハンドラを独自に設定しています。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15">Runtime.java の一部&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-keyword">static&#x3C;/span> {
+    Thread.setDefaultUncaughtExceptionHandler (&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">XamarinUncaughtExceptionHandler&#x3C;/span> (Thread.getDefaultUncaughtExceptionHandler ()));
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>このハンドラでは、 Xamarin.Android 独自の処理をしたあと、もともと設定してあったハンドラに処理を投げています。つまり、処理順は PreHandler である &#x3C;code>LoggingHandler&#x3C;/code> が呼び出されたあと、 Xamarin.Android 独自の処理をして、最後に &#x3C;code>KillApplicationHandler&#x3C;/code> を実行する、という順番になります。&#x3C;/p>
+&#x3C;p>Xamarin.Android 独自の処理の中身は &#x3C;a href="https://github.com/xamarin/xamarin-android/blob/ab0ed93cc88863b226c917dfef1fa62979c6ead8/src/Mono.Android/Android.Runtime/JNIEnv.cs#L284">&#x3C;code>JNIEnv.PropagateUncaughtException&#x3C;/code>&#x3C;/a> にあります。このメソッドの中には、ログにあった「UNHANDLED EXCEPTION」が見つけられます。また、ここで受け取った例外は &#x3C;code>AppDomain.UnhandledException&#x3C;/code> に投げられることがわかります。&#x3C;/p>
+&#x3C;p>まとめ: Java のスレッドで発生した例外は、 Xamarin.Android 独自のハンドラで処理されます。このハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code> イベントを発生させたあと、 Android の標準ハンドラである &#x3C;code>KillApplicationHandler&#x3C;/code> を呼び出すことで Android に後片付けを任せます。&#x3C;/p>
+&#x3C;h2>.NET のスレッドで例外を起こす&#x3C;/h2>
+&#x3C;p>ここまで Java のスレッドで例外を発生させてきました。しかし、 .NET でもスレッドを作成することができます。 .NET のスレッドで例外が発生した場合はどのように処理されるのでしょうか？&#x3C;/p>
+&#x3C;p>前回の実験コードの &#x3C;code>throw new Exception();&#x3C;/code> を &#x3C;code>new Thread(() => throw new Exception()).Start();&#x3C;/code> に書き換えて試してみましょう。実行すると logcat のエラーログはこんな感じになりました。&#x3C;/p>
+&#x3C;pre>&#x3C;samp class="language-samp">F mono-rt : [ERROR] FATAL UNHANDLED EXCEPTION: System.Exception: Exception of type 'System.Exception' was thrown.
+F mono-rt :   at OchiruAppXamarin.MainActivity+&#x26;#x3C;>c.&#x26;#x3C;OnStart>b__2_0 () [0x00000] in &#x26;#x3C;605572ca36544c48913788216f21b753>:0
+F mono-rt :   at System.Threading.ThreadHelper.ThreadStart_Context (System.Object state) [0x00014] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ExecutionContext.RunInternal (System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, System.Object state, System.Boolean preserveSyncCtx) [0x00071] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ExecutionContext.Run (System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, System.Object state, System.Boolean preserveSyncCtx) [0x00000] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ExecutionContext.Run (System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, System.Object state) [0x0002b] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+&#x3C;/samp>&#x3C;/pre>
+&#x3C;p>ついに Java っぽいログが出なくなりました！&#x3C;/p>
+&#x3C;p>これはどういうことかというと、何の細工もなく、 Mono がプロセスを終了しています。普通の .NET アプリと同じです。 Java 側にはまったく通達されません。&#x3C;/p>
+&#x3C;p>まとめ: .NET のスレッドで例外が発生すると Mono によってハンドルされ、普通の .NET アプリのようにプロセスが終了します。&#x3C;/p>
+&#x3C;h2>総まとめ&#x3C;/h2>
+&#x3C;p>Java が管理するスレッドで例外が発生しても、 .NET が管理するスレッドで例外が発生しても、とりあえず &#x3C;code>AppDomain.UnhandledException&#x3C;/code> が呼び出されるので、これが最強の例外ハンドラです。&#x3C;/p>
+&#x3C;h2>おまけ: AndroidEnvironment.UnhandledExceptionRaiser って何？&#x3C;/h2>
+&#x3C;p>Xamarin.Android の例外処理を調べたことがある人は、 &#x3C;code>AndroidEnvironment.UnhandledExceptionRaiser&#x3C;/code> が強そうな名前に見えて、使えそうに見えてしまったのではないでしょうか。しかし実際のところ、あんまり使い道はありません。&#x3C;/p>
+&#x3C;p>&#x3C;code>AndroidEnvironment.UnhandledExceptionRaiser&#x3C;/code> イベントは、 .NET で発生した例外を Java の例外に変換するときに発生します。例えば、今まで &#x3C;code>OnStart&#x3C;/code> メソッドで &#x3C;code>throw new Exception();&#x3C;/code> をする例を示してきましたが、 &#x3C;code>OnStart&#x3C;/code> メソッドの呼び出し元は Java なので、 Java の例外に変換する必要があります。&#x3C;/p>
+&#x3C;p>このイベントにハンドラを設定しない場合、もしくはいずれのハンドラも &#x3C;code>e.Handled = true&#x3C;/code> をセットしない場合はデフォルトの挙動をします。デフォルトの挙動は、 .NET の例外を &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> でラップし、 Java を例外状態（JNI の &#x3C;code>Throw&#x3C;/code> 関数を呼び出す）にします。&#x3C;/p>
+&#x3C;p>使い道としては、 .NET で発生した例外を握りつぶして Java のプログラムを続行させたり（&#x3C;code>e.Handled = true&#x3C;/code> をセットして何もしない）、 &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> ではない独自の &#x3C;code>Throwable&#x3C;/code> に変換したり（&#x3C;code>JNIEnv.Throw&#x3C;/code> を呼び出す）、が考えられます。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/08/28/01-xaexception/</id><link href="https://blog.azyobuzi.net/2021/08/28/01-xaexception/" rel="alternate" type="text/html" /><published>2021-08-27T03:24:00+09:00</published><title type="html">Xamarin.Android アプリが例外で落ちるということ</title><updated>2021-08-29T01:22:30+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？&#x3C;/p>
+&#x3C;p>例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-function">ISourceBlock&#x26;#x3C;T> &#x3C;span class="hljs-title">CreateSource&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>
+{
+    IEnumerable&#x26;#x3C;ISourceBlock&#x26;#x3C;T>> sources = &#x3C;span class="hljs-comment">/* ... */&#x3C;/span>;
+
+    &#x3C;span class="hljs-keyword">var&#x3C;/span> resultBlock = &#x3C;span class="hljs-keyword">new&#x3C;/span> BufferBlock&#x26;#x3C;T>(&#x3C;span class="hljs-keyword">new&#x3C;/span> DataflowBlockOptions() { BoundedCapacity = &#x3C;span class="hljs-number">1&#x3C;/span> });
+    &#x3C;span class="hljs-keyword">foreach&#x3C;/span> (&#x3C;span class="hljs-keyword">var&#x3C;/span> s &#x3C;span class="hljs-keyword">in&#x3C;/span> sources) s.LinkTo(resultBlock);
+
+    &#x3C;span class="hljs-keyword">return&#x3C;/span> resultBlock;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>どうでしょう？ &#x3C;code>resultBlock&#x3C;/code> は、1件はバッファに持ってしまうので、後段のブロックがどうであれ、ソースからは必ず1件多く取り出されてしまいます。&#x3C;/p>
+&#x3C;p>1件くらいいいじゃない？ それは &#x3C;code>sources&#x3C;/code> 次第でしょう。&#x3C;/p>
+&#x3C;p>というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし &#x3C;code>resultBlock&#x3C;/code> にバッファがなければ、 &#x3C;code>CreateSource&#x3C;/code> の戻り値を利用する（リンクする）とき、初めて &#x3C;code>sources&#x3C;/code> からデータが取り出されます。やりたいですね。&#x3C;/p>
+&#x3C;h2>タイトルオチ&#x3C;/h2>
+&#x3C;p>もうタイトルでオチてますが、このような PropagatorBlock はデータフローブロックのプロトコル上、おそらく作れません。プロトコルについては&#x3C;a href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" title="プロトコルから比較する Reactive Streams と TPL Dataflow">以前&#x3C;/a>ざっくりと紹介しましたが、今回はこのプロトコルと、既存のブロックの実装で使われているロックが鍵となります。&#x3C;/p>
+&#x3C;p>TPL Dataflow のブロック間の通信は、完全に直列です。ある SourceBlock からは同時に1件しか送信しないし、ある TargetBlock は同時に1件しか受信できません。その制御は &#x3C;code>lock&#x3C;/code> ステートメントで行われています（絶対ボトルネックじゃん）。&#x3C;/p>
+&#x3C;p>PropagatorBlock は Source と Target 両方の性質を持っており、 Target で受信したデータを加工して Source がデータを出力します。 Target 部は1件ずつ受信を行い、加工を行うタスクへ投げ、加工が終わったデータは Source 部のキューに積まれ、 Source 部は1件ずつ送信を行います。つまり PropagatorBlock においては Target と Source は並列に動いています。&#x3C;/p>
+&#x3C;p>TPL Dataflow のソースコードを読むと、 TargetBlock または PropagatorBlock の Target 部を直列化するために使用されるロックを &#x3C;code>IncomingLock&#x3C;/code>、 SourceBlock または PropagatorBlock の Source 部を直列化するために使用されるロックを &#x3C;code>OutgoingLock&#x3C;/code> と呼んでいるので、この名称を使っていきます。&#x3C;/p>
+&#x3C;p>では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子">&#x3C;/figure>
+&#x3C;p>もう複数のロックがあるという時点で嫌ですね。&#x3C;/p>
+&#x3C;p>ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子">&#x3C;/figure>
+&#x3C;p>そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg">&#x3C;/figure>
+&#x3C;p>見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。&#x3C;/p>
+&#x3C;p>ただ、このデッドロックは実は回避できます。「(1) OfferMessage」のところで Propagator が「(2) ConsumeMessage」を実行中でまだ返ってきてないぞと判断して、このメッセージを延期させてしまえば、 OutgoingLock が外れるので先に進むことができます。&#x3C;/p>
+&#x3C;p>今の例では、 Source, Propagator, Target が 1:1:1 だったので回避できました。が、1:N:1、つまりひとつの Source が複数の Propagator に接続されていて、さらにその Propagator たちがひとつの Target に接続されている場合はどうでしょう。先程の図の (1) が Propagator1 で、 (2) が Propagator2 で起こっていたら、 Propagator 同士はお互いを知らないので調停することができません。&#x3C;/p>
+&#x3C;h2>まとめ&#x3C;/h2>
+&#x3C;p>バッファを持たない PropagatorBlock は、デッドロックを起こす運命にあります。回避可能なケースは Source, Propagator, Target が 1:1:1 の関係にあるときです。例えば、 &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowblock.linkto?view=net-5.0#System_Threading_Tasks_Dataflow_DataflowBlock_LinkTo__1_System_Threading_Tasks_Dataflow_ISourceBlock___0__System_Threading_Tasks_Dataflow_ITargetBlock___0__System_Predicate___0__">&#x3C;code>LinkTo&#x3C;/code> メソッドの &#x3C;code>predicate&#x3C;/code> 引数を持つオーバーロード&#x3C;/a>は、内部で PropagatorBlock を作成しています。しかしこのブロックは外部へ公開されず、あくまでリンクのために隠蔽されています。通常のブロックとして、複数のファンイン、ファンアウトを持てるという要件を満たそうとすると、不可能になります。&#x3C;/p>
+&#x3C;p>結局この記事で何が言いたかったかというと、拙作の TPL Dataflow 補助ライブラリの &#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a> で、バッファなしの &#x3C;code>TransformBlock&#x3C;/code> を提供していたのですが、デッドロックの可能性を排除できなかったので、機能を削除することにしました。悲しい。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/</id><link href="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png" rel="enclosure" /><published>2021-03-23T03:44:00+09:00</published><title type="html">バッファのない PropagatorBlock はつくれないという話</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
+&#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
+&#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>
+&#x3C;p>VSCode Remote は、コンテナの中で VSCode が動きます。ホストのディレクトリをコンテナにマウントすることで、ホストのファイルを編集できます。メリットは、 VSCode のターミナルからコンテナ内を触り放題なところです。例えば Windows で開発していて、 Linux で動かしたい開発ツールがあるときには便利です。デメリットは、 Visual Studio に慣れた人間にとって、 VSCode の C# 拡張は不足を感じるところです。&#x3C;/p>
+&#x3C;p>データベースを置くという今回の仮定では、データベースを手で操作するときに簡単に環境に入るために VSCode を使いたいものの、メインの開発は Visual Studio でしたい、となり、共存させたい欲求が発生しています。&#x3C;/p>
+&#x3C;h2>やっていく&#x3C;/h2>
+&#x3C;h3>1. Visual Studio で連携を設定する&#x3C;/h3>
+&#x3C;p>ここで説明する手順を実行するには、 Visual Studio 2019 で「ASP.NET と Web 開発」または「.NET Core クロスプラットフォームの開発」ワークロードがインストールされている必要があります。&#x3C;/p>
+&#x3C;p>ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加">&#x3C;/figure>
+&#x3C;p>いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。&#x3C;/p>
+&#x3C;p>完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション">&#x3C;/figure>
+&#x3C;p>これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。&#x3C;/p>
+&#x3C;h3>2. Dockerfile を改変する&#x3C;/h3>
+&#x3C;p>生成された Dockerfile を確認すると、本番ビルド用のスクリプトが書かれています。今回はこれを完全に捨てることにします。ただ、プロジェクトディレクトリ下に Dockerfile がないと Visual Studio が認識してくれないので、ここに開発環境を作成するスクリプトを書きましょう。本番用 Dockerfile はどこか別のところに置いてください……。&#x3C;/p>
+&#x3C;p>最低限必要なのは &#x3C;code>FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster&#x3C;/code> だけです。「buster」のところは好きなディストリビューションに変えてください。必要に応じて、例えば今回の仮定ならば postgresql-client を入れたりするのもいいでしょう。&#x3C;/p>
+&#x3C;h3>3. docker-compose.yml を改変する&#x3C;/h3>
+&#x3C;p>ここからの操作は Visual Studio を破壊するので、すべてが完了するまで Visual Studio は閉じておきましょう。&#x3C;/p>
+&#x3C;p>いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動">&#x3C;/figure>
+&#x3C;p>さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。&#x3C;/p>
+&#x3C;p>いま docker-compose.yml の中身はこのようになっていると思います。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.yml&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
+
+&#x3C;span class="hljs-attr">services:&#x3C;/span>
+  &#x3C;span class="hljs-attr">mydatabaseapp:&#x3C;/span>
+    &#x3C;span class="hljs-attr">image:&#x3C;/span> &#x3C;span class="hljs-string">${DOCKER_REGISTRY-}mydatabaseapp&#x3C;/span>
+    &#x3C;span class="hljs-attr">build:&#x3C;/span>
+      &#x3C;span class="hljs-attr">context:&#x3C;/span> &#x3C;span class="hljs-string">.&#x3C;/span>
+      &#x3C;span class="hljs-attr">dockerfile:&#x3C;/span> &#x3C;span class="hljs-string">MyDatabaseApp/Dockerfile&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>改変が必要なポイントは次のふたつです。&#x3C;/p>
+&#x3C;ul>
+&#x3C;li>&#x3C;code>build.context&#x3C;/code> のパスを正しく直す。 docker-compose.yml を移動したので、それに合わせます。&#x3C;/li>
+&#x3C;li>PostgreSQL を追加する。&#x3C;/li>
+&#x3C;/ul>
+&#x3C;p>改変結果はこんな感じです。 docker-compose.yml の構文バージョンやプロジェクト名は、環境に合わせて書き換えてください。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.yml&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
+
+&#x3C;span class="hljs-attr">services:&#x3C;/span>
+  &#x3C;span class="hljs-attr">mydatabaseapp:&#x3C;/span>
+    &#x3C;span class="hljs-attr">build:&#x3C;/span>
+      &#x3C;span class="hljs-attr">context:&#x3C;/span> &#x3C;span class="hljs-string">..&#x3C;/span>
+      &#x3C;span class="hljs-attr">dockerfile:&#x3C;/span> &#x3C;span class="hljs-string">MyDatabaseApp/Dockerfile&#x3C;/span>
+
+  &#x3C;span class="hljs-attr">db:&#x3C;/span>
+    &#x3C;span class="hljs-attr">image:&#x3C;/span> &#x3C;span class="hljs-string">postgres:11&#x3C;/span>
+    &#x3C;span class="hljs-attr">environment:&#x3C;/span>
+      &#x3C;span class="hljs-attr">POSTGRES_PASSWORD:&#x3C;/span> &#x3C;span class="hljs-string">postgres&#x3C;/span>
+    &#x3C;span class="hljs-attr">volumes:&#x3C;/span>
+      &#x3C;span class="hljs-bullet">-&#x3C;/span> &#x3C;span class="hljs-string">./db/data:/var/lib/postgresql/data&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>データベースのデータの永続化は、ホストのパスを指定するか、この docker-compose.yml の外で作成したボリュームを割り当ててください。でないと、 VS と VSCode で Docker Compose のプロジェクト名が異なるので、同じデータを見てくれません。&#x3C;/p>
+&#x3C;h3>4. docker-compose.dcproj を改変する&#x3C;/h3>
+&#x3C;p>docker-compose.yml を移動したので、 docker-compose.dcproj も書き換えます。これもソリューションディレクトリ直下にあると邪魔なので .devcontainer に移動させてしまいましょう。&#x3C;/p>
+&#x3C;p>さらにファイル名変更を反映して、ディレクトリ外に行ってしまった .dockerignore をプロジェクトから消します。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.dcproj&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-diff"> &#x26;#x3C;?xml version="1.0" encoding="utf-8"?>
+ &#x26;#x3C;Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
+   &#x26;#x3C;PropertyGroup Label="Globals">
+     &#x26;#x3C;ProjectVersion>2.1&#x26;#x3C;/ProjectVersion>
+     &#x26;#x3C;DockerTargetOS>Linux&#x26;#x3C;/DockerTargetOS>
+     &#x26;#x3C;ProjectGuid>3caba81b-3f76-4ecf-9907-78b96280d41c&#x26;#x3C;/ProjectGuid>
+   &#x26;#x3C;/PropertyGroup>
+   &#x26;#x3C;ItemGroup>
+&#x3C;span class="hljs-deletion">-    &#x26;#x3C;None Include="docker-compose.override.yml">&#x3C;/span>
+&#x3C;span class="hljs-addition">+    &#x26;#x3C;None Include="docker-compose.vs.yml">&#x3C;/span>
+       &#x26;#x3C;DependentUpon>docker-compose.yml&#x26;#x3C;/DependentUpon>
+     &#x26;#x3C;/None>
+     &#x26;#x3C;None Include="docker-compose.yml" />
+&#x3C;span class="hljs-deletion">-    &#x26;#x3C;None Include=".dockerignore" />&#x3C;/span>
+   &#x26;#x3C;/ItemGroup>
+ &#x26;#x3C;/Project>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>またソリューションファイルもパスを書き換えます。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>MyDatabaseApp.sln&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-diff">&#x3C;span class="hljs-deletion">-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3CABA81B-3F76-4ECF-9907-78B96280D41C}"&#x3C;/span>
+&#x3C;span class="hljs-addition">+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", ".devcontainer\docker-compose.dcproj", "{3CABA81B-3F76-4ECF-9907-78B96280D41C}"&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;h3>5. VSCode 向けの docker-compose.yml をつくる&#x3C;/h3>
+&#x3C;p>VSCode 向けに .devcontainer/docker-compose.vscode.yml を作っていきます。ポイントは次のふたつです。&#x3C;/p>
+&#x3C;ul>
+&#x3C;li>コンテナが終了しないように無限ループさせる&#x3C;/li>
+&#x3C;li>作業ディレクトリをマウントする&#x3C;/li>
+&#x3C;/ul>
+&#x3C;p>実際の YAML で表すとこれだけです。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.vscode.yml&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
+
+&#x3C;span class="hljs-attr">services:&#x3C;/span>
+  &#x3C;span class="hljs-attr">mydatabaseapp:&#x3C;/span>
+    &#x3C;span class="hljs-attr">command:&#x3C;/span> &#x3C;span class="hljs-string">/bin/sh&#x3C;/span> &#x3C;span class="hljs-string">-c&#x3C;/span> &#x3C;span class="hljs-string">"while sleep 1000; do :; done"&#x3C;/span>
+    &#x3C;span class="hljs-attr">volumes:&#x3C;/span>
+      &#x3C;span class="hljs-bullet">-&#x3C;/span> &#x3C;span class="hljs-string">..:/workspace:cached&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>必要に応じて、ポートを公開するために &#x3C;code>ports&#x3C;/code> を追加したりしてください。&#x3C;/p>
+&#x3C;p>参考: &#x3C;a href="https://bufferings.hatenablog.com/entry/2020/06/11/233201">&#x3C;cite>VS Code Remote - Containers を Docker Compose で使うのだー！ - Mitsuyuki.Shiiba&#x3C;/cite>&#x3C;/a>&#x3C;/p>
+&#x3C;h3>6. devcontainer.json をつくる&#x3C;/h3>
+&#x3C;p>devcontainer.json は VSCode にコンテナ作成を指示する設定ファイルです。これも .devcontainer に置きます。&#x3C;/p>
+&#x3C;p>最小限の devcontainer.json はこんな感じです。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>devcontainer.json&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-json">&#x3C;span class="hljs-punctuation">{&#x3C;/span>
+  &#x3C;span class="hljs-attr">"dockerComposeFile"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-punctuation">[&#x3C;/span>&#x3C;span class="hljs-string">"docker-compose.yml"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span> &#x3C;span class="hljs-string">"docker-compose.vscode.yml"&#x3C;/span>&#x3C;span class="hljs-punctuation">]&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">// docker-compose.yml の services のうち、開発環境につかうもの&#x3C;/span>
+  &#x3C;span class="hljs-attr">"service"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-string">"mydatabaseapp"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">// docker-compose.vscode.yml で指定したマウント先&#x3C;/span>
+  &#x3C;span class="hljs-attr">"workspaceFolder"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-string">"/workspace"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">// 事前にインストールしておいてほしい拡張&#x3C;/span>
+  &#x3C;span class="hljs-attr">"extensions"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-punctuation">[&#x3C;/span>&#x3C;span class="hljs-string">"ms-dotnettools.csharp"&#x3C;/span>&#x3C;span class="hljs-punctuation">]&#x3C;/span>
+&#x3C;span class="hljs-punctuation">}&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>いじり倒したいときは &#x3C;a href="https://code.visualstudio.com/docs/remote/devcontainerjson-reference">&#x3C;cite>devcontainer.json reference&#x3C;/cite>&#x3C;/a> を読むといいでしょう。&#x3C;/p>
+&#x3C;h3>完成！&#x3C;/h3>
+&#x3C;p>これで準備完了です。 VSCode で「Reopen in Container」を実行すると、コンテナ上で VSCode が動き始めます。 Dockerfile のビルドが走るので気長に待ちましょう。&#x3C;/p>
+&#x3C;p>また、 Visual Studio でも docker-compose プロジェクトをスタートアッププロジェクトに設定して実行できるはずです！&#x3C;/p>
+&#x3C;div class="admonitionblock caution" role="note">&#x3C;div class="icon">Caution&#x3C;/div>&#x3C;div class="content">
+&#x3C;p>Visual Studio と VSCode の同時実行は危険です。同じマウント先のデータベースがふたつ動くことになってしまいます。また、それぞれ終了後 30 秒くらいはコンテナが動いているので、コンテナが終了されたことを確認してから、他方を使ってください。&#x3C;/p>
+&#x3C;/div>&#x3C;/div>
+&#x3C;h2>まとめ&#x3C;/h2>
+&#x3C;p>頑張れば Visual Studio でも VSCode でも使える Docker Compose 環境がつくれることを示しました。これで開発が捗ればいいね。捗らんか……。&#x3C;/p>
+&#x3C;p>ここまでの内容を clone するだけでお試しできるものを GitHub に置いておきました。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
+&#x3C;p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 &#x3C;strong>以上&#x3C;/strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。&#x3C;/p>
+&#x3C;h2>サンプルプロジェクト&#x3C;/h2>
+&#x3C;p>文章でだらだらと説明されても読みたくないのはわかります。ので、実際の csproj を示しておきます。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>A/A.csproj&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Project&#x3C;/span> &#x3C;span class="hljs-attr">Sdk&#x3C;/span>=&#x3C;span class="hljs-string">"Microsoft.NET.Sdk"&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">TargetFramework&#x3C;/span>>&#x3C;/span>netstandard2.0&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">TargetFramework&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Version&#x3C;/span>>&#x3C;/span>1.0.0&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">Version&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
+&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">Project&#x3C;/span>>&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;figure>
+&#x3C;figcaption>B/B.csproj&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Project&#x3C;/span> &#x3C;span class="hljs-attr">Sdk&#x3C;/span>=&#x3C;span class="hljs-string">"Microsoft.NET.Sdk"&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">TargetFramework&#x3C;/span>>&#x3C;/span>netstandard2.0&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">TargetFramework&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">ItemGroup&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">ProjectReference&#x3C;/span> &#x3C;span class="hljs-attr">Include&#x3C;/span>=&#x3C;span class="hljs-string">"..\A\A.csproj"&#x3C;/span> />&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">ItemGroup&#x3C;/span>>&#x3C;/span>
+&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">Project&#x3C;/span>>&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>ここで、 B に対して &#x3C;code>dotnet pack&#x3C;/code> を実行したときの nuspec の &#x3C;code>&#x26;#x3C;dependencies>&#x3C;/code> はこのようになります。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">dependencies&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">group&#x3C;/span> &#x3C;span class="hljs-attr">targetFramework&#x3C;/span>=&#x3C;span class="hljs-string">".NETStandard2.0"&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">dependency&#x3C;/span> &#x3C;span class="hljs-attr">id&#x3C;/span>=&#x3C;span class="hljs-string">"A"&#x3C;/span> &#x3C;span class="hljs-attr">version&#x3C;/span>=&#x3C;span class="hljs-string">"1.0.0"&#x3C;/span> &#x3C;span class="hljs-attr">exclude&#x3C;/span>=&#x3C;span class="hljs-string">"Build,Analyzers"&#x3C;/span> />&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">group&#x3C;/span>>&#x3C;/span>
+&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">dependencies&#x3C;/span>>&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>&#x3C;code>version="1.0.0"&#x3C;/code> という指定は、「1.0.0 以上」と解釈されます。&#x3C;/p>
+&#x3C;h2>目標設定&#x3C;/h2>
+&#x3C;p>ここでは、 Semantic Versioning という前提で、 B が依存するのは A v1.0.0 以上 2.0.0 未満、としましょう。こうすれば、 B が A の Public API のみに依存しているならば、 B はこの依存関係が解決できる限り、必ず動作するといえます。&#x3C;/p>
+&#x3C;h2>一筋縄で実現できたらブログ書いてない&#x3C;/h2>
+&#x3C;p>はい。これは NuGet の Issue (&#x3C;a href="https://github.com/NuGet/Home/issues/5556">NuGet/Home#5556&#x3C;/a>) に挙がっており、現在も実現されていません。しかし頑張ればできないこともない状況になっています。&#x3C;/p>
+&#x3C;p>必要なものは &#x3C;a href="https://dotnet.microsoft.com/download/dotnet/5.0">.NET 5.0 Preview SDK&#x3C;/a> (執筆時点で 5.0.100-preview.3.20216.6) です。最新の NuGet を搭載している SDK を使うと、 csproj に少し手を入れるだけで、 &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> に対する依存関係に介入できるようになります。&#x3C;/p>
+&#x3C;h2>目標をクリアする csproj&#x3C;/h2>
+&#x3C;p>仕組みとかいいからとりあえず使いたいって人は、これをコピペしてください。バージョンの指定方法は、 NuGet のドキュメント (&#x3C;a href="https://docs.microsoft.com/ja-jp/nuget/concepts/package-versioning#version-ranges">&#x3C;cite>Version ranges&#x3C;/cite>&#x3C;/a>) を確認してください。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Project&#x3C;/span> &#x3C;span class="hljs-attr">Sdk&#x3C;/span>=&#x3C;span class="hljs-string">"Microsoft.NET.Sdk"&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">TargetFramework&#x3C;/span>>&#x3C;/span>netstandard2.0&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">TargetFramework&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">ItemGroup&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">ProjectReference&#x3C;/span> &#x3C;span class="hljs-attr">Include&#x3C;/span>=&#x3C;span class="hljs-string">"..\A\A.csproj"&#x3C;/span> />&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">ItemGroup&#x3C;/span>>&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">&#x26;#x3C;!-- 以下を追加 -->&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Target&#x3C;/span> &#x3C;span class="hljs-attr">Name&#x3C;/span>=&#x3C;span class="hljs-string">"SetDependencyVersion"&#x3C;/span> &#x3C;span class="hljs-attr">AfterTargets&#x3C;/span>=&#x3C;span class="hljs-string">"_GetProjectReferenceVersions"&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">ItemGroup&#x3C;/span>>&#x3C;/span>
+      &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">_ProjectReferencesWithVersions&#x3C;/span> &#x3C;span class="hljs-attr">Update&#x3C;/span>=&#x3C;span class="hljs-string">"..\A\A.csproj"&#x3C;/span> &#x3C;span class="hljs-attr">ProjectVersion&#x3C;/span>=&#x3C;span class="hljs-string">"[1.0.0,2.0.0)"&#x3C;/span> />&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">ItemGroup&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">Target&#x3C;/span>>&#x3C;/span>
+&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">Project&#x3C;/span>>&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>出力される nuspec の &#x3C;code>&#x26;#x3C;dependencies>&#x3C;/code> はこんな感じになります。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">dependencies&#x3C;/span>>&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">group&#x3C;/span> &#x3C;span class="hljs-attr">targetFramework&#x3C;/span>=&#x3C;span class="hljs-string">".NETStandard2.0"&#x3C;/span>>&#x3C;/span>
+    &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">dependency&#x3C;/span> &#x3C;span class="hljs-attr">id&#x3C;/span>=&#x3C;span class="hljs-string">"A"&#x3C;/span> &#x3C;span class="hljs-attr">version&#x3C;/span>=&#x3C;span class="hljs-string">"[1.0.0, 2.0.0)"&#x3C;/span> &#x3C;span class="hljs-attr">exclude&#x3C;/span>=&#x3C;span class="hljs-string">"Build,Analyzers"&#x3C;/span> />&#x3C;/span>
+  &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">group&#x3C;/span>>&#x3C;/span>
+&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">dependencies&#x3C;/span>>&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;h2>仕組み&#x3C;/h2>
+&#x3C;p>&#x3C;code>dotnet pack&#x3C;/code> (MSBuild で &#x3C;code>Pack&#x3C;/code> ターゲットを実行する) では、 &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> Item があったら、そのプロジェクトのバージョンを読み込み、 &#x3C;code>&#x26;#x3C;_ProjectReferencesWithVersions>&#x3C;/code> という Item を作成します。そこで、その処理が行われる &#x3C;code>_GetProjectReferenceVersions&#x3C;/code> ターゲットの後に、読み込まれたバージョンを上書きするようなターゲットを作成することで、好きなバージョンに書き換えることができます。&#x3C;/p>
+&#x3C;p>ここまでは古い SDK でもできたのですが、古い SDK では &#x3C;code>ProjectVersion&#x3C;/code> 属性にバージョンの&#x3C;strong>範囲&#x3C;/strong>が指定されることを想定していませんでした。つまり &#x3C;code>1.0.0&#x3C;/code> は受け付けるけど、 &#x3C;code>[1.0.0,2.0.0)&#x3C;/code> は受け付けてくれなかったわけです。新しい SDK では、範囲を指定してもエラーにならないようになったので、このようなハックでお茶を濁せるようになりました。&#x3C;/p>
+&#x3C;h2>今後もっと簡単になるか？&#x3C;/h2>
+&#x3C;p>&#x3C;a href="https://github.com/NuGet/Home/issues/5556">NuGet/Home#5556&#x3C;/a> を監視していきましょう。&#x3C;/p>
+&#x3C;h2>NuGet に対するぼやき&#x3C;/h2>
+&#x3C;p>依存関係解決の戦略がデフォルトで「条件を満たす最小バージョン」な所為で、依存バージョンをすぐ「以上」にしてしまうのは NuGet の悪いところだなぁと思っています。そのおかげで lock ファイルを使わなくても、あまり崩壊しないという利点はありますが、少なくともリビジョンリリースは自動で最新にしてほしくない？ という思いがあります。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/05/03/01-projectref/</id><link href="https://blog.azyobuzi.net/2020/05/03/01-projectref/" rel="alternate" type="text/html" /><published>2020-05-03T04:07:00+09:00</published><title type="html">ProjectReference にバージョン範囲を指定したい</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>以前、&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「&#x3C;cite>いまさら使う TPL Dataflow&#x3C;/cite>」&#x3C;/a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
+&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E9%A1%9E%E4%BC%BC%E5%93%81%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83">「&#x3C;cite>類似品との比較&#x3C;/cite>」&#x3C;/a>で述べたように、 TPL Dataflow は、プッシュ型とプル型の両方の性質を持っており、送信者（&#x3C;i>Producer&#x3C;/i>）が、受信者（&#x3C;i>Consumer&#x3C;/i>）が処理しきれないほど大量のデータをプッシュしようとするとき、受信者がそのデータの受信を遅延させることで、データフロー内を流れるデータ量を制御します。&#x3C;/p>
+&#x3C;p>一方で、このような、大量のデータや時系列データ（イベント列）を入力し、データフロー内を流れるデータ量を制御しながら、並列にデータを加工する仕組みは、一般的に、特に Java のコミュニティでは &#x3C;a href="https://www.reactive-streams.org/">&#x3C;dfn>Reactive Streams&#x3C;/dfn>&#x3C;/a> と呼ばれています。 Reactive Streams に用いられるインターフェイスは Java 9 で &#x3C;code>java.util.concurrent.Flow&#x3C;/code> として標準ライブラリ入りしており、 RxJava や Akka Streams がこのインターフェイスの実装を提供しています（実際には、互換性のため &#x3C;a href="https://github.com/reactive-streams/reactive-streams-jvm">reactive-streams パッケージ&#x3C;/a>を通じて実装しています）。&#x3C;/p>
+&#x3C;p>C# においても Reactive Streams は他人事ではなく、 &#x3C;code>java.util.concurrent.Flow&#x3C;/code> と同様のインターフェイスが &#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet">Reactive.Streams パッケージ&#x3C;/a>として NuGet で配布されており、標準的なインターフェイスの座を狙っています。また Akka.NET Streams がこのインターフェイスの実装を提供しています。&#x3C;/p>
+&#x3C;p>いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（&#x3C;i>back pressure&#x3C;/i>）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。&#x3C;/p>
+&#x3C;h2>1. Reactive Streams&#x3C;/h2>
+&#x3C;p>先に Reactive Streams のほうから導入していきましょう。 Reactive Streams の基本思想は、&#x3C;strong>受信者がどれだけデータを受け入れられるかを送信者に申告する&#x3C;/strong>ことによって、流量の合意を取ります。&#x3C;/p>
+&#x3C;p>インターフェイスを見ていきましょう。 Reactive Streams では、送信者は &#x3C;dfn>Publisher&#x3C;/dfn>、受信者は &#x3C;dfn>Subscriber&#x3C;/dfn> と呼ばれます。 Publisher は Rx における Observable に対応し、 Subscriber は Observer に対応します。インターフェイスは次のようになっており、 &#x3C;code>IPublisher.Subscribe&#x3C;/code> に、購読者のコールバックを表す &#x3C;code>ISubscriber&#x3C;/code> インスタンスを渡すことによって、購読を開始します。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/IPublisher.cs">IPublisher&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">IPublisher&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">out&#x3C;/span> &#x3C;span class="hljs-title">T&#x3C;/span>>
+{
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Subscribe&#x3C;/span>(&#x3C;span class="hljs-params">ISubscriber&#x26;#x3C;T> subscriber&#x3C;/span>)&#x3C;/span>;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscriber.cs">ISubscriber&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISubscriber&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">in&#x3C;/span> &#x3C;span class="hljs-title">T&#x3C;/span>>
+{
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnSubscribe&#x3C;/span>(&#x3C;span class="hljs-params">ISubscription subscription&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnNext&#x3C;/span>(&#x3C;span class="hljs-params">T element&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnError&#x3C;/span>(&#x3C;span class="hljs-params">Exception cause&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnComplete&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>&#x3C;code>ISubscriber&#x3C;/code> について、 Publisher がデータを送信するために &#x3C;code>OnNext&#x3C;/code> が呼び出され、 Publisher が送信すべきすべてのデータを送信しきったら &#x3C;code>OnComplete&#x3C;/code> が呼び出されます。また Publisher でエラーが発生したら &#x3C;code>OnError&#x3C;/code> が呼び出されます。 &#x3C;code>OnComplete&#x3C;/code> または &#x3C;code>OnError&#x3C;/code> が呼び出されたあとは、いずれのメソッドも呼び出されることはありません。このあたりのルールは Observer とまったく同じになっています。&#x3C;/p>
+&#x3C;p>&#x3C;code>IObservable&#x3C;/code>、&#x3C;code>IObserver&#x3C;/code> と比較して、 &#x3C;code>Subscribe&#x3C;/code> の戻り値が &#x3C;code>IDisposable&#x3C;/code> ではなく &#x3C;code>void&#x3C;/code> ですが、これは &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/ObservableSource.html#subscribe-io.reactivex.rxjava3.core.Observer-">RxJava にあわせた&#x3C;/a>ためだと思われます。購読の解除には、 &#x3C;code>ISubscriber.OnSubscribe&#x3C;/code> で受け取ることができる &#x3C;code>ISubscription&#x3C;/code> を使います。&#x3C;/p>
+&#x3C;p>Observable と異なり、 Subscribe を呼び出した瞬間にデータが飛んでくる（&#x3C;code>ISubscriber.OnNext&#x3C;/code> が呼び出される）ことはありません。 Publisher は Subscriber がどれだけのデータを受け取る準備があるかを確認してから、データを送信します。 Subscriber は、今どれだけのデータを受け取ることができるかを &#x3C;code>OnSubscribe&#x3C;/code> で受け取った &#x3C;code>ISubscription&#x3C;/code> インスタンスを通じて Publisher に申告します。 &#x3C;code>ISubscription&#x3C;/code> は次のように定義されています。 &#x3C;code>Request&#x3C;/code> メソッドに渡す引数が、どれだけデータを受信できるかを表します。 &#x3C;code>Cancel&#x3C;/code> は先ほど説明した &#x3C;code>IDisposable&#x3C;/code> の代わりとなるものです。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscription.cs">ISubscription&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISubscription&#x3C;/span>
+{
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Request&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;span class="hljs-built_in">long&#x3C;/span> n&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Cancel&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>Reactive Streams は以上のインターフェイスとルールによって成り立っています。キーポイントは &#x3C;strong>Subscriber が Publisher に自分のキャパシティを伝え、 Publisher はそのキャパシティの範囲内で &#x3C;code>OnNext&#x3C;/code> を呼び出す&#x3C;/strong>ことによって、データを送信を行っているところです。流量についてプル型でありながら、データを送信するタイミングは自由（プッシュ型）というところでしょうか。&#x3C;/p>
+&#x3C;p>Reactive Streams には、 Rx と同様に、 &#x3C;strong>Hot な Publisher と Cold な Publisher があります&#x3C;/strong>。 Hot と Cold の違いについては&#x3C;a href="https://blog.xin9le.net/entry/2012/01/18/105003">「&#x3C;cite>Rx入門 (13) - HotとCold - xin9le.net&#x3C;/cite>」&#x3C;/a>が参考になります。ただし、 Reactive Streams では、 Rx と異なり流量制限があります。したがって、 Hot な Publisher や、時系列データを扱う Publisher が Subscriber に対してデータを送信しようとしたとき、キャパシティが足りない Subscriber がいる可能性があります。そのときに、どのような動作をするかは、実装次第です。例えば RxJava において Observable から Publisher に変換するときは、あふれた値を破棄したり、例外を送出したり、などの選択肢が与えられています（参考: &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Observable.html#toFlowable-io.reactivex.rxjava3.core.BackpressureStrategy-">Observable#toFlowable&#x3C;/a>）。&#x3C;/p>
+&#x3C;p>最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。&#x3C;/p>
+&#x3C;figure>
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" alt="Reactive Streams のシーケンス図">
+&#x3C;figcaption>Reactive Streams のシーケンス図&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>実際には、 Cold な Publisher を実装するときには、 &#x3C;code>IPublisher&#x3C;/code> は &#x3C;code>ISubscription&#x3C;/code> を作成するだけの存在となり、 &#x3C;code>ISubscription&#x3C;/code> が実際に Subscriber と通信するような実装になります。&#x3C;/p>
+&#x3C;figure>
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" alt="Cold な Publisher のシーケンス図">
+&#x3C;figcaption>Cold な Publisher のシーケンス図&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;h2>2. TPL Dataflow&#x3C;/h2>
+&#x3C;p>Reactive Streams は流量についてプル型とまとめましたが、 TPL Dataflow では逆の設計思想となっています。 TPL Dataflow では、&#x3C;strong>データをプッシュしてみて、失敗したらプルされるのを待つ&#x3C;/strong>、という戦略を取ることによって、流量制限を実現しています。&#x3C;/p>
+&#x3C;p>登場人物の紹介です。 TPL Dataflow では、送信者は &#x3C;dfn>Source&#x3C;/dfn>、受信者は &#x3C;dfn>Target&#x3C;/dfn> と呼ばれます。どちらもデータフローを構成する要素で、これら構成要素のことを&#x3C;dfn>データフローブロック&#x3C;/dfn>と呼びます。&#x3C;/p>
+&#x3C;p>まず、データフローブロック共通のインターフェイスである &#x3C;code>IDataflowBlock&#x3C;/code> を導入します。 &#x3C;code>Completion&#x3C;/code> はそのブロックがすべてのデータの処理が完了したら完了する（またはエラーとなる） &#x3C;code>Task&#x3C;/code> を表します。 &#x3C;code>Complete&#x3C;/code> と &#x3C;code>Fault&#x3C;/code> は Reactive Streams の &#x3C;code>ISubscriber.OnComplete&#x3C;/code>、&#x3C;code>OnError&#x3C;/code> に対応するものですが、 Target 以外もこのメソッドを実装します。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.idataflowblock?view=netcore-3.1">IDataflowBlock&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
+{
+    Task Completion { &#x3C;span class="hljs-keyword">get&#x3C;/span>; }
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Complete&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Fault&#x3C;/span>(&#x3C;span class="hljs-params">Exception exception&#x3C;/span>)&#x3C;/span>;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>Source から Target への接続は、リンクと呼ばれます。リンクによって、 Source は Target を認知し、もし送信できるデータがあるならば、データを送信します。&#x3C;/p>
+&#x3C;p>まずは Source のインターフェイスを見てみます。ユーザーが &#x3C;code>LinkTo&#x3C;/code> を呼び出すことによって、 Source から Target へのリンクが作成されます。戻り値の &#x3C;code>IDisposable&#x3C;/code> を使って、リンクを解除できます。その他のメソッドは Target によって呼び出されます。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.isourceblock-1?view=netcore-3.1">ISourceBlock&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISourceBlock&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">out&#x3C;/span> &#x3C;span class="hljs-title">TOutput&#x3C;/span>> : &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
+{
+    &#x3C;span class="hljs-function">IDisposable &#x3C;span class="hljs-title">LinkTo&#x3C;/span>(&#x3C;span class="hljs-params">ITargetBlock&#x26;#x3C;TOutput> target, DataflowLinkOptions linkOptions&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">TOutput &#x3C;span class="hljs-title">ConsumeMessage&#x3C;/span>(&#x3C;span class="hljs-params">DataflowMessageHeader messageHeader, ITargetBlock&#x26;#x3C;TOutput> target, &#x3C;span class="hljs-keyword">out&#x3C;/span> &#x3C;span class="hljs-built_in">bool&#x3C;/span> messageConsumed&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-built_in">bool&#x3C;/span> &#x3C;span class="hljs-title">ReserveMessage&#x3C;/span>(&#x3C;span class="hljs-params">DataflowMessageHeader messageHeader, ITargetBlock&#x26;#x3C;TOutput> target&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">ReleaseReservation&#x3C;/span>(&#x3C;span class="hljs-params">DataflowMessageHeader messageHeader, ITargetBlock&#x26;#x3C;TOutput> target&#x3C;/span>)&#x3C;/span>;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>対して、 Target のインターフェイスは、データを受信するための &#x3C;code>OfferMessage&#x3C;/code> と、 Source の完了を受け取る &#x3C;code>IDataflowBlock.Complete&#x3C;/code>、&#x3C;code>Fault&#x3C;/code> になります。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.itargetblock-1?view=netcore-3.1">ITargetBlock&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ITargetBlock&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">in&#x3C;/span> &#x3C;span class="hljs-title">TInput&#x3C;/span>> : &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
+{
+    &#x3C;span class="hljs-function">DataflowMessageStatus &#x3C;span class="hljs-title">OfferMessage&#x3C;/span>(&#x3C;span class="hljs-params">DataflowMessageHeader messageHeader, TInput messageValue, ISourceBlock&#x26;#x3C;TInput>? source, &#x3C;span class="hljs-built_in">bool&#x3C;/span> consumeToAccept&#x3C;/span>)&#x3C;/span>;
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>さて、 &#x3C;code>LinkTo&#x3C;/code> と &#x3C;code>OfferMessage&#x3C;/code> だけで成り立つならば話は簡単だったのですが、流量制限を導入するために、 Source と Target は密接に通信する必要があります。&#x3C;/p>
+&#x3C;p>まず、いくつかのメソッドの引数に現れた &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowmessageheader?view=netcore-3.1">&#x3C;code>DataflowMessageHeader&#x3C;/code>&#x3C;/a> について説明します。中身は &#x3C;code>long&#x3C;/code> 型の数値です。 Source が送信するメッセージには、 Source 内でユニークな（通常連番の） ID が振られます。この ID を用いて、どのメッセージについての呼び出しなのかを判定します（実際には、送信しようとしている最新のメッセージについてかどうかのアサーションを行うために用いられます）。&#x3C;/p>
+&#x3C;p>次に、 &#x3C;code>OfferMessage&#x3C;/code> がどのように振る舞うかです。もし、 Target に空きがあり、データを受信することができるならば、 &#x3C;code>DataflowMessageStatus.Accepted&#x3C;/code> を返して終わりです（ただし &#x3C;code>consumeToAccept&#x3C;/code> 引数が &#x3C;code>true&#x3C;/code> ならば、 Source の &#x3C;code>ConsumeMessage&#x3C;/code> を呼び出す必要があります）。一方で、 Target に空きがなく、データを受信することができないとき、 &#x3C;code>DataflowMessageStatus.Postponed&#x3C;/code> を返します。このとき Target は、受信できなかったメッセージの ID をキューに記録します。その後、空きができて受信できるようになったら、キューから ID を取り出し、 &#x3C;code>ConsumeMessage&#x3C;/code> を呼び出すことによって、 Source からデータを受信します。ただし、 Source は複数のリンク先を持つことができ、 Target が &#x3C;code>Postponed&#x3C;/code> を返したとき、他の Target へ送信しようとします。したがって、 &#x3C;code>ConsumeMessage&#x3C;/code> を呼び出しても、データを取得できないことがあります。&#x3C;/p>
+&#x3C;p>&#x3C;code>OfferMessage&#x3C;/code> は同一 ID のメッセージについて、複数回呼び出されることを許容する必要があります。これは Source のリンクが変更されたときに、再度送信を試みるためです。&#x3C;/p>
+&#x3C;p>&#x3C;code>ReserveMessage&#x3C;/code>、&#x3C;code>ReleaseReservation&#x3C;/code> については、最短一致モード（&#x3C;i>non-greedy mode&#x3C;/i>）を実装するときと、 Source より先に Target が終了するときに Source にリンク解除を要求するために利用されます。&#x3C;/p>
+&#x3C;p>ここまでだらだらと文章で説明してきましたが、&#x3C;strong>アホほど面倒くさい&#x3C;/strong>インターフェイスだということがわかったと思います。&#x3C;/p>
+&#x3C;p>最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 &#x3C;code>LinkTo&#x3C;/code> のオプションとして、完了を通知する &#x3C;code>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion&#x3C;/a> = true&#x3C;/code> を指定したものとします。&#x3C;/p>
+&#x3C;figure>
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" alt="TPL Dataflow のシーケンス図">
+&#x3C;figcaption>TPL Dataflow のシーケンス図&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;h2>3. 動作開始タイミングの違いについて&#x3C;/h2>
+&#x3C;p>TPL Dataflow では、データフローブロック間のリンクが作成された時点で、 Source の準備ができていれば、データが送信されます。次の図は、 Source が送信したデータが Propagator（Target と Source の両方の性質を持つブロック）を経由して Target に到達するフローに対して、前から順にリンクを行ったときの動作の様子です。&#x3C;/p>
+&#x3C;figure>
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子">
+&#x3C;/figure>
+&#x3C;p>一方で、 Reactive Streams では、上の図のような使い方もできますが、通常はフローを作成し、それに対して Subscribe を呼び出すことで実際の処理を開始する、という使い方のほうが一般的かと思います。例えば、次の RxJava の例では、 &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Flowable.html#range-int-int-">&#x3C;code>range&#x3C;/code>&#x3C;/a> という Publisher と、それを加工する &#x3C;code>map&#x3C;/code> を接続したストリーム &#x3C;code>flowable&#x3C;/code>（&#x3C;code>Publisher&#x26;#x3C;Integer>&#x3C;/code> を実装しています）を定義していますが、 &#x3C;code>subscribe&#x3C;/code> を呼び出すまでは、何も処理を行いません。また、 &#x3C;code>range&#x3C;/code> は Cold なストリームなので、複数回 &#x3C;code>subscribe&#x3C;/code> すると、そのたびに値が送信されます。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">var&#x3C;/span> &#x3C;span class="hljs-variable">flowable&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> Flowable.range(&#x3C;span class="hljs-number">1&#x3C;/span>, &#x3C;span class="hljs-number">1&#x3C;/span>).map(x -> x + &#x3C;span class="hljs-number">1&#x3C;/span>);
+flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">// 2&#x3C;/span>
+flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">// 2&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>逆に TPL Dataflow で Cold なストリームを実現するには、フローの作成を関数で包むという方法が必要になります。&#x3C;/p>
+&#x3C;h2>4. 並列化について&#x3C;/h2>
+&#x3C;p>Reactive Streams プロトコルでは、 &#x3C;code>OnNext&#x3C;/code> を並行に呼び出すことを禁止されています。また TPL Dataflow も &#x3C;code>OfferMessage&#x3C;/code> を並行に呼び出すことはできません（これを間違えて、デッドロックを起こした経験が……）。したがって、いずれのプロトコルも、ひとつの Publisher の境界を越えて並列化することはできません。そこで、それぞれの実装から、どのように処理の並列化を行っているかを見ていきましょう。&#x3C;/p>
+&#x3C;p>Reactive Streams の実装である RxJava では、並列部分については &#x3C;code>Publisher&#x3C;/code> を実装しない独自の &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/parallel/ParallelFlowable.html">&#x3C;code>ParallelFlowable&#x3C;/code>&#x3C;/a> 型で表されます。並列処理を終え、また直列なフローに戻るときに &#x3C;code>Flowable&#x3C;/code>（&#x3C;code>Publisher&#x3C;/code> の実装）で包み直します。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">var&#x3C;/span> &#x3C;span class="hljs-variable">flowable&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> Flowable.range(&#x3C;span class="hljs-number">1&#x3C;/span>, &#x3C;span class="hljs-number">100&#x3C;/span>) &#x3C;span class="hljs-comment">// Flowable&#x3C;/span>
+    .parallel() &#x3C;span class="hljs-comment">//  ParallelFlowable&#x3C;/span>
+    .runOn(Schedulers.computation())
+    .map(x -> x + &#x3C;span class="hljs-number">1&#x3C;/span>)
+    .sequential() &#x3C;span class="hljs-comment">// Flowable&#x3C;/span>
+    .map(x -> x + &#x3C;span class="hljs-number">1&#x3C;/span>);
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>TPL Dataflow では、各データフローブロックが並列に処理を行います。例えば、 &#x3C;code>map&#x3C;/code> に相当する &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.transformblock-2?view=netcore-3.1">&#x3C;code>TransformBlock&#x3C;/code>&#x3C;/a> や、基本的な Target である &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.actionblock-1?view=netcore-3.1">&#x3C;code>ActionBlock&#x3C;/code>&#x3C;/a> はオプションとして &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.executiondataflowblockoptions.maxdegreeofparallelism?view=netcore-3.1">&#x3C;code>MaxDegreeOfParallelism&#x3C;/code>&#x3C;/a> を指定することで、データが並列に処理されます。また RxJava では、並列部分ではデータの順番が維持される保証がありませんが、 &#x3C;code>TransformBlock&#x3C;/code> では &#x3C;code>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowblockoptions.ensureordered?view=netcore-3.1">EnsureOrdered&#x3C;/a> = true&#x3C;/code> を指定することで、データの順番を維持できます。&#x3C;/p>
+&#x3C;p>いずれも実装の違いであり、インターフェイス上はどうにでもできます。&#x3C;/p>
+&#x3C;h2>5. それぞれのメリット、デメリット&#x3C;/h2>
+&#x3C;h3>5.1. プロトコル&#x3C;/h3>
+&#x3C;p>Reactive Streams のプロトコルには、一度 &#x3C;code>Request&#x3C;/code> した数を取り消せないという問題があります。したがって、状況によって受け入れられるデータ量が増減するようなとき、もっとも保守的な手法、すなわち 1 件受け取っては &#x3C;code>Request(1)&#x3C;/code> を呼び出すという非効率的な方法を取らざるを得なくなります。しかし、これが問題かというと、問題になるユースケースが特に思いつかないです。&#x3C;/p>
+&#x3C;p>一方 TPL Dataflow は、独自でデータフローブロックを実装するのが非常に難しいです。標準で提供されているブロックの組み合わせだけでなんとかしてくださいという感じです。&#x3C;/p>
+&#x3C;h3>5.2. 実装&#x3C;/h3>
+&#x3C;p>Reactive Streams は、 Java では RxJava という最強の実装がありますが、 C# には Akka.NET Streams しかない状況です。 Akka.NET Streams は Akka のランタイムを必要とする重厚なものになっており、 RxJava ほど軽い気持ちで導入しにくいという印象があります。&#x3C;/p>
+&#x3C;p>TPL Dataflow は、半標準ライブラリな存在であり、品質も良いです。ただし、提供されているブロックは、有用ではありますが、もしかすると痒いところに手が届かないかもしれないなという品揃えです。ですが、先ほど述べたように、独自でデータフローブロックを実装するのはとても大変です（ある程度妥協できるなら、 &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowblock.encapsulate?view=netcore-3.1">&#x3C;code>DataflowBlock.Encapsulate&#x3C;/code>&#x3C;/a> という便利メソッドがあることは覚えておいてください）。&#x3C;/p>
+&#x3C;h2>6. C# で Reactive Streams とどう向き合うか&#x3C;/h2>
+&#x3C;p>Rx と並んで登場した Ix (Interactive Extensions) には AsyncEnumerable が含まれていました。 .NET Standard 2.1 では &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.collections.generic.iasyncenumerable-1?view=netcore-3.1">&#x3C;code>IAsyncEnumerable&#x3C;/code>&#x3C;/a> が標準入りを果たしました。 AsyncEnumerable は、常に &#x3C;code>Request(1)&#x3C;/code> を投げる Reactive Streams と見なすこともできます。&#x3C;/p>
+&#x3C;p>ここまで Reactive Streams と TPL Dataflow の比較をしてきましたが、&#x3C;strong>AsyncEnumerable が C# における Reactive Streams の大本命&#x3C;/strong>なのでは、と考えています（正確にはこの章を書き始めて気づいた……）。「並列化について」で述べたように、 Reactive Streams はいくら上流にキャパシティを報告したところで、 &#x3C;code>OnNext&#x3C;/code> を並行実行できません。したがって、キャパシティを報告することにあまり意味はなく、 AsyncEnumerable のように常にプル型でも問題ないと考えられます。キャパシティを気にする必要がある、流量の制御できないデータソースからの入力や、ある程度まとまったデータがないとパフォーマンスメリットがない並列化部分の前後にバッファを置くだけで解決できてしまいます。&#x3C;/p>
+&#x3C;p>一方で、並列処理という観点では TPL Dataflow は非常に良質なライブラリです。並列処理において困る部分が隠蔽されており、本質的な処理を書くことに集中できます。&#x3C;/p>
+&#x3C;p>現在の私の野心としては、 AsyncEnumerable のメソッドチェーンの中に、 TPL Dataflow を導入することと、 &#x3C;code>IAsyncEnumerable&#x3C;/code> と &#x3C;code>IPublisher&#x3C;/code> の相互変換です。前者によって、 AsyncEnumerable を並列に処理する表現力が向上します。後者は Akka.NET Streams のような Java 由来のライブラリで Reactive Streams の利用が考えられることから、相互変換が容易に行えると便利だという考えです。これらは現在開発中のライブラリ（&#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a>）で実現できればなと考えています。&#x3C;/p>
+&#x3C;h2>7. おわりに&#x3C;/h2>
+&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-01T01:02:14+09:00</updated></entry></feed>

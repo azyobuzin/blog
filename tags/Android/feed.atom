@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/Android/feed.atom</id><link href="https://blog.azyobuzi.net/tags/Android/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/Android/" rel="alternate" type="text/html" /><title>Android | あじょろぐ</title><updated>2021-08-29T01:22:30+09:00</updated><entry><category term="C#" label="C#" /><category term="Android" label="Android" /><content type="html">&#x3C;p>TL;DR: Xamarin.Android のグローバル例外ハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（&#x3C;a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211&#x3C;/a>）。&#x3C;/p>
+&#x3C;h2>はじめに&#x3C;/h2>
+&#x3C;p>ハンドルされない例外は、アプリにとって異常事態ですから、さっさと&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/916d24b7d83a79853dd1d1cf060d327f98c46e77/src/java-runtime/java/mono/android/Seppuku.java">切腹&#x3C;/a>する必要があります。 Xamarin.Android アプリでは、 Java の例外と .NET の例外が入り混じり、境界ではそれぞれの例外に相互変換されています。では、相互変換を繰り返し、最終的に誰にもキャッチされなかった例外は、どのように処理されるのでしょうか？ そして、もし最後の砦、グローバル例外ハンドラを設定するなら、どこに設定するのが良いのでしょうか？&#x3C;/p>
+&#x3C;h2>普通の Android アプリの死に方&#x3C;/h2>
+&#x3C;p>まずはピュア Java の Android アプリを例外で落としてみましょう。適当な場所に &#x3C;code>throw new RuntimeException();&#x3C;/code> と書けばいいだけですね。今回は &#x3C;code>MainActivity.onStart&#x3C;/code> に仕込んでみます。これで起動した瞬間に落ちるはずです。&#x3C;/p>
+&#x3C;p>実行するとアプリが終了し、 logcat にはこのようなログが残ります。&#x3C;/p>
+&#x3C;pre>&#x3C;samp class="language-samp">E AndroidRuntime: FATAL EXCEPTION: main
+E AndroidRuntime: Process: com.example.ochiruapplication, PID: 6823
+E AndroidRuntime: java.lang.RuntimeException
+E AndroidRuntime:        at com.example.ochiruapplication.MainActivity.onStart(MainActivity.java:18)
+E AndroidRuntime:        at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1425)
+E AndroidRuntime:        at android.app.Activity.performStart(Activity.java:7825)
+E AndroidRuntime:        at android.app.ActivityThread.handleStartActivity(ActivityThread.java:3294)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:221)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:201)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:173)
+E AndroidRuntime:        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+E AndroidRuntime:        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:107)
+E AndroidRuntime:        at android.os.Looper.loop(Looper.java:214)
+E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7356)
+E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+&#x3C;/samp>&#x3C;/pre>
+&#x3C;p>さて、例外の中身を知っているのは例外を起こしたプロセスだけですから、このログを吐き出した犯人を探すことで、 Android のグローバル例外ハンドラを探すことができそうです。 &#x3C;a href="https://cs.android.com/">Android Code Search&#x3C;/a> で「FATAL EXCEPTION」と検索すると、&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=80;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">それっぽい行&#x3C;/a>が見つかりました。&#x3C;/p>
+&#x3C;p>さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる &#x3C;code>RuntimeInit.commonInit&#x3C;/code> に次のようなプログラムが入っています。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">RuntimeInit.commonInit の一部&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">LoggingHandler&#x3C;/span> &#x3C;span class="hljs-variable">loggingHandler&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">LoggingHandler&#x3C;/span>();
+RuntimeHooks.setUncaughtExceptionPreHandler(loggingHandler);
+Thread.setDefaultUncaughtExceptionHandler(&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">KillApplicationHandler&#x3C;/span>(loggingHandler));
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>Java が管理するスレッドで発生した例外は、スレッド自体に例外ハンドラを設定していなければ &#x3C;code>Thread.setDefaultUncaughtExceptionHandler&#x3C;/code> で設定したハンドラで処理されます。 Android では &#x3C;code>RuntimeInit$KillApplicationHandler&#x3C;/code> が設定されており、これが最後の砦をやっています。また、 Android には Java 標準の &#x3C;code>Thread&#x3C;/code> クラスにはない &#x3C;code>setUncaughtExceptionPreHandler&#x3C;/code> があり、もしデフォルトのハンドラがアプリのコードによって書き換えられたとしても、 &#x3C;code>RuntimeInit$LoggingHandler&#x3C;/code> だけは呼び出されて、 logcat に例外ログが吐きだされるようになっています。&#x3C;/p>
+&#x3C;p>&#x3C;code>KillApplicationHandler&#x3C;/code> は、 &#x3C;code>ActivityManager&#x3C;/code> サービスに後処理（アクティビティを終了させ、必要ならばクラッシュダイアログを表示する）を任せて、プロセスを終了します。&#x3C;/p>
+&#x3C;p>まとめ: Xamarin ではないピュアな Android アプリでは、基本的にすべてのスレッドを Java が管理しているので、 &#x3C;code>Thread.setDefaultUncaughtExceptionHandler&#x3C;/code> で設定したハンドラによって未ハンドルの例外が処理されます。 Android ではハンドラとして &#x3C;code>com.android.internal.os.RuntimeInit$KillApplicationHandler&#x3C;/code> が設定されており、アクティビティとプロセスの終了を担っています。&#x3C;/p>
+&#x3C;h2>Xamarin アプリを例外で落とす&#x3C;/h2>
+&#x3C;p>同じことを Xamarin.Android でやってみましょう。 &#x3C;code>MainActivity.OnStart&#x3C;/code> に &#x3C;code>throw new Exception();&#x3C;/code> を仕込んで実行すると、このようなログが得られます。&#x3C;/p>
+&#x3C;pre>&#x3C;samp class="language-samp">E AndroidRuntime: FATAL EXCEPTION: main
+E AndroidRuntime: Process: com.companyname.ochiruappxamarin, PID: 9701
+E AndroidRuntime: java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:502)
+E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+E AndroidRuntime: Caused by: java.lang.reflect.InvocationTargetException
+E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+E AndroidRuntime: 	... 1 more
+E AndroidRuntime: Caused by: java.lang.Exception
+E AndroidRuntime: 	at crc64a14461782825e2ee.MainActivity.n_onStart(Native Method)
+E AndroidRuntime: 	at crc64a14461782825e2ee.MainActivity.onStart(MainActivity.java:55)
+E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1425)
+E AndroidRuntime: 	at android.app.Activity.performStart(Activity.java:7825)
+E AndroidRuntime: 	at android.app.ActivityThread.handleStartActivity(ActivityThread.java:3294)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:221)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:201)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:173)
+E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:107)
+E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:214)
+E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7356)
+E AndroidRuntime: 	... 3 more
+I MonoDroid: UNHANDLED EXCEPTION:
+I MonoDroid: Java.Lang.RuntimeException: java.lang.reflect.InvocationTargetException ---> Java.Lang.Reflect.InvocationTargetException: Exception of type 'Java.Lang.Reflect.InvocationTargetException' was thrown. ---> Java.Lang.Exception: Exception of type 'Java.Lang.Exception' was thrown.
+I MonoDroid:   at OchiruAppXamarin.MainActivity.OnStart () [0x0000d] in &#x26;#x3C;c931122de5944a1da7dcf64a7158eefa>:0
+I MonoDroid:   at Android.App.Activity.n_OnStart (System.IntPtr jnienv, System.IntPtr native__this) [0x00008] in &#x26;#x3C;db0280fb1b254cf889f3a750ac3ea0bb>:0
+I MonoDroid:   at (wrapper dynamic-method) Android.Runtime.DynamicMethodNameCounter.5(intptr,intptr)
+I MonoDroid:    --- End of inner exception stack trace ---
+I MonoDroid:    --- End of inner exception stack trace ---
+I MonoDroid:   --- End of managed Java.Lang.RuntimeException stack trace ---
+I MonoDroid: java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+I MonoDroid: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:502)
+I MonoDroid: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+I MonoDroid: Caused by: java.lang.reflect.InvocationTargetException
+I MonoDroid: 	at java.lang.reflect.Method.invoke(Native Method)
+I MonoDroid: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+I MonoDroid: 	... 1 more
+I MonoDroid: Caused by: java.lang.Exception
+I MonoDroid: 	at crc64a14461782825e2ee.MainActivity.n_onStart(Native Method)
+I MonoDroid: 	at crc64a14461782825e2ee.MainActivity.onStart(MainActivity.java:55)
+I MonoDroid: 	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1425)
+I MonoDroid: 	at android.app.Activity.performStart(Activity.java:7825)
+I MonoDroid: 	at android.app.ActivityThread.handleStartActivity(ActivityThread.java:3294)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:221)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:201)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:173)
+I MonoDroid: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+I MonoDroid: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+I MonoDroid: 	at android.os.Handler.dispatchMessage(Handler.java:107)
+I MonoDroid: 	at android.os.Looper.loop(Looper.java:214)
+I MonoDroid: 	at android.app.ActivityThread.main(ActivityThread.java:7356)
+I MonoDroid: 	... 3 more
+I MonoDroid:
+&#x3C;/samp>&#x3C;/pre>
+&#x3C;p>見覚えのある前半と、見覚えのない後半ですね。ということは、 &#x3C;code>RuntimeInit$LoggingHandler&#x3C;/code> は呼び出されるようです。 Java のスレッドで例外が発生しているので、 .NET の例外は JNI を通して Java 側にスローされていきます。なので Java のスレッドの例外ハンドラが処理しているのは不思議ではないですね。&#x3C;/p>
+&#x3C;p>では後半のログを出しているのは一体誰なのでしょうか？ 答えは &#x3C;code>Thread.getDefaultUncaughtExceptionHandler()&#x3C;/code>（C# では &#x3C;code>Java.Lang.Thread.DefaultUncaughtExceptionHandler&#x3C;/code>）を取得してみるとわかります。 Xamarin.Android の初期化メソッドが存在する &#x3C;code>mono.android.Runtime&#x3C;/code> クラスの静的コンストラクタで、デフォルト例外ハンドラを独自に設定しています。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15">Runtime.java の一部&#x3C;/a>&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-keyword">static&#x3C;/span> {
+    Thread.setDefaultUncaughtExceptionHandler (&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">XamarinUncaughtExceptionHandler&#x3C;/span> (Thread.getDefaultUncaughtExceptionHandler ()));
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>このハンドラでは、 Xamarin.Android 独自の処理をしたあと、もともと設定してあったハンドラに処理を投げています。つまり、処理順は PreHandler である &#x3C;code>LoggingHandler&#x3C;/code> が呼び出されたあと、 Xamarin.Android 独自の処理をして、最後に &#x3C;code>KillApplicationHandler&#x3C;/code> を実行する、という順番になります。&#x3C;/p>
+&#x3C;p>Xamarin.Android 独自の処理の中身は &#x3C;a href="https://github.com/xamarin/xamarin-android/blob/ab0ed93cc88863b226c917dfef1fa62979c6ead8/src/Mono.Android/Android.Runtime/JNIEnv.cs#L284">&#x3C;code>JNIEnv.PropagateUncaughtException&#x3C;/code>&#x3C;/a> にあります。このメソッドの中には、ログにあった「UNHANDLED EXCEPTION」が見つけられます。また、ここで受け取った例外は &#x3C;code>AppDomain.UnhandledException&#x3C;/code> に投げられることがわかります。&#x3C;/p>
+&#x3C;p>まとめ: Java のスレッドで発生した例外は、 Xamarin.Android 独自のハンドラで処理されます。このハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code> イベントを発生させたあと、 Android の標準ハンドラである &#x3C;code>KillApplicationHandler&#x3C;/code> を呼び出すことで Android に後片付けを任せます。&#x3C;/p>
+&#x3C;h2>.NET のスレッドで例外を起こす&#x3C;/h2>
+&#x3C;p>ここまで Java のスレッドで例外を発生させてきました。しかし、 .NET でもスレッドを作成することができます。 .NET のスレッドで例外が発生した場合はどのように処理されるのでしょうか？&#x3C;/p>
+&#x3C;p>前回の実験コードの &#x3C;code>throw new Exception();&#x3C;/code> を &#x3C;code>new Thread(() => throw new Exception()).Start();&#x3C;/code> に書き換えて試してみましょう。実行すると logcat のエラーログはこんな感じになりました。&#x3C;/p>
+&#x3C;pre>&#x3C;samp class="language-samp">F mono-rt : [ERROR] FATAL UNHANDLED EXCEPTION: System.Exception: Exception of type 'System.Exception' was thrown.
+F mono-rt :   at OchiruAppXamarin.MainActivity+&#x26;#x3C;>c.&#x26;#x3C;OnStart>b__2_0 () [0x00000] in &#x26;#x3C;605572ca36544c48913788216f21b753>:0
+F mono-rt :   at System.Threading.ThreadHelper.ThreadStart_Context (System.Object state) [0x00014] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ExecutionContext.RunInternal (System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, System.Object state, System.Boolean preserveSyncCtx) [0x00071] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ExecutionContext.Run (System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, System.Object state, System.Boolean preserveSyncCtx) [0x00000] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ExecutionContext.Run (System.Threading.ExecutionContext executionContext, System.Threading.ContextCallback callback, System.Object state) [0x0002b] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26;#x3C;1b39a03c32ec46258a7821e202e0269f>:0
+&#x3C;/samp>&#x3C;/pre>
+&#x3C;p>ついに Java っぽいログが出なくなりました！&#x3C;/p>
+&#x3C;p>これはどういうことかというと、何の細工もなく、 Mono がプロセスを終了しています。普通の .NET アプリと同じです。 Java 側にはまったく通達されません。&#x3C;/p>
+&#x3C;p>まとめ: .NET のスレッドで例外が発生すると Mono によってハンドルされ、普通の .NET アプリのようにプロセスが終了します。&#x3C;/p>
+&#x3C;h2>総まとめ&#x3C;/h2>
+&#x3C;p>Java が管理するスレッドで例外が発生しても、 .NET が管理するスレッドで例外が発生しても、とりあえず &#x3C;code>AppDomain.UnhandledException&#x3C;/code> が呼び出されるので、これが最強の例外ハンドラです。&#x3C;/p>
+&#x3C;h2>おまけ: AndroidEnvironment.UnhandledExceptionRaiser って何？&#x3C;/h2>
+&#x3C;p>Xamarin.Android の例外処理を調べたことがある人は、 &#x3C;code>AndroidEnvironment.UnhandledExceptionRaiser&#x3C;/code> が強そうな名前に見えて、使えそうに見えてしまったのではないでしょうか。しかし実際のところ、あんまり使い道はありません。&#x3C;/p>
+&#x3C;p>&#x3C;code>AndroidEnvironment.UnhandledExceptionRaiser&#x3C;/code> イベントは、 .NET で発生した例外を Java の例外に変換するときに発生します。例えば、今まで &#x3C;code>OnStart&#x3C;/code> メソッドで &#x3C;code>throw new Exception();&#x3C;/code> をする例を示してきましたが、 &#x3C;code>OnStart&#x3C;/code> メソッドの呼び出し元は Java なので、 Java の例外に変換する必要があります。&#x3C;/p>
+&#x3C;p>このイベントにハンドラを設定しない場合、もしくはいずれのハンドラも &#x3C;code>e.Handled = true&#x3C;/code> をセットしない場合はデフォルトの挙動をします。デフォルトの挙動は、 .NET の例外を &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> でラップし、 Java を例外状態（JNI の &#x3C;code>Throw&#x3C;/code> 関数を呼び出す）にします。&#x3C;/p>
+&#x3C;p>使い道としては、 .NET で発生した例外を握りつぶして Java のプログラムを続行させたり（&#x3C;code>e.Handled = true&#x3C;/code> をセットして何もしない）、 &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> ではない独自の &#x3C;code>Throwable&#x3C;/code> に変換したり（&#x3C;code>JNIEnv.Throw&#x3C;/code> を呼び出す）、が考えられます。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/08/28/01-xaexception/</id><link href="https://blog.azyobuzi.net/2021/08/28/01-xaexception/" rel="alternate" type="text/html" /><published>2021-08-27T03:24:00+09:00</published><title type="html">Xamarin.Android アプリが例外で落ちるということ</title><updated>2021-08-29T01:22:30+09:00</updated></entry></feed>

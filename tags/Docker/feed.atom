@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/Docker/feed.atom</id><link href="https://blog.azyobuzi.net/tags/Docker/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/Docker/" rel="alternate" type="text/html" /><title>Docker | あじょろぐ</title><updated>2021-09-01T01:02:14+09:00</updated><entry><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
+&#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
+&#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>
+&#x3C;p>VSCode Remote は、コンテナの中で VSCode が動きます。ホストのディレクトリをコンテナにマウントすることで、ホストのファイルを編集できます。メリットは、 VSCode のターミナルからコンテナ内を触り放題なところです。例えば Windows で開発していて、 Linux で動かしたい開発ツールがあるときには便利です。デメリットは、 Visual Studio に慣れた人間にとって、 VSCode の C# 拡張は不足を感じるところです。&#x3C;/p>
+&#x3C;p>データベースを置くという今回の仮定では、データベースを手で操作するときに簡単に環境に入るために VSCode を使いたいものの、メインの開発は Visual Studio でしたい、となり、共存させたい欲求が発生しています。&#x3C;/p>
+&#x3C;h2>やっていく&#x3C;/h2>
+&#x3C;h3>1. Visual Studio で連携を設定する&#x3C;/h3>
+&#x3C;p>ここで説明する手順を実行するには、 Visual Studio 2019 で「ASP.NET と Web 開発」または「.NET Core クロスプラットフォームの開発」ワークロードがインストールされている必要があります。&#x3C;/p>
+&#x3C;p>ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加">&#x3C;/figure>
+&#x3C;p>いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。&#x3C;/p>
+&#x3C;p>完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション">&#x3C;/figure>
+&#x3C;p>これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。&#x3C;/p>
+&#x3C;h3>2. Dockerfile を改変する&#x3C;/h3>
+&#x3C;p>生成された Dockerfile を確認すると、本番ビルド用のスクリプトが書かれています。今回はこれを完全に捨てることにします。ただ、プロジェクトディレクトリ下に Dockerfile がないと Visual Studio が認識してくれないので、ここに開発環境を作成するスクリプトを書きましょう。本番用 Dockerfile はどこか別のところに置いてください……。&#x3C;/p>
+&#x3C;p>最低限必要なのは &#x3C;code>FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster&#x3C;/code> だけです。「buster」のところは好きなディストリビューションに変えてください。必要に応じて、例えば今回の仮定ならば postgresql-client を入れたりするのもいいでしょう。&#x3C;/p>
+&#x3C;h3>3. docker-compose.yml を改変する&#x3C;/h3>
+&#x3C;p>ここからの操作は Visual Studio を破壊するので、すべてが完了するまで Visual Studio は閉じておきましょう。&#x3C;/p>
+&#x3C;p>いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。&#x3C;/p>
+&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動">&#x3C;/figure>
+&#x3C;p>さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。&#x3C;/p>
+&#x3C;p>いま docker-compose.yml の中身はこのようになっていると思います。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.yml&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
+
+&#x3C;span class="hljs-attr">services:&#x3C;/span>
+  &#x3C;span class="hljs-attr">mydatabaseapp:&#x3C;/span>
+    &#x3C;span class="hljs-attr">image:&#x3C;/span> &#x3C;span class="hljs-string">${DOCKER_REGISTRY-}mydatabaseapp&#x3C;/span>
+    &#x3C;span class="hljs-attr">build:&#x3C;/span>
+      &#x3C;span class="hljs-attr">context:&#x3C;/span> &#x3C;span class="hljs-string">.&#x3C;/span>
+      &#x3C;span class="hljs-attr">dockerfile:&#x3C;/span> &#x3C;span class="hljs-string">MyDatabaseApp/Dockerfile&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>改変が必要なポイントは次のふたつです。&#x3C;/p>
+&#x3C;ul>
+&#x3C;li>&#x3C;code>build.context&#x3C;/code> のパスを正しく直す。 docker-compose.yml を移動したので、それに合わせます。&#x3C;/li>
+&#x3C;li>PostgreSQL を追加する。&#x3C;/li>
+&#x3C;/ul>
+&#x3C;p>改変結果はこんな感じです。 docker-compose.yml の構文バージョンやプロジェクト名は、環境に合わせて書き換えてください。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.yml&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
+
+&#x3C;span class="hljs-attr">services:&#x3C;/span>
+  &#x3C;span class="hljs-attr">mydatabaseapp:&#x3C;/span>
+    &#x3C;span class="hljs-attr">build:&#x3C;/span>
+      &#x3C;span class="hljs-attr">context:&#x3C;/span> &#x3C;span class="hljs-string">..&#x3C;/span>
+      &#x3C;span class="hljs-attr">dockerfile:&#x3C;/span> &#x3C;span class="hljs-string">MyDatabaseApp/Dockerfile&#x3C;/span>
+
+  &#x3C;span class="hljs-attr">db:&#x3C;/span>
+    &#x3C;span class="hljs-attr">image:&#x3C;/span> &#x3C;span class="hljs-string">postgres:11&#x3C;/span>
+    &#x3C;span class="hljs-attr">environment:&#x3C;/span>
+      &#x3C;span class="hljs-attr">POSTGRES_PASSWORD:&#x3C;/span> &#x3C;span class="hljs-string">postgres&#x3C;/span>
+    &#x3C;span class="hljs-attr">volumes:&#x3C;/span>
+      &#x3C;span class="hljs-bullet">-&#x3C;/span> &#x3C;span class="hljs-string">./db/data:/var/lib/postgresql/data&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>データベースのデータの永続化は、ホストのパスを指定するか、この docker-compose.yml の外で作成したボリュームを割り当ててください。でないと、 VS と VSCode で Docker Compose のプロジェクト名が異なるので、同じデータを見てくれません。&#x3C;/p>
+&#x3C;h3>4. docker-compose.dcproj を改変する&#x3C;/h3>
+&#x3C;p>docker-compose.yml を移動したので、 docker-compose.dcproj も書き換えます。これもソリューションディレクトリ直下にあると邪魔なので .devcontainer に移動させてしまいましょう。&#x3C;/p>
+&#x3C;p>さらにファイル名変更を反映して、ディレクトリ外に行ってしまった .dockerignore をプロジェクトから消します。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.dcproj&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-diff"> &#x26;#x3C;?xml version="1.0" encoding="utf-8"?>
+ &#x26;#x3C;Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
+   &#x26;#x3C;PropertyGroup Label="Globals">
+     &#x26;#x3C;ProjectVersion>2.1&#x26;#x3C;/ProjectVersion>
+     &#x26;#x3C;DockerTargetOS>Linux&#x26;#x3C;/DockerTargetOS>
+     &#x26;#x3C;ProjectGuid>3caba81b-3f76-4ecf-9907-78b96280d41c&#x26;#x3C;/ProjectGuid>
+   &#x26;#x3C;/PropertyGroup>
+   &#x26;#x3C;ItemGroup>
+&#x3C;span class="hljs-deletion">-    &#x26;#x3C;None Include="docker-compose.override.yml">&#x3C;/span>
+&#x3C;span class="hljs-addition">+    &#x26;#x3C;None Include="docker-compose.vs.yml">&#x3C;/span>
+       &#x26;#x3C;DependentUpon>docker-compose.yml&#x26;#x3C;/DependentUpon>
+     &#x26;#x3C;/None>
+     &#x26;#x3C;None Include="docker-compose.yml" />
+&#x3C;span class="hljs-deletion">-    &#x26;#x3C;None Include=".dockerignore" />&#x3C;/span>
+   &#x26;#x3C;/ItemGroup>
+ &#x26;#x3C;/Project>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>またソリューションファイルもパスを書き換えます。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>MyDatabaseApp.sln&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-diff">&#x3C;span class="hljs-deletion">-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3CABA81B-3F76-4ECF-9907-78B96280D41C}"&#x3C;/span>
+&#x3C;span class="hljs-addition">+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", ".devcontainer\docker-compose.dcproj", "{3CABA81B-3F76-4ECF-9907-78B96280D41C}"&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;h3>5. VSCode 向けの docker-compose.yml をつくる&#x3C;/h3>
+&#x3C;p>VSCode 向けに .devcontainer/docker-compose.vscode.yml を作っていきます。ポイントは次のふたつです。&#x3C;/p>
+&#x3C;ul>
+&#x3C;li>コンテナが終了しないように無限ループさせる&#x3C;/li>
+&#x3C;li>作業ディレクトリをマウントする&#x3C;/li>
+&#x3C;/ul>
+&#x3C;p>実際の YAML で表すとこれだけです。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>docker-compose.vscode.yml&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
+
+&#x3C;span class="hljs-attr">services:&#x3C;/span>
+  &#x3C;span class="hljs-attr">mydatabaseapp:&#x3C;/span>
+    &#x3C;span class="hljs-attr">command:&#x3C;/span> &#x3C;span class="hljs-string">/bin/sh&#x3C;/span> &#x3C;span class="hljs-string">-c&#x3C;/span> &#x3C;span class="hljs-string">"while sleep 1000; do :; done"&#x3C;/span>
+    &#x3C;span class="hljs-attr">volumes:&#x3C;/span>
+      &#x3C;span class="hljs-bullet">-&#x3C;/span> &#x3C;span class="hljs-string">..:/workspace:cached&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>必要に応じて、ポートを公開するために &#x3C;code>ports&#x3C;/code> を追加したりしてください。&#x3C;/p>
+&#x3C;p>参考: &#x3C;a href="https://bufferings.hatenablog.com/entry/2020/06/11/233201">&#x3C;cite>VS Code Remote - Containers を Docker Compose で使うのだー！ - Mitsuyuki.Shiiba&#x3C;/cite>&#x3C;/a>&#x3C;/p>
+&#x3C;h3>6. devcontainer.json をつくる&#x3C;/h3>
+&#x3C;p>devcontainer.json は VSCode にコンテナ作成を指示する設定ファイルです。これも .devcontainer に置きます。&#x3C;/p>
+&#x3C;p>最小限の devcontainer.json はこんな感じです。&#x3C;/p>
+&#x3C;figure>
+&#x3C;figcaption>devcontainer.json&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-json">&#x3C;span class="hljs-punctuation">{&#x3C;/span>
+  &#x3C;span class="hljs-attr">"dockerComposeFile"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-punctuation">[&#x3C;/span>&#x3C;span class="hljs-string">"docker-compose.yml"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span> &#x3C;span class="hljs-string">"docker-compose.vscode.yml"&#x3C;/span>&#x3C;span class="hljs-punctuation">]&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">// docker-compose.yml の services のうち、開発環境につかうもの&#x3C;/span>
+  &#x3C;span class="hljs-attr">"service"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-string">"mydatabaseapp"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">// docker-compose.vscode.yml で指定したマウント先&#x3C;/span>
+  &#x3C;span class="hljs-attr">"workspaceFolder"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-string">"/workspace"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
+
+  &#x3C;span class="hljs-comment">// 事前にインストールしておいてほしい拡張&#x3C;/span>
+  &#x3C;span class="hljs-attr">"extensions"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-punctuation">[&#x3C;/span>&#x3C;span class="hljs-string">"ms-dotnettools.csharp"&#x3C;/span>&#x3C;span class="hljs-punctuation">]&#x3C;/span>
+&#x3C;span class="hljs-punctuation">}&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>いじり倒したいときは &#x3C;a href="https://code.visualstudio.com/docs/remote/devcontainerjson-reference">&#x3C;cite>devcontainer.json reference&#x3C;/cite>&#x3C;/a> を読むといいでしょう。&#x3C;/p>
+&#x3C;h3>完成！&#x3C;/h3>
+&#x3C;p>これで準備完了です。 VSCode で「Reopen in Container」を実行すると、コンテナ上で VSCode が動き始めます。 Dockerfile のビルドが走るので気長に待ちましょう。&#x3C;/p>
+&#x3C;p>また、 Visual Studio でも docker-compose プロジェクトをスタートアッププロジェクトに設定して実行できるはずです！&#x3C;/p>
+&#x3C;div class="admonitionblock caution" role="note">&#x3C;div class="icon">Caution&#x3C;/div>&#x3C;div class="content">
+&#x3C;p>Visual Studio と VSCode の同時実行は危険です。同じマウント先のデータベースがふたつ動くことになってしまいます。また、それぞれ終了後 30 秒くらいはコンテナが動いているので、コンテナが終了されたことを確認してから、他方を使ってください。&#x3C;/p>
+&#x3C;/div>&#x3C;/div>
+&#x3C;h2>まとめ&#x3C;/h2>
+&#x3C;p>頑張れば Visual Studio でも VSCode でも使える Docker Compose 環境がつくれることを示しました。これで開発が捗ればいいね。捗らんか……。&#x3C;/p>
+&#x3C;p>ここまでの内容を clone するだけでお試しできるものを GitHub に置いておきました。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
+&#x3C;h2>イントロダクション&#x3C;/h2>
+&#x3C;p>ケチケチしたインターネットライフに Kubernetes は無縁です。&#x3C;/p>
+&#x3C;p>以前、 Docker のネットワークに細かい設定ができないという不満があって、 Kubernetes の調査をしていたこともありました（&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/03/21/024504">「&#x3C;cite>Kubernetesで隔離Mastodonネットワークを作った&#x3C;/cite>」&#x3C;/a>）。しかしながら、趣味で動かしている web サーバに Kubernetes を導入するのは、ケチケチした人間には不可能です。メモリ 2GB (GMO の株主優待を受けて、スペックアップしました！) の VPS に詰め込めるだけのアプリを詰める、そういうことをしている人間にとっては、 Kubernetes の導入はデメリットの方が多くなります。&#x3C;/p>
+&#x3C;p>そんなわけで、私が管理しているサービスは、基本的に Docker Compose で管理されています。しかし、動かしているアプリも増えてきて、 Pleroma のような SSRF 対策も必要なアプリ（例: &#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/11/12/005317">「&#x3C;cite>比較的安全に Docker で Pleroma サーバーを建てる&#x3C;/cite>」&#x3C;/a>）も出てくると、そろそろ真面目にネットワークポリシーを導入して、安心してコンテナを動かしたくなります。&#x3C;/p>
+&#x3C;p>しかしまぁどう検索しても Kubernetes の話しか出てこなくてキレそうだったわけですが、 &#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> という仮想ネットワークツールが Docker のプラグインとして動いてくれるみたいなので、検証してみました。&#x3C;/p>
+&#x3C;h2>Docker ネットワークの課題&#x3C;/h2>
+&#x3C;p>Docker 標準の bridge ネットワークの表現力を確認して、課題を確認します。&#x3C;/p>
+&#x3C;p>まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 &#x3C;code>docker network connect&#x3C;/code> コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。&#x3C;/p>
+&#x3C;figure>
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="コンテナとネットワークの関係">
+&#x3C;figcaption>コンテナとネットワークの関係&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>基本的なネットワークの種類である bridge ネットワークでは、ネットワークごとに次のような設定ができます。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>ネットワーク内のコンテナ間で通信 (Inter Container Connectivity) できるようにするか&#x3C;/li>
+&#x3C;li>IP マスカレードを有効にするか = ホストの外に通信できるようにするか&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>これの何が不満かというと、コンテナ間の通信の可否はネットワーク単位でしか設定できないということです。&#x3C;/p>
+&#x3C;p>例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。&#x3C;/p>
+&#x3C;figure>
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="DBを参照するふたつのアプリ">
+&#x3C;figcaption>DBを参照するふたつのアプリ&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>このような想定をし始めると、 bridge ネットワークに不満を感じてくるでしょう。コンテナ間の通信を制御しているのは iptables なので、 iptables を直接いじってあげればどうにかできなくはないですが、自分でやりたくはないです。&#x3C;/p>
+&#x3C;h2>Cilium&#x3C;/h2>
+&#x3C;p>とりあえず「docker network policy」でググってみてください。はい、 1 ページ目のすべてが Kubernetes ですね。というわけで、意外と Docker のネットワークを強固にしようという試みはやられていないようです。存在するネットワークプラグインは皆複数ノードをひとつのネットワークとして使えるようにするみたいなやつばかりです。そんな中で、やっと見つけてきたのが Cilium です。&#x3C;/p>
+&#x3C;p>Cilium も複数ノードをひとつのネットワークとして使えるようにするやつのひとつです。メインの用途は Kubernetes の仮想ネットワークです。 Kubernetes の仮想ネットワークといえば、クラスタ内がひとつのネットワークになっていて、初期状態では任意の Pod 同士で通信ができるやつです。そして、それを制限する方法として NetworkPolicy リソースがあります。 Cilium はこれを実現します。&#x3C;/p>
+&#x3C;p>Cilium が他の仮想ネットワークツールと違うところは、 Kubernetes がなくてもネットワークポリシーが設定できるところです。つまり単体で使い物になる！ ……はずでした。&#x3C;/p>
+&#x3C;h2>Getting Started&#x3C;/h2>
+&#x3C;p>Cilium を Docker で使う例は、ドキュメントにこの 1 ページしかありません。ありがとうございました。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://docs.cilium.io/en/v1.8/gettingstarted/docker/">&#x3C;cite>Cilium with Docker &#x26;#x26; libnetwork ― Cilium 1.8.3 documentation&#x3C;/cite>&#x3C;/a>&#x3C;/p>
+&#x3C;p>Debian 10 で試してみましたが、特に Linux の設定は必要なく、&#x3C;a href="https://github.com/cilium/cilium/blob/v1.8.3/examples/getting-started/docker-compose.yml">サンプルの docker-compose.yml&#x3C;/a> を投入するだけで起動することができました。&#x3C;/p>
+&#x3C;p>とにかく、この 1 ページを一通り読むと、ポリシー設定を突っ込むところまで体験できます。&#x3C;/p>
+&#x3C;p>メモリ使用量は Cilium + Consul で 100MB 弱と、まぁまぁ許容範囲内かなというところでした。&#x3C;/p>
+&#x3C;h2>で、何がダメだったの？&#x3C;/h2>
+&#x3C;ol>
+&#x3C;li>ポートバインディング (&#x3C;code>--publish&#x3C;/code>) が使えない&#x3C;/li>
+&#x3C;li>ポリシーが永続化されない&#x3C;/li>
+&#x3C;/ol>
+&#x3C;h3>1. ポートバインディングが使えない&#x3C;/h3>
+&#x3C;p>&#x3C;code>docker run -p 80:80 nginx&#x3C;/code> と書くとホストの 80 番ポートからコンテナの 80 番ポートにつながるやつです。 Cilium の Docker プラグインはこのオプションを実装していないので、指定しても何も起こりません。&#x3C;/p>
+&#x3C;p>改造して解決しようかと挑んだものの、別の課題を先になんとかしないといけないことがわかったので面倒になりました。&#x3C;/p>
+&#x3C;p>これは現実的な解決策があり、 Traefik を使ったリバースプロキシを host ネットワークに用意すればいいです。 Traefik 2 からは TCP のリバースプロキシもできるようになったので、 HTTP に限らず何でもいけます。&#x3C;/p>
+&#x3C;h3>2. ポリシーが永続化されない&#x3C;/h3>
+&#x3C;p>これが致命的。&#x3C;/p>
+&#x3C;p>ポリシーを設定しても永続化してくれません。 Consul や etcd がそこにあるのにどうして記憶してくれないの？&#x3C;/p>
+&#x3C;p>永続化されないということは Cilium が起動したときにポリシーを設定する必要があります。これが問題になるのは、特にマシンや Docker デーモンを再起動したときです。 Cilium が起動するのを待ち、ポリシーを設定するようなサイドカーを用意しておかないと、正しくポリシーが適用されません。このようなサイドカーの実装を考え始めると、どんどん制御ループ、つまり Kubernetes のコンセプトに近づいていきます。&#x3C;/p>
+&#x3C;h2>結局&#x3C;/h2>
+&#x3C;p>&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/03/04/144245" title="k3s の中身とメモリ使用量の調査">K3s に最初に食いついた&#x3C;/a>人間なので、諦めて K3s と仲良くするのが一番いいのかもしれません。うっ……。&#x3C;/p>
+&#x3C;figure>
+&#x3C;blockquote cite="https://twitter.com/azyobuzin/status/1251774353579978758">
+働かざる者Kubeからずというように、個人の趣味プロジェクトでKubernetesを使うべきではない
+&#x3C;/blockquote>
+&#x3C;figcaption>&#x3C;a href="https://twitter.com/azyobuzin/status/1251774353579978758">@azyobuzin&#x3C;/a>&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;h2>おまけ: IPv6 を使う&#x3C;/h2>
+&#x3C;p>&#x3C;a href="https://docs.cilium.io/en/v1.8/gettingstarted/docker/">サンプル&#x3C;/a>をいくらか改造すると IPv6 も使えるようになります。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>
+&#x3C;p>Vagrantfile の &#x3C;code>cilium_opts&#x3C;/code> から &#x3C;code>--enable-ipv6=false&#x3C;/code> を削除する&#x3C;/p>
+&#x3C;/li>
+&#x3C;li>
+&#x3C;p>&#x3C;code>cilium-net&#x3C;/code> を作成するコマンドで &#x3C;code>--ipv6&#x3C;/code> を指定する&#x3C;/p>
+&#x3C;pre>&#x3C;code class="">docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>これでコンテナに IPv6 アドレスが振られるようになります。が、 NAT が設定されないので外に出ていったパケットが帰ってこられなくなります。これは Cilium の Issue に積まれていますが、なかなか修正される様子がないです。ワークアラウンドとしては、自分で ip6tables を設定してねということです。&#x3C;/p>
+&#x3C;figure>
+&#x3C;blockquote>
+&#x3C;p>Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.&#x3C;/p>
+&#x3C;pre>&#x3C;code class="">ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/blockquote>
+&#x3C;figcaption>&#x3C;a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">&#x3C;cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
+&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2021-09-01T01:02:14+09:00</updated></entry></feed>
