@@ -2,8 +2,8 @@
 
 一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。
 
-AsciiDoc をやめ Markdown に移行しました。いくつか理由があるので、そのうち書こうと思います。"><meta property="og:article:published_time" content="2020-04-04T02:29+09:00"><meta property="og:article:modified_time" content="2021-09-01T01:02:14+09:00"></head><body><div class="container"><article class="article-page"><header><h1>さよならはてなブログ、こんにちはGatsby</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-04-04T02:29:00.000+09:00" title="公開: 2020/04/04 02:29
-最終更新: 2021/09/01 01:02">2020/04/04</time> ― <a href="https://github.com/azyobuzin/blog/commits/b8152b1b3052491c89af0fa0843beb8cadd34cc9/posts/2020/04/04/01-hello-gatsby" rel="external">History</a></div></header><div class="article-content"><p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！</p>
+AsciiDoc をやめ Markdown に移行しました。いくつか理由があるので、そのうち書こうと思います。"><meta property="og:article:published_time" content="2020-04-04T02:29+09:00"><meta property="og:article:modified_time" content="2021-09-16T23:56:15+09:00"></head><body><div class="container"><article class="article-page"><header><h1>さよならはてなブログ、こんにちはGatsby</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-04-04T02:29:00.000+09:00" title="公開: 2020/04/04 02:29
+最終更新: 2021/09/16 23:56">2020/04/04</time> ― <a href="https://github.com/azyobuzin/blog/commits/41da0ddaad6d3a1d7df32381c420ce1c97a30e62/posts/2020/04/04/01-hello-gatsby" rel="external">History</a></div></header><div class="article-content"><p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！</p>
 <p>一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。</p>
 <p><ins datetime="2021-09-01">AsciiDoc をやめ Markdown に移行しました。いくつか理由があるので、そのうち書こうと思います。</ins></p>
 <h2>1. なぜ脱はてなブログ</h2>
@@ -22,7 +22,7 @@ AsciiDoc をやめ Markdown に移行しました。いくつか理由がある�
 </li>
 <li>
 <p>なぜ Qiita ではないのか</p>
-<figure>
+<figure class="fig-quote">
 <blockquote cite="https://mstdn.maud.io/@azyobuzin/103884235813994300">
 Qiita なんて承認欲求が通常のブログより満たせる以外のメリット何一つないのに、その一点のメリットに負けた人たちが使うサービスでしょゲラゲラって言ってる
 </blockquote>
@@ -57,7 +57,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 <p>入力データは、さまざまな形式であることが考えられるので、プラグイン機構によって柔軟に処理できることが求められます。</p>
 <p>入力データを集めるだけでも、データソースからの取得と、データの解釈の 2 種類があります。前者は、ファイルシステムやインターネットからデータを取得してきます。後者は、例えば、データが Markdown なら、 Frontmatter を処理したり、 HTML に変換したりして、バイト列から View で使える意味のあるデータに変形します。</p>
 <p>さて、この取得・解釈パイプラインにおいて、ひとつのデータについて、ひとつの解釈とは限りません。複数のプラグインが同じデータを異なる方法で解釈することもあります。つまり、まっすぐなパイプラインにはなりません。そこで Gatsby が採用した、共通の入力データ形式は「オブジェクトの森」でした。あるデータに対する解釈は、そのデータの子オブジェクトになる、と表現します（<a href="#image-forest-example">図 1</a>）。このような表現を用いることで、非常に柔軟に入力データを扱うことができるようになりました。</p>
-<figure id="image-forest-example" data-num="図">
+<figure id="image-forest-example" class="fig-img" data-num="図">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" width="500" alt="データと、データの解釈結果オブジェクト">
 <figcaption>図 1: データと、データの解釈結果オブジェクト</figcaption>
 </figure>
@@ -66,7 +66,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 <p>必要なものは、オブジェクトの森からデータを取り出し、 JSON を作成する方法だということがわかりました。そこで満を持して GraphQL の登場です。 GraphQL はオブジェクトの森に対して柔軟なクエリを記述でき、出力が JSON となります。完璧にマッチしますね。</p>
 <p>では、どのタイミングで、どのクエリが呼び出されるのでしょうか。答えは、ビルド時にすべてのクエリです。</p>
 <p>まず、 Gatsby をまだ触っていない方のために、クエリの書き方を紹介します。あるページ <code>/hoge</code> に対応する <code>pages/hoge.js</code> があったとして、次のように、 <code>query</code> または <code>pageQuery</code> を <code>export</code> することでクエリを指定すると、 <code>export default</code> している関数の引数に <code>data</code> として、そのクエリの結果が代入されます。</p>
-<figure>
+<figure class="fig-code">
 <figcaption>pages/hoge.js</figcaption>
 <pre><code class="language-js"><span class="hljs-keyword">import</span> <span class="hljs-title hljs-class">React</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"react"</span>
 <span class="hljs-keyword">import</span> { graphql } <span class="hljs-keyword">from</span> <span class="hljs-string">"gatsby"</span>
@@ -97,7 +97,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 <p>Gatsby がなぜ GraphQL を使っているのかについては、納得しました。しかし私が作りたいのは React でできたサイトではなく、ブログ本文が書かれた HTML が置いてあるだけのシンプルなブログです。 PWA でプリロード？ 知らん、読むかもわからんページを先読みしたところでたかが知れてるし、そのスクリプト分だけデータ量は増え、ブラウザの負荷もあります。エコじゃない。</p>
 <p>しかしまぁ、一応は Server Side Rendering 済み HTML が吐き出されるので、やりようでどうにかできます。 <a href="https://www.gatsbyjs.org/packages/gatsby-plugin-no-javascript/">gatsby-plugin-no-javascript</a> という過激な名前のサードパーティープラグインがあり、吐き出される HTML の <code>script</code> タグを全部消し去ります。今は特に動的な部分はないので、これで満足しています。</p>
 <p>あと、 SPA という前提に立っているので、デフォルトでは CSS が HTML の <code>style</code> タグに全部入っています。外部リソースのダウンロードを減らす目的でしょうけれど、スクリプトを無効化すると、サイト内リンクは React 内でのルーティングではなく普通のリンクになるので、各ページに CSS が埋め込まれていると逆効果になりそうです。そこで <code>style</code> タグではなく <code>link</code> タグにしておきたいです。 <code>link</code> タグへの変換は、ビルド中のフックで、簡単にできます（<a href="https://github.com/gatsbyjs/gatsby/issues/1526#issuecomment-583740341">元ネタ</a>）。</p>
-<figure>
+<figure class="fig-code">
 <figcaption>gatsby-ssr.js</figcaption>
 <pre><code class="language-js"><span class="hljs-keyword">const</span> <span class="hljs-title hljs-class">React</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"react"</span>)
 

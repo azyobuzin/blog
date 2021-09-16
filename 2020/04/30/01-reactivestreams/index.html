@@ -4,8 +4,8 @@
 
 C# においても Reactive Streams は他人事ではなく、 java.util.concurrent.Flow と同様のインターフェイスが Reactive.Streams パッケージとして NuGet で配布されており、標準的なインターフェイスの座を狙っています。また Akka.NET Streams がこのインターフェイスの実装を提供しています。
 
-いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（back pressure）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。"><meta property="og:article:published_time" content="2020-04-30T02:36+09:00"><meta property="og:article:modified_time" content="2021-09-01T01:02:14+09:00"><meta property="og:article:tag" content="C#"></head><body><div class="container"><article class="article-page"><header><h1>プロトコルから比較する Reactive Streams と TPL Dataflow</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-04-30T02:36:00.000+09:00" title="公開: 2020/04/30 02:36
-最終更新: 2021/09/01 01:02">2020/04/30</time> ― <a href="https://github.com/azyobuzin/blog/commits/b8152b1b3052491c89af0fa0843beb8cadd34cc9/posts/2020/04/30/01-reactivestreams" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>以前、<a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「<cite>いまさら使う TPL Dataflow</cite>」</a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
+いずれの方法も、 Reactive Extensions (Rx) 的なプッシュ型に対して、流量制限（back pressure）を導入することで、データ量を制御しています。この記事では、 Reactive Streams と TPL Dataflow をプロトコル（インターフェイスとその実装方法）から比較します。"><meta property="og:article:published_time" content="2020-04-30T02:36+09:00"><meta property="og:article:modified_time" content="2021-09-16T23:56:15+09:00"><meta property="og:article:tag" content="C#"></head><body><div class="container"><article class="article-page"><header><h1>プロトコルから比較する Reactive Streams と TPL Dataflow</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-04-30T02:36:00.000+09:00" title="公開: 2020/04/30 02:36
+最終更新: 2021/09/16 23:56">2020/04/30</time> ― <a href="https://github.com/azyobuzin/blog/commits/41da0ddaad6d3a1d7df32381c420ce1c97a30e62/posts/2020/04/30/01-reactivestreams" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/C%23/">C#</a></div></header><div class="article-content"><p>以前、<a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「<cite>いまさら使う TPL Dataflow</cite>」</a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
 <a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E9%A1%9E%E4%BC%BC%E5%93%81%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83">「<cite>類似品との比較</cite>」</a>で述べたように、 TPL Dataflow は、プッシュ型とプル型の両方の性質を持っており、送信者（<i>Producer</i>）が、受信者（<i>Consumer</i>）が処理しきれないほど大量のデータをプッシュしようとするとき、受信者がそのデータの受信を遅延させることで、データフロー内を流れるデータ量を制御します。</p>
 <p>一方で、このような、大量のデータや時系列データ（イベント列）を入力し、データフロー内を流れるデータ量を制御しながら、並列にデータを加工する仕組みは、一般的に、特に Java のコミュニティでは <a href="https://www.reactive-streams.org/"><dfn>Reactive Streams</dfn></a> と呼ばれています。 Reactive Streams に用いられるインターフェイスは Java 9 で <code>java.util.concurrent.Flow</code> として標準ライブラリ入りしており、 RxJava や Akka Streams がこのインターフェイスの実装を提供しています（実際には、互換性のため <a href="https://github.com/reactive-streams/reactive-streams-jvm">reactive-streams パッケージ</a>を通じて実装しています）。</p>
 <p>C# においても Reactive Streams は他人事ではなく、 <code>java.util.concurrent.Flow</code> と同様のインターフェイスが <a href="https://github.com/reactive-streams/reactive-streams-dotnet">Reactive.Streams パッケージ</a>として NuGet で配布されており、標準的なインターフェイスの座を狙っています。また Akka.NET Streams がこのインターフェイスの実装を提供しています。</p>
@@ -13,7 +13,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <h2>1. Reactive Streams</h2>
 <p>先に Reactive Streams のほうから導入していきましょう。 Reactive Streams の基本思想は、<strong>受信者がどれだけデータを受け入れられるかを送信者に申告する</strong>ことによって、流量の合意を取ります。</p>
 <p>インターフェイスを見ていきましょう。 Reactive Streams では、送信者は <dfn>Publisher</dfn>、受信者は <dfn>Subscriber</dfn> と呼ばれます。 Publisher は Rx における Observable に対応し、 Subscriber は Observer に対応します。インターフェイスは次のようになっており、 <code>IPublisher.Subscribe</code> に、購読者のコールバックを表す <code>ISubscriber</code> インスタンスを渡すことによって、購読を開始します。</p>
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/IPublisher.cs">IPublisher</a></figcaption>
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IPublisher</span>&#x3C;<span class="hljs-keyword">out</span> <span class="hljs-title">T</span>>
 {
@@ -21,7 +21,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 }
 </code></pre>
 </figure>
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscriber.cs">ISubscriber</a></figcaption>
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">ISubscriber</span>&#x3C;<span class="hljs-keyword">in</span> <span class="hljs-title">T</span>>
 {
@@ -35,7 +35,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <p><code>ISubscriber</code> について、 Publisher がデータを送信するために <code>OnNext</code> が呼び出され、 Publisher が送信すべきすべてのデータを送信しきったら <code>OnComplete</code> が呼び出されます。また Publisher でエラーが発生したら <code>OnError</code> が呼び出されます。 <code>OnComplete</code> または <code>OnError</code> が呼び出されたあとは、いずれのメソッドも呼び出されることはありません。このあたりのルールは Observer とまったく同じになっています。</p>
 <p><code>IObservable</code>、<code>IObserver</code> と比較して、 <code>Subscribe</code> の戻り値が <code>IDisposable</code> ではなく <code>void</code> ですが、これは <a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/ObservableSource.html#subscribe-io.reactivex.rxjava3.core.Observer-">RxJava にあわせた</a>ためだと思われます。購読の解除には、 <code>ISubscriber.OnSubscribe</code> で受け取ることができる <code>ISubscription</code> を使います。</p>
 <p>Observable と異なり、 Subscribe を呼び出した瞬間にデータが飛んでくる（<code>ISubscriber.OnNext</code> が呼び出される）ことはありません。 Publisher は Subscriber がどれだけのデータを受け取る準備があるかを確認してから、データを送信します。 Subscriber は、今どれだけのデータを受け取ることができるかを <code>OnSubscribe</code> で受け取った <code>ISubscription</code> インスタンスを通じて Publisher に申告します。 <code>ISubscription</code> は次のように定義されています。 <code>Request</code> メソッドに渡す引数が、どれだけデータを受信できるかを表します。 <code>Cancel</code> は先ほど説明した <code>IDisposable</code> の代わりとなるものです。</p>
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscription.cs">ISubscription</a></figcaption>
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">ISubscription</span>
 {
@@ -47,12 +47,12 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <p>Reactive Streams は以上のインターフェイスとルールによって成り立っています。キーポイントは <strong>Subscriber が Publisher に自分のキャパシティを伝え、 Publisher はそのキャパシティの範囲内で <code>OnNext</code> を呼び出す</strong>ことによって、データを送信を行っているところです。流量についてプル型でありながら、データを送信するタイミングは自由（プッシュ型）というところでしょうか。</p>
 <p>Reactive Streams には、 Rx と同様に、 <strong>Hot な Publisher と Cold な Publisher があります</strong>。 Hot と Cold の違いについては<a href="https://blog.xin9le.net/entry/2012/01/18/105003">「<cite>Rx入門 (13) - HotとCold - xin9le.net</cite>」</a>が参考になります。ただし、 Reactive Streams では、 Rx と異なり流量制限があります。したがって、 Hot な Publisher や、時系列データを扱う Publisher が Subscriber に対してデータを送信しようとしたとき、キャパシティが足りない Subscriber がいる可能性があります。そのときに、どのような動作をするかは、実装次第です。例えば RxJava において Observable から Publisher に変換するときは、あふれた値を破棄したり、例外を送出したり、などの選択肢が与えられています（参考: <a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Observable.html#toFlowable-io.reactivex.rxjava3.core.BackpressureStrategy-">Observable#toFlowable</a>）。</p>
 <p>最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。</p>
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" alt="Reactive Streams のシーケンス図">
 <figcaption>Reactive Streams のシーケンス図</figcaption>
 </figure>
 <p>実際には、 Cold な Publisher を実装するときには、 <code>IPublisher</code> は <code>ISubscription</code> を作成するだけの存在となり、 <code>ISubscription</code> が実際に Subscriber と通信するような実装になります。</p>
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" alt="Cold な Publisher のシーケンス図">
 <figcaption>Cold な Publisher のシーケンス図</figcaption>
 </figure>
@@ -60,7 +60,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <p>Reactive Streams は流量についてプル型とまとめましたが、 TPL Dataflow では逆の設計思想となっています。 TPL Dataflow では、<strong>データをプッシュしてみて、失敗したらプルされるのを待つ</strong>、という戦略を取ることによって、流量制限を実現しています。</p>
 <p>登場人物の紹介です。 TPL Dataflow では、送信者は <dfn>Source</dfn>、受信者は <dfn>Target</dfn> と呼ばれます。どちらもデータフローを構成する要素で、これら構成要素のことを<dfn>データフローブロック</dfn>と呼びます。</p>
 <p>まず、データフローブロック共通のインターフェイスである <code>IDataflowBlock</code> を導入します。 <code>Completion</code> はそのブロックがすべてのデータの処理が完了したら完了する（またはエラーとなる） <code>Task</code> を表します。 <code>Complete</code> と <code>Fault</code> は Reactive Streams の <code>ISubscriber.OnComplete</code>、<code>OnError</code> に対応するものですが、 Target 以外もこのメソッドを実装します。</p>
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.idataflowblock?view=netcore-3.1">IDataflowBlock</a></figcaption>
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IDataflowBlock</span>
 {
@@ -72,7 +72,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 </figure>
 <p>Source から Target への接続は、リンクと呼ばれます。リンクによって、 Source は Target を認知し、もし送信できるデータがあるならば、データを送信します。</p>
 <p>まずは Source のインターフェイスを見てみます。ユーザーが <code>LinkTo</code> を呼び出すことによって、 Source から Target へのリンクが作成されます。戻り値の <code>IDisposable</code> を使って、リンクを解除できます。その他のメソッドは Target によって呼び出されます。</p>
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.isourceblock-1?view=netcore-3.1">ISourceBlock</a></figcaption>
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">ISourceBlock</span>&#x3C;<span class="hljs-keyword">out</span> <span class="hljs-title">TOutput</span>> : <span class="hljs-title">IDataflowBlock</span>
 {
@@ -84,7 +84,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 </code></pre>
 </figure>
 <p>対して、 Target のインターフェイスは、データを受信するための <code>OfferMessage</code> と、 Source の完了を受け取る <code>IDataflowBlock.Complete</code>、<code>Fault</code> になります。</p>
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.itargetblock-1?view=netcore-3.1">ITargetBlock</a></figcaption>
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">ITargetBlock</span>&#x3C;<span class="hljs-keyword">in</span> <span class="hljs-title">TInput</span>> : <span class="hljs-title">IDataflowBlock</span>
 {
@@ -99,13 +99,13 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <p><code>ReserveMessage</code>、<code>ReleaseReservation</code> については、最短一致モード（<i>non-greedy mode</i>）を実装するときと、 Source より先に Target が終了するときに Source にリンク解除を要求するために利用されます。</p>
 <p>ここまでだらだらと文章で説明してきましたが、<strong>アホほど面倒くさい</strong>インターフェイスだということがわかったと思います。</p>
 <p>最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 <code>LinkTo</code> のオプションとして、完了を通知する <code><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion</a> = true</code> を指定したものとします。</p>
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" alt="TPL Dataflow のシーケンス図">
 <figcaption>TPL Dataflow のシーケンス図</figcaption>
 </figure>
 <h2>3. 動作開始タイミングの違いについて</h2>
 <p>TPL Dataflow では、データフローブロック間のリンクが作成された時点で、 Source の準備ができていれば、データが送信されます。次の図は、 Source が送信したデータが Propagator（Target と Source の両方の性質を持つブロック）を経由して Target に到達するフローに対して、前から順にリンクを行ったときの動作の様子です。</p>
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子">
 </figure>
 <p>一方で、 Reactive Streams では、上の図のような使い方もできますが、通常はフローを作成し、それに対して Subscribe を呼び出すことで実際の処理を開始する、という使い方のほうが一般的かと思います。例えば、次の RxJava の例では、 <a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Flowable.html#range-int-int-"><code>range</code></a> という Publisher と、それを加工する <code>map</code> を接続したストリーム <code>flowable</code>（<code>Publisher&#x3C;Integer></code> を実装しています）を定義していますが、 <code>subscribe</code> を呼び出すまでは、何も処理を行いません。また、 <code>range</code> は Cold なストリームなので、複数回 <code>subscribe</code> すると、そのたびに値が送信されます。</p>

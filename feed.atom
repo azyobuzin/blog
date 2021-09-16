@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2021-09-01T01:02:14+09:00</updated><entry><category term="C#" label="C#" /><category term="Android" label="Android" /><content type="html">&#x3C;p>TL;DR: Xamarin.Android のグローバル例外ハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（&#x3C;a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211&#x3C;/a>）。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2021-09-16T23:56:15+09:00</updated><entry><category term="C#" label="C#" /><category term="Android" label="Android" /><content type="html">&#x3C;p>TL;DR: Xamarin.Android のグローバル例外ハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（&#x3C;a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211&#x3C;/a>）。&#x3C;/p>
 &#x3C;h2>はじめに&#x3C;/h2>
 &#x3C;p>ハンドルされない例外は、アプリにとって異常事態ですから、さっさと&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/916d24b7d83a79853dd1d1cf060d327f98c46e77/src/java-runtime/java/mono/android/Seppuku.java">切腹&#x3C;/a>する必要があります。 Xamarin.Android アプリでは、 Java の例外と .NET の例外が入り混じり、境界ではそれぞれの例外に相互変換されています。では、相互変換を繰り返し、最終的に誰にもキャッチされなかった例外は、どのように処理されるのでしょうか？ そして、もし最後の砦、グローバル例外ハンドラを設定するなら、どこに設定するのが良いのでしょうか？&#x3C;/p>
 &#x3C;h2>普通の Android アプリの死に方&#x3C;/h2>
@@ -25,7 +25,7 @@ E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.j
 &#x3C;/samp>&#x3C;/pre>
 &#x3C;p>さて、例外の中身を知っているのは例外を起こしたプロセスだけですから、このログを吐き出した犯人を探すことで、 Android のグローバル例外ハンドラを探すことができそうです。 &#x3C;a href="https://cs.android.com/">Android Code Search&#x3C;/a> で「FATAL EXCEPTION」と検索すると、&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=80;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">それっぽい行&#x3C;/a>が見つかりました。&#x3C;/p>
 &#x3C;p>さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる &#x3C;code>RuntimeInit.commonInit&#x3C;/code> に次のようなプログラムが入っています。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">RuntimeInit.commonInit の一部&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">LoggingHandler&#x3C;/span> &#x3C;span class="hljs-variable">loggingHandler&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">LoggingHandler&#x3C;/span>();
 RuntimeHooks.setUncaughtExceptionPreHandler(loggingHandler);
@@ -95,7 +95,7 @@ I MonoDroid:
 &#x3C;/samp>&#x3C;/pre>
 &#x3C;p>見覚えのある前半と、見覚えのない後半ですね。ということは、 &#x3C;code>RuntimeInit$LoggingHandler&#x3C;/code> は呼び出されるようです。 Java のスレッドで例外が発生しているので、 .NET の例外は JNI を通して Java 側にスローされていきます。なので Java のスレッドの例外ハンドラが処理しているのは不思議ではないですね。&#x3C;/p>
 &#x3C;p>では後半のログを出しているのは一体誰なのでしょうか？ 答えは &#x3C;code>Thread.getDefaultUncaughtExceptionHandler()&#x3C;/code>（C# では &#x3C;code>Java.Lang.Thread.DefaultUncaughtExceptionHandler&#x3C;/code>）を取得してみるとわかります。 Xamarin.Android の初期化メソッドが存在する &#x3C;code>mono.android.Runtime&#x3C;/code> クラスの静的コンストラクタで、デフォルト例外ハンドラを独自に設定しています。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15">Runtime.java の一部&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-keyword">static&#x3C;/span> {
     Thread.setDefaultUncaughtExceptionHandler (&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">XamarinUncaughtExceptionHandler&#x3C;/span> (Thread.getDefaultUncaughtExceptionHandler ()));
@@ -125,7 +125,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>Xamarin.Android の例外処理を調べたことがある人は、 &#x3C;code>AndroidEnvironment.UnhandledExceptionRaiser&#x3C;/code> が強そうな名前に見えて、使えそうに見えてしまったのではないでしょうか。しかし実際のところ、あんまり使い道はありません。&#x3C;/p>
 &#x3C;p>&#x3C;code>AndroidEnvironment.UnhandledExceptionRaiser&#x3C;/code> イベントは、 .NET で発生した例外を Java の例外に変換するときに発生します。例えば、今まで &#x3C;code>OnStart&#x3C;/code> メソッドで &#x3C;code>throw new Exception();&#x3C;/code> をする例を示してきましたが、 &#x3C;code>OnStart&#x3C;/code> メソッドの呼び出し元は Java なので、 Java の例外に変換する必要があります。&#x3C;/p>
 &#x3C;p>このイベントにハンドラを設定しない場合、もしくはいずれのハンドラも &#x3C;code>e.Handled = true&#x3C;/code> をセットしない場合はデフォルトの挙動をします。デフォルトの挙動は、 .NET の例外を &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> でラップし、 Java を例外状態（JNI の &#x3C;code>Throw&#x3C;/code> 関数を呼び出す）にします。&#x3C;/p>
-&#x3C;p>使い道としては、 .NET で発生した例外を握りつぶして Java のプログラムを続行させたり（&#x3C;code>e.Handled = true&#x3C;/code> をセットして何もしない）、 &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> ではない独自の &#x3C;code>Throwable&#x3C;/code> に変換したり（&#x3C;code>JNIEnv.Throw&#x3C;/code> を呼び出す）、が考えられます。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/08/28/01-xaexception/</id><link href="https://blog.azyobuzi.net/2021/08/28/01-xaexception/" rel="alternate" type="text/html" /><published>2021-08-27T03:24:00+09:00</published><title type="html">Xamarin.Android アプリが例外で落ちるということ</title><updated>2021-08-29T01:22:30+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？&#x3C;/p>
+&#x3C;p>使い道としては、 .NET で発生した例外を握りつぶして Java のプログラムを続行させたり（&#x3C;code>e.Handled = true&#x3C;/code> をセットして何もしない）、 &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> ではない独自の &#x3C;code>Throwable&#x3C;/code> に変換したり（&#x3C;code>JNIEnv.Throw&#x3C;/code> を呼び出す）、が考えられます。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/08/28/01-xaexception/</id><link href="https://blog.azyobuzi.net/2021/08/28/01-xaexception/" rel="alternate" type="text/html" /><published>2021-08-27T03:24:00+09:00</published><title type="html">Xamarin.Android アプリが例外で落ちるということ</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？&#x3C;/p>
 &#x3C;p>例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。&#x3C;/p>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-function">ISourceBlock&#x26;#x3C;T> &#x3C;span class="hljs-title">CreateSource&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>
 {
@@ -146,18 +146,18 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>PropagatorBlock は Source と Target 両方の性質を持っており、 Target で受信したデータを加工して Source がデータを出力します。 Target 部は1件ずつ受信を行い、加工を行うタスクへ投げ、加工が終わったデータは Source 部のキューに積まれ、 Source 部は1件ずつ送信を行います。つまり PropagatorBlock においては Target と Source は並列に動いています。&#x3C;/p>
 &#x3C;p>TPL Dataflow のソースコードを読むと、 TargetBlock または PropagatorBlock の Target 部を直列化するために使用されるロックを &#x3C;code>IncomingLock&#x3C;/code>、 SourceBlock または PropagatorBlock の Source 部を直列化するために使用されるロックを &#x3C;code>OutgoingLock&#x3C;/code> と呼んでいるので、この名称を使っていきます。&#x3C;/p>
 &#x3C;p>では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子">&#x3C;/figure>
 &#x3C;p>もう複数のロックがあるという時点で嫌ですね。&#x3C;/p>
 &#x3C;p>ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子">&#x3C;/figure>
 &#x3C;p>そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg">&#x3C;/figure>
 &#x3C;p>見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。&#x3C;/p>
 &#x3C;p>ただ、このデッドロックは実は回避できます。「(1) OfferMessage」のところで Propagator が「(2) ConsumeMessage」を実行中でまだ返ってきてないぞと判断して、このメッセージを延期させてしまえば、 OutgoingLock が外れるので先に進むことができます。&#x3C;/p>
 &#x3C;p>今の例では、 Source, Propagator, Target が 1:1:1 だったので回避できました。が、1:N:1、つまりひとつの Source が複数の Propagator に接続されていて、さらにその Propagator たちがひとつの Target に接続されている場合はどうでしょう。先程の図の (1) が Propagator1 で、 (2) が Propagator2 で起こっていたら、 Propagator 同士はお互いを知らないので調停することができません。&#x3C;/p>
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>バッファを持たない PropagatorBlock は、デッドロックを起こす運命にあります。回避可能なケースは Source, Propagator, Target が 1:1:1 の関係にあるときです。例えば、 &#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowblock.linkto?view=net-5.0#System_Threading_Tasks_Dataflow_DataflowBlock_LinkTo__1_System_Threading_Tasks_Dataflow_ISourceBlock___0__System_Threading_Tasks_Dataflow_ITargetBlock___0__System_Predicate___0__">&#x3C;code>LinkTo&#x3C;/code> メソッドの &#x3C;code>predicate&#x3C;/code> 引数を持つオーバーロード&#x3C;/a>は、内部で PropagatorBlock を作成しています。しかしこのブロックは外部へ公開されず、あくまでリンクのために隠蔽されています。通常のブロックとして、複数のファンイン、ファンアウトを持てるという要件を満たそうとすると、不可能になります。&#x3C;/p>
-&#x3C;p>結局この記事で何が言いたかったかというと、拙作の TPL Dataflow 補助ライブラリの &#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a> で、バッファなしの &#x3C;code>TransformBlock&#x3C;/code> を提供していたのですが、デッドロックの可能性を排除できなかったので、機能を削除することにしました。悲しい。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/</id><link href="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png" rel="enclosure" /><published>2021-03-23T03:44:00+09:00</published><title type="html">バッファのない PropagatorBlock はつくれないという話</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="日記" label="日記" /><content type="html">&#x3C;p>冬。国内学会の総合大会の季節。間に合わん！&#x3C;/p>
+&#x3C;p>結局この記事で何が言いたかったかというと、拙作の TPL Dataflow 補助ライブラリの &#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a> で、バッファなしの &#x3C;code>TransformBlock&#x3C;/code> を提供していたのですが、デッドロックの可能性を排除できなかったので、機能を削除することにしました。悲しい。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/</id><link href="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png" rel="enclosure" /><published>2021-03-23T03:44:00+09:00</published><title type="html">バッファのない PropagatorBlock はつくれないという話</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><category term="日記" label="日記" /><content type="html">&#x3C;p>冬。国内学会の総合大会の季節。間に合わん！&#x3C;/p>
 &#x3C;h2>自己紹介&#x3C;/h2>
 &#x3C;p>自己紹介。情報工学系修士1年。研究テーマは&#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/" title="画像可逆圧縮形式 FLIF についてのメモ">前回の投稿&#x3C;/a>みたいな話をやっていきたいというところです。&#x3C;/p>
 &#x3C;p>そしてあまりにも進捗が爆発してしまったので、ここに反省文を書こうという気持ちです。こんなもの書いてる暇があったら研究計画を立てろ。すいません。&#x3C;/p>
@@ -217,7 +217,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;li>チャンネルごとに、画素値を左上からラスタスキャンの順に MANIAC 符号化したデータ&#x3C;/li>
 &#x3C;/ol>
 &#x3C;p>実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-px-noninterlace">図 1&#x3C;/a> に示すように、予測する画素 X の左上、上、左です。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_noninterlace.svg" height="75" alt="非インターレース方式で参照する周辺画素">
 &#x3C;figcaption>図 1: 非インターレース方式で参照する周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
@@ -226,7 +226,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>3.2. インターレース方式&#x3C;/h3>
 &#x3C;p>大きいサイズの画像に対しては、非インターレース方式よりも複雑ですが、予測精度の高い手法を用いることで、圧縮効率を稼ぎます。インターレース方式では小さい画像から段々と大きい画像を復元していきます。 PNG だとインターレースを使用するメリットは読み込み途中でも画像を表示できるという程度ですが、 FLIF では圧縮率に貢献します。&#x3C;/p>
 &#x3C;p>次の表は実際の復号化中のデータを Y チャンネル（輝度値）について取り出したものです。この場合では、ズームレベル 14 から順番に復元していきます。&#x3C;/p>
-&#x3C;figure data-num="表">
+&#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 1: インターレース方式で画素が復元される様子&#x3C;/figcaption>
 
 
@@ -319,22 +319,22 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>このように圧縮すると何がうれしいかというと、すでに復号化されている隣接画素の情報を画素値予測に使うことができることができます。図からも 4×4 くらいになれば、手がかりになりそうなデータになっていることが分かると思います。実際、インターレース方式で使用する予測器は、非インターレース方式の予測器よりもリッチです。&#x3C;/p>
 &#x3C;p>予測器はズームレベルが偶数か奇数かで少し挙動が変わります。なぜなら周囲の画素の復号化状況が異なるからです。偶数では行を復号化するため、下側の画素を参照することができますが、右側を参照することはできません。奇数では列を復号化するため、逆に右側を参照することできますが、下側を参照することができません。&#x3C;/p>
 &#x3C;p>実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_interlace.svg" height="150" alt="インターレース方式で参照する周辺画素">
 &#x3C;figcaption>図 2: インターレース方式で参照する周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_horizontal.svg" height="150" alt="偶数ズームレベルにおける周辺画素">
 &#x3C;figcaption>図 3: 偶数ズームレベルにおける周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_vertical.svg" height="150" alt="奇数ズームレベルにおける周辺画素">
 &#x3C;figcaption>図 4: 奇数ズームレベルにおける周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>また、画像の端っこの画素を処理するときには、参照できない周辺画素があります。その場合は、偶数ズームレベルでは必ず T があり、奇数ズームレベルでは L があるので、その値を代用します。&#x3C;/p>
 &#x3C;p>予測器は次の3つから選ぶことができます。チャンネルごとに指定するかズームレベルごとに指定するかが選べます。リファレンス実装のデフォルトでは、チャンネルごとにズームレベル 0 と 1 で試しにすべての予測器で予測させて、誤差が一番少ないものを選択します。&#x3C;/p>
-&#x3C;figure data-num="表">
+&#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 2: インターレース方式における予測器&#x3C;/figcaption>
 &#x3C;table>
   &#x3C;thead>
@@ -398,12 +398,12 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h4>4.1.1. 実数による算術符号&#x3C;/h4>
 &#x3C;p>算術符号は、記号の出現確率分布（累積分布）を表す数直線上で、符号化したい記号列がどの位置にあるのか、を記録する符号化方式です。&#x3C;/p>
 &#x3C;p>まずは簡単な概念の説明のために、0～1の実数で考えてみます。 FLIF で使用される算術符号では「0」と「1」の2種類の記号だけが登場する（二値算術符号）記号列を扱うので、ここでも2種類の記号で考えます。例えば、「0」が 40% 、「1」が 60% の確率で出現することがわかっているとします。この確率によって、 0～1 の数直線を分割すると、このようになります。数直線上に点を置いたとき 0～0.4 の範囲にあるならば 0、 0.4～1 ならば 1 を表している、と解釈できます。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig1.svg" alt="算術符号を説明する数直線1">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig1.svg" alt="算術符号を説明する数直線1">&#x3C;/figure>
 &#x3C;p>では、この分割を再帰的に用いて、記号列「101」を数直線上に表してみましょう。&#x3C;/p>
 &#x3C;p>最初の記号は 1 なので、 0.4～1 の範囲に注目します。この範囲をさらに 40:60 に分割するとこのようになります。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig2.svg" alt="算術符号を説明する数直線2">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig2.svg" alt="算術符号を説明する数直線2">&#x3C;/figure>
 &#x3C;p>2個目の記号は 0 なので、次は 0.4～0.64 の範囲に注目し、同じように分割します。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig3.svg" alt="算術符号を説明する数直線3">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig3.svg" alt="算術符号を説明する数直線3">&#x3C;/figure>
 &#x3C;p>この結果から、記号列「101」をこの数直線上に表すと 0.496～0.64 の範囲となることがわかりました！ 符号化結果としては、範囲の左端を使って「0.496」とすることにしましょう。このように、記号列を記号の出現確率を使って数直線上に表す方法が、算術符号になります。復号化するときは、「0.496」がどの記号の範囲に含まれているかを、同じように分割しながら探索していきます。&#x3C;/p>
 &#x3C;h4>4.1.2. Range Coder&#x3C;/h4>
 &#x3C;p>先ほどの例では実数を使って表しましたが、記号列が長くなると相当な精度の小数を使用しなければ正しく符号化結果を記録できないことがわかると思います。また小数を使用すると計算速度も遅くなります。そこで、現実的な実装方法として、整数を使用する Range Coder という手法が用いられます。 FLIF のリファレンス実装のソースコードでは「RAC」と略されています。&#x3C;/p>
@@ -432,7 +432,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;p>もし値がゼロなら、ゼロフラグを 1 としておしまいです。そうでなければ、正(1)か負(0)か、何ビットあるか、数値のビット列、の順で記録します。&#x3C;/p>
 &#x3C;p>例えば、「5」を符号化すると次のようになります。&#x3C;/p>
-&#x3C;figure data-num="表">
+&#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 3: 「5」を Near-zero Integer Coding で符号化&#x3C;/figcaption>
 &#x3C;table>
 &#x3C;tbody>&#x3C;tr>
@@ -458,7 +458,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>指数部は数値が何ビットあるかを表します。数値が何ビットあるかは 0 が連続した数で決まります。この例では、 0 が 2 個続き、その次が 1 なので、 3 ビットの数値を表していることを表現しています。&#x3C;/p>
 &#x3C;p>仮数部は、最上位ビット以外の値がそのまま出力されます。最上位ビットについては、何ビットあるかが指数部で示されているので、 1 であることが確定しています。&#x3C;/p>
 &#x3C;p>ただし、数値の取りうる範囲によっては、一部ビットが省略されることがあります。ここでは最小値を任意の負値、最大値を 5 として、 5 を符号化した例を見てみましょう。&#x3C;/p>
-&#x3C;figure data-num="表">
+&#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 4: 「5」を最大値 5 の Near-zero Integer Coding で符号化&#x3C;/figcaption>
 &#x3C;table>
 &#x3C;tbody>&#x3C;tr>
@@ -484,29 +484,29 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h4>4.4.1. ざっくりとした説明&#x3C;/h4>
 &#x3C;p>ここまでで、各画素値を周囲の画素値を使って予測し、その予測誤差を確率表を使って適応的算術符号化して記録するということがわかりました。しかしまだ終わりではありません。 FLIF では確率表を状況に応じて使い分けます。つまり&#x3C;strong>確率表のコンテキスト&#x3C;/strong>を考えます。これが FLIF 用語での「コンテキスト」になります。&#x3C;/p>
 &#x3C;p>コンテキストについてざっくりいうと、符号化しようとしている画素に関する情報を条件とする決定木によって、使用する確率表が決定します（&#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-ctx-summary">図 5&#x3C;/a>）。条件には他のチャンネルの画素値や、周辺画素同士の差といった情報が使えます。条件に使用できる情報をそれぞれプロパティと呼び、非インターレース方式で10種類、インターレース方式で17種類のプロパティがあります。プロパティ値がある値より大きい場合と、ある値以下の場合で分岐します。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_summary.svg" alt="確率表のコンテキストを選択する決定木">
 &#x3C;figcaption>図 5: 確率表のコンテキストを選択する決定木&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h4>4.4.2. カウンター&#x3C;/h4>
 &#x3C;p>さらに踏み込んで見てみます。もし最初から &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-ctx-summary">図 5&#x3C;/a> のように使用する確率表が決まるとすると、それぞれの確率表の初期値はどのように決まるのでしょうか？ 確率表それぞれが別々に適応を行っていくので、すべての確率表を仕様で定められた確率で初期化したら、適応によって確率表が温まるまでの間に全画素についての処理が終わってしまいます。そこで FLIF の決定木にはカウンターという機能が盛り込まれています。&#x3C;/p>
 &#x3C;p>カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_1.svg" height="200" alt="決定木の初期状態">
 &#x3C;figcaption>図 6: 決定木の初期状態&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_2.svg" height="200" alt="カウンターがデクリメントされる">
 &#x3C;figcaption>図 7: カウンターがデクリメントされる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_3.svg" height="200" alt="カウンターが0になると子に確率表がコピーされる">
 &#x3C;figcaption>図 8: カウンターが0になると子に確率表がコピーされる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>いま、確率表2と確率表3は、確率表1と同じ内容になっています。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_4.svg" height="200" alt="カウンターが0になると条件分岐が行われる">
 &#x3C;figcaption>図 9: カウンターが0になると条件分岐が行われる&#x3C;/figcaption>
 &#x3C;/figure>
@@ -575,7 +575,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;/li>
 &#x3C;/ol>
-&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
 &#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
 &#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
 &#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>
@@ -585,10 +585,10 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>1. Visual Studio で連携を設定する&#x3C;/h3>
 &#x3C;p>ここで説明する手順を実行するには、 Visual Studio 2019 で「ASP.NET と Web 開発」または「.NET Core クロスプラットフォームの開発」ワークロードがインストールされている必要があります。&#x3C;/p>
 &#x3C;p>ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加">&#x3C;/figure>
 &#x3C;p>いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。&#x3C;/p>
 &#x3C;p>完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション">&#x3C;/figure>
 &#x3C;p>これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。&#x3C;/p>
 &#x3C;h3>2. Dockerfile を改変する&#x3C;/h3>
 &#x3C;p>生成された Dockerfile を確認すると、本番ビルド用のスクリプトが書かれています。今回はこれを完全に捨てることにします。ただ、プロジェクトディレクトリ下に Dockerfile がないと Visual Studio が認識してくれないので、ここに開発環境を作成するスクリプトを書きましょう。本番用 Dockerfile はどこか別のところに置いてください……。&#x3C;/p>
@@ -596,10 +596,10 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>3. docker-compose.yml を改変する&#x3C;/h3>
 &#x3C;p>ここからの操作は Visual Studio を破壊するので、すべてが完了するまで Visual Studio は閉じておきましょう。&#x3C;/p>
 &#x3C;p>いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。&#x3C;/p>
-&#x3C;figure>&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動">&#x3C;/figure>
 &#x3C;p>さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。&#x3C;/p>
 &#x3C;p>いま docker-compose.yml の中身はこのようになっていると思います。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>docker-compose.yml&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
 
@@ -617,7 +617,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;li>PostgreSQL を追加する。&#x3C;/li>
 &#x3C;/ul>
 &#x3C;p>改変結果はこんな感じです。 docker-compose.yml の構文バージョンやプロジェクト名は、環境に合わせて書き換えてください。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>docker-compose.yml&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
 
@@ -639,7 +639,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>4. docker-compose.dcproj を改変する&#x3C;/h3>
 &#x3C;p>docker-compose.yml を移動したので、 docker-compose.dcproj も書き換えます。これもソリューションディレクトリ直下にあると邪魔なので .devcontainer に移動させてしまいましょう。&#x3C;/p>
 &#x3C;p>さらにファイル名変更を反映して、ディレクトリ外に行ってしまった .dockerignore をプロジェクトから消します。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>docker-compose.dcproj&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-diff"> &#x26;#x3C;?xml version="1.0" encoding="utf-8"?>
  &#x26;#x3C;Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
@@ -660,7 +660,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
 &#x3C;p>またソリューションファイルもパスを書き換えます。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>MyDatabaseApp.sln&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-diff">&#x3C;span class="hljs-deletion">-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3CABA81B-3F76-4ECF-9907-78B96280D41C}"&#x3C;/span>
 &#x3C;span class="hljs-addition">+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", ".devcontainer\docker-compose.dcproj", "{3CABA81B-3F76-4ECF-9907-78B96280D41C}"&#x3C;/span>
@@ -673,7 +673,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;li>作業ディレクトリをマウントする&#x3C;/li>
 &#x3C;/ul>
 &#x3C;p>実際の YAML で表すとこれだけです。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>docker-compose.vscode.yml&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">version:&#x3C;/span> &#x3C;span class="hljs-string">"3.4"&#x3C;/span>
 
@@ -689,7 +689,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>6. devcontainer.json をつくる&#x3C;/h3>
 &#x3C;p>devcontainer.json は VSCode にコンテナ作成を指示する設定ファイルです。これも .devcontainer に置きます。&#x3C;/p>
 &#x3C;p>最小限の devcontainer.json はこんな感じです。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>devcontainer.json&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-json">&#x3C;span class="hljs-punctuation">{&#x3C;/span>
   &#x3C;span class="hljs-attr">"dockerComposeFile"&#x3C;/span>&#x3C;span class="hljs-punctuation">:&#x3C;/span> &#x3C;span class="hljs-punctuation">[&#x3C;/span>&#x3C;span class="hljs-string">"docker-compose.yml"&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span> &#x3C;span class="hljs-string">"docker-compose.vscode.yml"&#x3C;/span>&#x3C;span class="hljs-punctuation">]&#x3C;/span>&#x3C;span class="hljs-punctuation">,&#x3C;/span>
@@ -715,7 +715,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>頑張れば Visual Studio でも VSCode でも使える Docker Compose 環境がつくれることを示しました。これで開発が捗ればいいね。捗らんか……。&#x3C;/p>
 &#x3C;p>ここまでの内容を clone するだけでお試しできるものを GitHub に置いておきました。&#x3C;/p>
-&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
 &#x3C;h2>イントロダクション&#x3C;/h2>
 &#x3C;p>ケチケチしたインターネットライフに Kubernetes は無縁です。&#x3C;/p>
 &#x3C;p>以前、 Docker のネットワークに細かい設定ができないという不満があって、 Kubernetes の調査をしていたこともありました（&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/03/21/024504">「&#x3C;cite>Kubernetesで隔離Mastodonネットワークを作った&#x3C;/cite>」&#x3C;/a>）。しかしながら、趣味で動かしている web サーバに Kubernetes を導入するのは、ケチケチした人間には不可能です。メモリ 2GB (GMO の株主優待を受けて、スペックアップしました！) の VPS に詰め込めるだけのアプリを詰める、そういうことをしている人間にとっては、 Kubernetes の導入はデメリットの方が多くなります。&#x3C;/p>
@@ -724,7 +724,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h2>Docker ネットワークの課題&#x3C;/h2>
 &#x3C;p>Docker 標準の bridge ネットワークの表現力を確認して、課題を確認します。&#x3C;/p>
 &#x3C;p>まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 &#x3C;code>docker network connect&#x3C;/code> コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="コンテナとネットワークの関係">
 &#x3C;figcaption>コンテナとネットワークの関係&#x3C;/figcaption>
 &#x3C;/figure>
@@ -735,7 +735,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;p>これの何が不満かというと、コンテナ間の通信の可否はネットワーク単位でしか設定できないということです。&#x3C;/p>
 &#x3C;p>例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="DBを参照するふたつのアプリ">
 &#x3C;figcaption>DBを参照するふたつのアプリ&#x3C;/figcaption>
 &#x3C;/figure>
@@ -765,7 +765,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>永続化されないということは Cilium が起動したときにポリシーを設定する必要があります。これが問題になるのは、特にマシンや Docker デーモンを再起動したときです。 Cilium が起動するのを待ち、ポリシーを設定するようなサイドカーを用意しておかないと、正しくポリシーが適用されません。このようなサイドカーの実装を考え始めると、どんどん制御ループ、つまり Kubernetes のコンセプトに近づいていきます。&#x3C;/p>
 &#x3C;h2>結局&#x3C;/h2>
 &#x3C;p>&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/03/04/144245" title="k3s の中身とメモリ使用量の調査">K3s に最初に食いついた&#x3C;/a>人間なので、諦めて K3s と仲良くするのが一番いいのかもしれません。うっ……。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-quote">
 &#x3C;blockquote cite="https://twitter.com/azyobuzin/status/1251774353579978758">
 働かざる者Kubeからずというように、個人の趣味プロジェクトでKubernetesを使うべきではない
 &#x3C;/blockquote>
@@ -784,18 +784,18 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/li>
 &#x3C;/ol>
 &#x3C;p>これでコンテナに IPv6 アドレスが振られるようになります。が、 NAT が設定されないので外に出ていったパケットが帰ってこられなくなります。これは Cilium の Issue に積まれていますが、なかなか修正される様子がないです。ワークアラウンドとしては、自分で ip6tables を設定してねということです。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-quote">
 &#x3C;blockquote>
 &#x3C;p>Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.&#x3C;/p>
 &#x3C;pre>&#x3C;code class="">ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/blockquote>
 &#x3C;figcaption>&#x3C;a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">&#x3C;cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
-&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
+&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
 &#x3C;p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 &#x3C;strong>以上&#x3C;/strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。&#x3C;/p>
 &#x3C;h2>サンプルプロジェクト&#x3C;/h2>
 &#x3C;p>文章でだらだらと説明されても読みたくないのはわかります。ので、実際の csproj を示しておきます。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>A/A.csproj&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Project&#x3C;/span> &#x3C;span class="hljs-attr">Sdk&#x3C;/span>=&#x3C;span class="hljs-string">"Microsoft.NET.Sdk"&#x3C;/span>>&#x3C;/span>
   &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
@@ -805,7 +805,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">Project&#x3C;/span>>&#x3C;/span>
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>B/B.csproj&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">Project&#x3C;/span> &#x3C;span class="hljs-attr">Sdk&#x3C;/span>=&#x3C;span class="hljs-string">"Microsoft.NET.Sdk"&#x3C;/span>>&#x3C;/span>
   &#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">PropertyGroup&#x3C;/span>>&#x3C;/span>
@@ -861,7 +861,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h2>今後もっと簡単になるか？&#x3C;/h2>
 &#x3C;p>&#x3C;a href="https://github.com/NuGet/Home/issues/5556">NuGet/Home#5556&#x3C;/a> を監視していきましょう。&#x3C;/p>
 &#x3C;h2>NuGet に対するぼやき&#x3C;/h2>
-&#x3C;p>依存関係解決の戦略がデフォルトで「条件を満たす最小バージョン」な所為で、依存バージョンをすぐ「以上」にしてしまうのは NuGet の悪いところだなぁと思っています。そのおかげで lock ファイルを使わなくても、あまり崩壊しないという利点はありますが、少なくともリビジョンリリースは自動で最新にしてほしくない？ という思いがあります。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/05/03/01-projectref/</id><link href="https://blog.azyobuzi.net/2020/05/03/01-projectref/" rel="alternate" type="text/html" /><published>2020-05-03T04:07:00+09:00</published><title type="html">ProjectReference にバージョン範囲を指定したい</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>以前、&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「&#x3C;cite>いまさら使う TPL Dataflow&#x3C;/cite>」&#x3C;/a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
+&#x3C;p>依存関係解決の戦略がデフォルトで「条件を満たす最小バージョン」な所為で、依存バージョンをすぐ「以上」にしてしまうのは NuGet の悪いところだなぁと思っています。そのおかげで lock ファイルを使わなくても、あまり崩壊しないという利点はありますが、少なくともリビジョンリリースは自動で最新にしてほしくない？ という思いがあります。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/05/03/01-projectref/</id><link href="https://blog.azyobuzi.net/2020/05/03/01-projectref/" rel="alternate" type="text/html" /><published>2020-05-03T04:07:00+09:00</published><title type="html">ProjectReference にバージョン範囲を指定したい</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><category term="C#" label="C#" /><content type="html">&#x3C;p>以前、&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155">「&#x3C;cite>いまさら使う TPL Dataflow&#x3C;/cite>」&#x3C;/a>で紹介した TPL Dataflow は、入力されたデータを並列に処理するプログラムを、ブロックの組み合わせで簡単に記述できるライブラリです。
 &#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/05/26/164155#%E9%A1%9E%E4%BC%BC%E5%93%81%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83">「&#x3C;cite>類似品との比較&#x3C;/cite>」&#x3C;/a>で述べたように、 TPL Dataflow は、プッシュ型とプル型の両方の性質を持っており、送信者（&#x3C;i>Producer&#x3C;/i>）が、受信者（&#x3C;i>Consumer&#x3C;/i>）が処理しきれないほど大量のデータをプッシュしようとするとき、受信者がそのデータの受信を遅延させることで、データフロー内を流れるデータ量を制御します。&#x3C;/p>
 &#x3C;p>一方で、このような、大量のデータや時系列データ（イベント列）を入力し、データフロー内を流れるデータ量を制御しながら、並列にデータを加工する仕組みは、一般的に、特に Java のコミュニティでは &#x3C;a href="https://www.reactive-streams.org/">&#x3C;dfn>Reactive Streams&#x3C;/dfn>&#x3C;/a> と呼ばれています。 Reactive Streams に用いられるインターフェイスは Java 9 で &#x3C;code>java.util.concurrent.Flow&#x3C;/code> として標準ライブラリ入りしており、 RxJava や Akka Streams がこのインターフェイスの実装を提供しています（実際には、互換性のため &#x3C;a href="https://github.com/reactive-streams/reactive-streams-jvm">reactive-streams パッケージ&#x3C;/a>を通じて実装しています）。&#x3C;/p>
 &#x3C;p>C# においても Reactive Streams は他人事ではなく、 &#x3C;code>java.util.concurrent.Flow&#x3C;/code> と同様のインターフェイスが &#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet">Reactive.Streams パッケージ&#x3C;/a>として NuGet で配布されており、標準的なインターフェイスの座を狙っています。また Akka.NET Streams がこのインターフェイスの実装を提供しています。&#x3C;/p>
@@ -869,7 +869,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h2>1. Reactive Streams&#x3C;/h2>
 &#x3C;p>先に Reactive Streams のほうから導入していきましょう。 Reactive Streams の基本思想は、&#x3C;strong>受信者がどれだけデータを受け入れられるかを送信者に申告する&#x3C;/strong>ことによって、流量の合意を取ります。&#x3C;/p>
 &#x3C;p>インターフェイスを見ていきましょう。 Reactive Streams では、送信者は &#x3C;dfn>Publisher&#x3C;/dfn>、受信者は &#x3C;dfn>Subscriber&#x3C;/dfn> と呼ばれます。 Publisher は Rx における Observable に対応し、 Subscriber は Observer に対応します。インターフェイスは次のようになっており、 &#x3C;code>IPublisher.Subscribe&#x3C;/code> に、購読者のコールバックを表す &#x3C;code>ISubscriber&#x3C;/code> インスタンスを渡すことによって、購読を開始します。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/IPublisher.cs">IPublisher&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">IPublisher&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">out&#x3C;/span> &#x3C;span class="hljs-title">T&#x3C;/span>>
 {
@@ -877,7 +877,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 }
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscriber.cs">ISubscriber&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISubscriber&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">in&#x3C;/span> &#x3C;span class="hljs-title">T&#x3C;/span>>
 {
@@ -891,7 +891,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>&#x3C;code>ISubscriber&#x3C;/code> について、 Publisher がデータを送信するために &#x3C;code>OnNext&#x3C;/code> が呼び出され、 Publisher が送信すべきすべてのデータを送信しきったら &#x3C;code>OnComplete&#x3C;/code> が呼び出されます。また Publisher でエラーが発生したら &#x3C;code>OnError&#x3C;/code> が呼び出されます。 &#x3C;code>OnComplete&#x3C;/code> または &#x3C;code>OnError&#x3C;/code> が呼び出されたあとは、いずれのメソッドも呼び出されることはありません。このあたりのルールは Observer とまったく同じになっています。&#x3C;/p>
 &#x3C;p>&#x3C;code>IObservable&#x3C;/code>、&#x3C;code>IObserver&#x3C;/code> と比較して、 &#x3C;code>Subscribe&#x3C;/code> の戻り値が &#x3C;code>IDisposable&#x3C;/code> ではなく &#x3C;code>void&#x3C;/code> ですが、これは &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/ObservableSource.html#subscribe-io.reactivex.rxjava3.core.Observer-">RxJava にあわせた&#x3C;/a>ためだと思われます。購読の解除には、 &#x3C;code>ISubscriber.OnSubscribe&#x3C;/code> で受け取ることができる &#x3C;code>ISubscription&#x3C;/code> を使います。&#x3C;/p>
 &#x3C;p>Observable と異なり、 Subscribe を呼び出した瞬間にデータが飛んでくる（&#x3C;code>ISubscriber.OnNext&#x3C;/code> が呼び出される）ことはありません。 Publisher は Subscriber がどれだけのデータを受け取る準備があるかを確認してから、データを送信します。 Subscriber は、今どれだけのデータを受け取ることができるかを &#x3C;code>OnSubscribe&#x3C;/code> で受け取った &#x3C;code>ISubscription&#x3C;/code> インスタンスを通じて Publisher に申告します。 &#x3C;code>ISubscription&#x3C;/code> は次のように定義されています。 &#x3C;code>Request&#x3C;/code> メソッドに渡す引数が、どれだけデータを受信できるかを表します。 &#x3C;code>Cancel&#x3C;/code> は先ほど説明した &#x3C;code>IDisposable&#x3C;/code> の代わりとなるものです。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscription.cs">ISubscription&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISubscription&#x3C;/span>
 {
@@ -903,12 +903,12 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>Reactive Streams は以上のインターフェイスとルールによって成り立っています。キーポイントは &#x3C;strong>Subscriber が Publisher に自分のキャパシティを伝え、 Publisher はそのキャパシティの範囲内で &#x3C;code>OnNext&#x3C;/code> を呼び出す&#x3C;/strong>ことによって、データを送信を行っているところです。流量についてプル型でありながら、データを送信するタイミングは自由（プッシュ型）というところでしょうか。&#x3C;/p>
 &#x3C;p>Reactive Streams には、 Rx と同様に、 &#x3C;strong>Hot な Publisher と Cold な Publisher があります&#x3C;/strong>。 Hot と Cold の違いについては&#x3C;a href="https://blog.xin9le.net/entry/2012/01/18/105003">「&#x3C;cite>Rx入門 (13) - HotとCold - xin9le.net&#x3C;/cite>」&#x3C;/a>が参考になります。ただし、 Reactive Streams では、 Rx と異なり流量制限があります。したがって、 Hot な Publisher や、時系列データを扱う Publisher が Subscriber に対してデータを送信しようとしたとき、キャパシティが足りない Subscriber がいる可能性があります。そのときに、どのような動作をするかは、実装次第です。例えば RxJava において Observable から Publisher に変換するときは、あふれた値を破棄したり、例外を送出したり、などの選択肢が与えられています（参考: &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Observable.html#toFlowable-io.reactivex.rxjava3.core.BackpressureStrategy-">Observable#toFlowable&#x3C;/a>）。&#x3C;/p>
 &#x3C;p>最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" alt="Reactive Streams のシーケンス図">
 &#x3C;figcaption>Reactive Streams のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>実際には、 Cold な Publisher を実装するときには、 &#x3C;code>IPublisher&#x3C;/code> は &#x3C;code>ISubscription&#x3C;/code> を作成するだけの存在となり、 &#x3C;code>ISubscription&#x3C;/code> が実際に Subscriber と通信するような実装になります。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" alt="Cold な Publisher のシーケンス図">
 &#x3C;figcaption>Cold な Publisher のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
@@ -916,7 +916,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>Reactive Streams は流量についてプル型とまとめましたが、 TPL Dataflow では逆の設計思想となっています。 TPL Dataflow では、&#x3C;strong>データをプッシュしてみて、失敗したらプルされるのを待つ&#x3C;/strong>、という戦略を取ることによって、流量制限を実現しています。&#x3C;/p>
 &#x3C;p>登場人物の紹介です。 TPL Dataflow では、送信者は &#x3C;dfn>Source&#x3C;/dfn>、受信者は &#x3C;dfn>Target&#x3C;/dfn> と呼ばれます。どちらもデータフローを構成する要素で、これら構成要素のことを&#x3C;dfn>データフローブロック&#x3C;/dfn>と呼びます。&#x3C;/p>
 &#x3C;p>まず、データフローブロック共通のインターフェイスである &#x3C;code>IDataflowBlock&#x3C;/code> を導入します。 &#x3C;code>Completion&#x3C;/code> はそのブロックがすべてのデータの処理が完了したら完了する（またはエラーとなる） &#x3C;code>Task&#x3C;/code> を表します。 &#x3C;code>Complete&#x3C;/code> と &#x3C;code>Fault&#x3C;/code> は Reactive Streams の &#x3C;code>ISubscriber.OnComplete&#x3C;/code>、&#x3C;code>OnError&#x3C;/code> に対応するものですが、 Target 以外もこのメソッドを実装します。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.idataflowblock?view=netcore-3.1">IDataflowBlock&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
 {
@@ -928,7 +928,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/figure>
 &#x3C;p>Source から Target への接続は、リンクと呼ばれます。リンクによって、 Source は Target を認知し、もし送信できるデータがあるならば、データを送信します。&#x3C;/p>
 &#x3C;p>まずは Source のインターフェイスを見てみます。ユーザーが &#x3C;code>LinkTo&#x3C;/code> を呼び出すことによって、 Source から Target へのリンクが作成されます。戻り値の &#x3C;code>IDisposable&#x3C;/code> を使って、リンクを解除できます。その他のメソッドは Target によって呼び出されます。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.isourceblock-1?view=netcore-3.1">ISourceBlock&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISourceBlock&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">out&#x3C;/span> &#x3C;span class="hljs-title">TOutput&#x3C;/span>> : &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
 {
@@ -940,7 +940,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
 &#x3C;p>対して、 Target のインターフェイスは、データを受信するための &#x3C;code>OfferMessage&#x3C;/code> と、 Source の完了を受け取る &#x3C;code>IDataflowBlock.Complete&#x3C;/code>、&#x3C;code>Fault&#x3C;/code> になります。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.itargetblock-1?view=netcore-3.1">ITargetBlock&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ITargetBlock&#x3C;/span>&#x26;#x3C;&#x3C;span class="hljs-keyword">in&#x3C;/span> &#x3C;span class="hljs-title">TInput&#x3C;/span>> : &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
 {
@@ -955,13 +955,13 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>&#x3C;code>ReserveMessage&#x3C;/code>、&#x3C;code>ReleaseReservation&#x3C;/code> については、最短一致モード（&#x3C;i>non-greedy mode&#x3C;/i>）を実装するときと、 Source より先に Target が終了するときに Source にリンク解除を要求するために利用されます。&#x3C;/p>
 &#x3C;p>ここまでだらだらと文章で説明してきましたが、&#x3C;strong>アホほど面倒くさい&#x3C;/strong>インターフェイスだということがわかったと思います。&#x3C;/p>
 &#x3C;p>最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 &#x3C;code>LinkTo&#x3C;/code> のオプションとして、完了を通知する &#x3C;code>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion&#x3C;/a> = true&#x3C;/code> を指定したものとします。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" alt="TPL Dataflow のシーケンス図">
 &#x3C;figcaption>TPL Dataflow のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>3. 動作開始タイミングの違いについて&#x3C;/h2>
 &#x3C;p>TPL Dataflow では、データフローブロック間のリンクが作成された時点で、 Source の準備ができていれば、データが送信されます。次の図は、 Source が送信したデータが Propagator（Target と Source の両方の性質を持つブロック）を経由して Target に到達するフローに対して、前から順にリンクを行ったときの動作の様子です。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子">
 &#x3C;/figure>
 &#x3C;p>一方で、 Reactive Streams では、上の図のような使い方もできますが、通常はフローを作成し、それに対して Subscribe を呼び出すことで実際の処理を開始する、という使い方のほうが一般的かと思います。例えば、次の RxJava の例では、 &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Flowable.html#range-int-int-">&#x3C;code>range&#x3C;/code>&#x3C;/a> という Publisher と、それを加工する &#x3C;code>map&#x3C;/code> を接続したストリーム &#x3C;code>flowable&#x3C;/code>（&#x3C;code>Publisher&#x26;#x3C;Integer>&#x3C;/code> を実装しています）を定義していますが、 &#x3C;code>subscribe&#x3C;/code> を呼び出すまでは、何も処理を行いません。また、 &#x3C;code>range&#x3C;/code> は Cold なストリームなので、複数回 &#x3C;code>subscribe&#x3C;/code> すると、そのたびに値が送信されます。&#x3C;/p>
@@ -995,7 +995,7 @@ flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">/
 &#x3C;p>一方で、並列処理という観点では TPL Dataflow は非常に良質なライブラリです。並列処理において困る部分が隠蔽されており、本質的な処理を書くことに集中できます。&#x3C;/p>
 &#x3C;p>現在の私の野心としては、 AsyncEnumerable のメソッドチェーンの中に、 TPL Dataflow を導入することと、 &#x3C;code>IAsyncEnumerable&#x3C;/code> と &#x3C;code>IPublisher&#x3C;/code> の相互変換です。前者によって、 AsyncEnumerable を並列に処理する表現力が向上します。後者は Akka.NET Streams のような Java 由来のライブラリで Reactive Streams の利用が考えられることから、相互変換が容易に行えると便利だという考えです。これらは現在開発中のライブラリ（&#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a>）で実現できればなと考えています。&#x3C;/p>
 &#x3C;h2>7. おわりに&#x3C;/h2>
-&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-01T01:02:14+09:00</updated></entry><entry><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
+&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-16T23:56:15+09:00</updated></entry><entry><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
 &#x3C;p>一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。&#x3C;/p>
 &#x3C;p>&#x3C;ins datetime="2021-09-01">AsciiDoc をやめ Markdown に移行しました。いくつか理由があるので、そのうち書こうと思います。&#x3C;/ins>&#x3C;/p>
 &#x3C;h2>1. なぜ脱はてなブログ&#x3C;/h2>
@@ -1014,7 +1014,7 @@ flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">/
 &#x3C;/li>
 &#x3C;li>
 &#x3C;p>なぜ Qiita ではないのか&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-quote">
 &#x3C;blockquote cite="https://mstdn.maud.io/@azyobuzin/103884235813994300">
 Qiita なんて承認欲求が通常のブログより満たせる以外のメリット何一つないのに、その一点のメリットに負けた人たちが使うサービスでしょゲラゲラって言ってる
 &#x3C;/blockquote>
@@ -1049,7 +1049,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 &#x3C;p>入力データは、さまざまな形式であることが考えられるので、プラグイン機構によって柔軟に処理できることが求められます。&#x3C;/p>
 &#x3C;p>入力データを集めるだけでも、データソースからの取得と、データの解釈の 2 種類があります。前者は、ファイルシステムやインターネットからデータを取得してきます。後者は、例えば、データが Markdown なら、 Frontmatter を処理したり、 HTML に変換したりして、バイト列から View で使える意味のあるデータに変形します。&#x3C;/p>
 &#x3C;p>さて、この取得・解釈パイプラインにおいて、ひとつのデータについて、ひとつの解釈とは限りません。複数のプラグインが同じデータを異なる方法で解釈することもあります。つまり、まっすぐなパイプラインにはなりません。そこで Gatsby が採用した、共通の入力データ形式は「オブジェクトの森」でした。あるデータに対する解釈は、そのデータの子オブジェクトになる、と表現します（&#x3C;a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/#image-forest-example">図 1&#x3C;/a>）。このような表現を用いることで、非常に柔軟に入力データを扱うことができるようになりました。&#x3C;/p>
-&#x3C;figure data-num="図">
+&#x3C;figure class="fig-img" data-num="図">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" width="500" alt="データと、データの解釈結果オブジェクト">
 &#x3C;figcaption>図 1: データと、データの解釈結果オブジェクト&#x3C;/figcaption>
 &#x3C;/figure>
@@ -1058,7 +1058,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 &#x3C;p>必要なものは、オブジェクトの森からデータを取り出し、 JSON を作成する方法だということがわかりました。そこで満を持して GraphQL の登場です。 GraphQL はオブジェクトの森に対して柔軟なクエリを記述でき、出力が JSON となります。完璧にマッチしますね。&#x3C;/p>
 &#x3C;p>では、どのタイミングで、どのクエリが呼び出されるのでしょうか。答えは、ビルド時にすべてのクエリです。&#x3C;/p>
 &#x3C;p>まず、 Gatsby をまだ触っていない方のために、クエリの書き方を紹介します。あるページ &#x3C;code>/hoge&#x3C;/code> に対応する &#x3C;code>pages/hoge.js&#x3C;/code> があったとして、次のように、 &#x3C;code>query&#x3C;/code> または &#x3C;code>pageQuery&#x3C;/code> を &#x3C;code>export&#x3C;/code> することでクエリを指定すると、 &#x3C;code>export default&#x3C;/code> している関数の引数に &#x3C;code>data&#x3C;/code> として、そのクエリの結果が代入されます。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>pages/hoge.js&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-js">&#x3C;span class="hljs-keyword">import&#x3C;/span> &#x3C;span class="hljs-title hljs-class">React&#x3C;/span> &#x3C;span class="hljs-keyword">from&#x3C;/span> &#x3C;span class="hljs-string">"react"&#x3C;/span>
 &#x3C;span class="hljs-keyword">import&#x3C;/span> { graphql } &#x3C;span class="hljs-keyword">from&#x3C;/span> &#x3C;span class="hljs-string">"gatsby"&#x3C;/span>
@@ -1089,7 +1089,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 &#x3C;p>Gatsby がなぜ GraphQL を使っているのかについては、納得しました。しかし私が作りたいのは React でできたサイトではなく、ブログ本文が書かれた HTML が置いてあるだけのシンプルなブログです。 PWA でプリロード？ 知らん、読むかもわからんページを先読みしたところでたかが知れてるし、そのスクリプト分だけデータ量は増え、ブラウザの負荷もあります。エコじゃない。&#x3C;/p>
 &#x3C;p>しかしまぁ、一応は Server Side Rendering 済み HTML が吐き出されるので、やりようでどうにかできます。 &#x3C;a href="https://www.gatsbyjs.org/packages/gatsby-plugin-no-javascript/">gatsby-plugin-no-javascript&#x3C;/a> という過激な名前のサードパーティープラグインがあり、吐き出される HTML の &#x3C;code>script&#x3C;/code> タグを全部消し去ります。今は特に動的な部分はないので、これで満足しています。&#x3C;/p>
 &#x3C;p>あと、 SPA という前提に立っているので、デフォルトでは CSS が HTML の &#x3C;code>style&#x3C;/code> タグに全部入っています。外部リソースのダウンロードを減らす目的でしょうけれど、スクリプトを無効化すると、サイト内リンクは React 内でのルーティングではなく普通のリンクになるので、各ページに CSS が埋め込まれていると逆効果になりそうです。そこで &#x3C;code>style&#x3C;/code> タグではなく &#x3C;code>link&#x3C;/code> タグにしておきたいです。 &#x3C;code>link&#x3C;/code> タグへの変換は、ビルド中のフックで、簡単にできます（&#x3C;a href="https://github.com/gatsbyjs/gatsby/issues/1526#issuecomment-583740341">元ネタ&#x3C;/a>）。&#x3C;/p>
-&#x3C;figure>
+&#x3C;figure class="fig-code">
 &#x3C;figcaption>gatsby-ssr.js&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-js">&#x3C;span class="hljs-keyword">const&#x3C;/span> &#x3C;span class="hljs-title hljs-class">React&#x3C;/span> = &#x3C;span class="hljs-built_in">require&#x3C;/span>(&#x3C;span class="hljs-string">"react"&#x3C;/span>)
 
@@ -1113,4 +1113,4 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 &#x3C;p>追記: Netlify にデプロイしようとしたら &#x3C;samp>Deployed filenames cannot contain # or ? characters&#x3C;/samp> と怒られてしまいました。静的ファイルをホスティングするだけの分際で無駄な忖度をするんじゃないという気持ちになったので、 Vercel に移行しました。&#x3C;/p>
 &#x3C;h2>6. さいごに&#x3C;/h2>
 &#x3C;p>下手な既存ツールで満足できない人間が、自前でブログを構築しようとすると、要求が膨らんで大変だということがよくわかりました。そんな中で、妥協点として Gatsby を採用しました。いくらか不満はありますが、解決できるだけの柔軟性はあるので、これからも仲良くやっていきたいと思います。&#x3C;/p>
-&#x3C;p>ブログを構築しようとして、何日を無駄にしたのでしょう。この 4 月より大学院に進学し、これから 2 年間どんな研究をするのかを考える大事な時期に、研究（文献調査）の進捗が出ていません。そんな時期に現実逃避していたら、数年の悲願であった自作ブログ基盤ができてしまいました。せっかくブログを作ったので、いろいろアウトプットできたらいいなぁと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/</id><link href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/" rel="alternate" type="text/html" /><published>2020-04-04T02:29:00+09:00</published><title type="html">さよならはてなブログ、こんにちはGatsby</title><updated>2021-09-01T01:02:14+09:00</updated></entry></feed>
+&#x3C;p>ブログを構築しようとして、何日を無駄にしたのでしょう。この 4 月より大学院に進学し、これから 2 年間どんな研究をするのかを考える大事な時期に、研究（文献調査）の進捗が出ていません。そんな時期に現実逃避していたら、数年の悲願であった自作ブログ基盤ができてしまいました。せっかくブログを作ったので、いろいろアウトプットできたらいいなぁと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/</id><link href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/" rel="alternate" type="text/html" /><published>2020-04-04T02:29:00+09:00</published><title type="html">さよならはてなブログ、こんにちはGatsby</title><updated>2021-09-16T23:56:15+09:00</updated></entry></feed>
