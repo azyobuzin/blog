@@ -13,7 +13,7 @@ tags: [C#]
 
 文章でだらだらと説明されても読みたくないのはわかります。ので、実際の csproj を示しておきます。
 
-<figure>
+<figure class="fig-code">
 <figcaption>A/A.csproj</figcaption>
 
 ```xml
@@ -27,7 +27,7 @@ tags: [C#]
 
 </figure>
 
-<figure>
+<figure class="fig-code">
 <figcaption>B/B.csproj</figcaption>
 
 ```xml

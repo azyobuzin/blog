@@ -23,7 +23,7 @@ Docker 標準の bridge ネットワークの表現力を確認して、課題�
 
 まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 `docker network connect` コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。
 
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" />
 <figcaption>コンテナとネットワークの関係</figcaption>
 </figure>
@@ -37,7 +37,7 @@ Docker 標準の bridge ネットワークの表現力を確認して、課題�
 
 例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。
 
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" />
 <figcaption>DBを参照するふたつのアプリ</figcaption>
 </figure>
@@ -89,7 +89,7 @@ Debian 10 で試してみましたが、特に Linux の設定は必要なく、
 
 [K3s に最初に食いついた](https://azyobuzin.hatenablog.com/entry/2019/03/04/144245 "k3s の中身とメモリ使用量の調査")人間なので、諦めて K3s と仲良くするのが一番いいのかもしれません。うっ……。
 
-<figure>
+<figure class="fig-quote">
 <blockquote cite="https://twitter.com/azyobuzin/status/1251774353579978758">
 働かざる者Kubeからずというように、個人の趣味プロジェクトでKubernetesを使うべきではない
 </blockquote>
@@ -109,7 +109,7 @@ Debian 10 で試してみましたが、特に Linux の設定は必要なく、
 
 これでコンテナに IPv6 アドレスが振られるようになります。が、 NAT が設定されないので外に出ていったパケットが帰ってこられなくなります。これは Cilium の Issue に積まれていますが、なかなか修正される様子がないです。ワークアラウンドとしては、自分で ip6tables を設定してねということです。
 
-<figure>
+<figure class="fig-quote">
 
 > Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.
 >

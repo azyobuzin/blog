@@ -430,3 +430,5 @@ export function removeRelativeLink<T extends HastNode>(
     return { ...node }
   }) as T
 }
+
+// TODO: figure タグに class がなかったら警告

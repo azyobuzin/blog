@@ -25,7 +25,7 @@ Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き�
 
 3. （広告のロードが遅いので、全体的に遅く感じる）
 4. なぜ Qiita ではないのか
-   <figure>
+   <figure class="fig-quote">
    <blockquote cite="https://mstdn.maud.io/@azyobuzin/103884235813994300">
    Qiita なんて承認欲求が通常のブログより満たせる以外のメリット何一つないのに、その一点のメリットに負けた人たちが使うサービスでしょゲラゲラって言ってる
    </blockquote>
@@ -80,7 +80,7 @@ Gatsby の基本的な設計は、[ライフサイクルの図](https://www.gats
 
 さて、この取得・解釈パイプラインにおいて、ひとつのデータについて、ひとつの解釈とは限りません。複数のプラグインが同じデータを異なる方法で解釈することもあります。つまり、まっすぐなパイプラインにはなりません。そこで Gatsby が採用した、共通の入力データ形式は「オブジェクトの森」でした。あるデータに対する解釈は、そのデータの子オブジェクトになる、と表現します（[](#image-forest-example)）。このような表現を用いることで、非常に柔軟に入力データを扱うことができるようになりました。
 
-<figure id="image-forest-example" data-num="図">
+<figure id="image-forest-example" class="fig-img" data-num="図">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" width="500" />
 <figcaption>データと、データの解釈結果オブジェクト</figcaption>
 </figure>
@@ -95,7 +95,7 @@ Gatsby の基本的な設計は、[ライフサイクルの図](https://www.gats
 
 まず、 Gatsby をまだ触っていない方のために、クエリの書き方を紹介します。あるページ `/hoge` に対応する `pages/hoge.js` があったとして、次のように、 `query` または `pageQuery` を `export` することでクエリを指定すると、 `export default` している関数の引数に `data` として、そのクエリの結果が代入されます。
 
-<figure>
+<figure class="fig-code">
 <figcaption>pages/hoge.js</figcaption>
 
 ```js
@@ -140,7 +140,7 @@ Gatsby がなぜ GraphQL を使っているのかについては、納得しま�
 
 あと、 SPA という前提に立っているので、デフォルトでは CSS が HTML の `style` タグに全部入っています。外部リソースのダウンロードを減らす目的でしょうけれど、スクリプトを無効化すると、サイト内リンクは React 内でのルーティングではなく普通のリンクになるので、各ページに CSS が埋め込まれていると逆効果になりそうです。そこで `style` タグではなく `link` タグにしておきたいです。 `link` タグへの変換は、ビルド中のフックで、簡単にできます（[元ネタ](https://github.com/gatsbyjs/gatsby/issues/1526#issuecomment-583740341)）。
 
-<figure>
+<figure class="fig-code">
 <figcaption>gatsby-ssr.js</figcaption>
 
 ```js

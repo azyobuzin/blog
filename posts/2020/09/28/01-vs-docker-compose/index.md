@@ -25,13 +25,13 @@ VSCode Remote は、コンテナの中で VSCode が動きます。ホストの�
 
 ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。
 
-<figure><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加" /></figure>
 
 いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。
 
 完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。
 
-<figure><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション" /></figure>
 
 これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。
 
@@ -47,13 +47,13 @@ VSCode Remote は、コンテナの中で VSCode が動きます。ホストの�
 
 いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。
 
-<figure><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動" /></figure>
 
 さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。
 
 いま docker-compose.yml の中身はこのようになっていると思います。
 
-<figure>
+<figure class="fig-code">
 <figcaption>docker-compose.yml</figcaption>
 
 ```yaml
@@ -76,7 +76,7 @@ services:
 
 改変結果はこんな感じです。 docker-compose.yml の構文バージョンやプロジェクト名は、環境に合わせて書き換えてください。
 
-<figure>
+<figure class="fig-code">
 <figcaption>docker-compose.yml</figcaption>
 
 ```yaml
@@ -106,7 +106,7 @@ docker-compose.yml を移動したので、 docker-compose.dcproj も書き換�
 
 さらにファイル名変更を反映して、ディレクトリ外に行ってしまった .dockerignore をプロジェクトから消します。
 
-<figure>
+<figure class="fig-code">
 <figcaption>docker-compose.dcproj</figcaption>
 
 ```diff
@@ -132,7 +132,7 @@ docker-compose.yml を移動したので、 docker-compose.dcproj も書き換�
 
 またソリューションファイルもパスを書き換えます。
 
-<figure>
+<figure class="fig-code">
 <figcaption>MyDatabaseApp.sln</figcaption>
 
 ```diff
@@ -151,7 +151,7 @@ VSCode 向けに .devcontainer/docker-compose.vscode.yml を作っていきま�
 
 実際の YAML で表すとこれだけです。
 
-<figure>
+<figure class="fig-code">
 <figcaption>docker-compose.vscode.yml</figcaption>
 
 ```yaml
@@ -176,7 +176,7 @@ devcontainer.json は VSCode にコンテナ作成を指示する設定ファイ
 
 最小限の devcontainer.json はこんな感じです。
 
-<figure>
+<figure class="fig-code">
 <figcaption>devcontainer.json</figcaption>
 
 ```json

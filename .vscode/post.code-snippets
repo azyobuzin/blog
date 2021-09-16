@@ -1,0 +1,48 @@
+{
+  "fig-img": {
+    "scope": "markdown",
+    "prefix": "fig-img",
+    "body": [
+      "<figure class=\"fig-img\">",
+      "<img src=\"${1:src}\" />",
+      "<figcaption>${2:caption}</figcaption>",
+      "</figure>"
+    ]
+  },
+  "fig-img with numbering": {
+    "scope": "markdown",
+    "prefix": "fig-img-num",
+    "body": [
+      "<figure id=\"${1:id}\" class=\"fig-img\" data-num=\"図\">",
+      "<img src=\"${2:src}\" />",
+      "<figcaption>${3:caption}</figcaption>",
+      "</figure>"
+    ]
+  },
+  "fig-code": {
+    "scope": "markdown",
+    "prefix": "fig-code",
+    "body": [
+      "<figure class=\"fig-code\">",
+      "<figcaption>${1:caption}</figcaption>",
+      "",
+      "```",
+      "$0",
+      "```",
+      "",
+      "</figure>"
+    ]
+  },
+  "fig-quote": {
+    "scope": "markdown",
+    "prefix": "fig-quote",
+    "body": [
+      "<figure class=\"fig-quote\">",
+      "<blockquote cite=\"${1:cite}\">",
+      "$0",
+      "</blockquote>",
+      "<figcaption>${2:caption}</figcaption>",
+      "</figure>"
+    ]
+  }
+}

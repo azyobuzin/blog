@@ -60,7 +60,7 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 [](#img-px-noninterlace) に示すように、予測する画素 X の左上、上、左です。
 
-<figure id="img-px-noninterlace" data-num="図">
+<figure id="img-px-noninterlace" class="fig-img" data-num="図">
 <img src="px_noninterlace.svg" height="75" />
 <figcaption>非インターレース方式で参照する周辺画素</figcaption>
 </figure>
@@ -75,7 +75,7 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 次の表は実際の復号化中のデータを Y チャンネル（輝度値）について取り出したものです。この場合では、ズームレベル 14 から順番に復元していきます。
 
-<figure data-num="表">
+<figure class="fig-table" data-num="表">
 <figcaption>インターレース方式で画素が復元される様子</figcaption>
 
 | ズームレベル |         サイズ         |                        画像                        |
@@ -106,19 +106,19 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。
 
-<figure id="img-px-interlace" data-num="図">
+<figure id="img-px-interlace" class="fig-img" data-num="図">
 <img src="px_interlace.svg" height="150" />
 <figcaption>インターレース方式で参照する周辺画素</figcaption>
 </figure>
 
 次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。
 
-<figure id="img-px-horizontal" data-num="図">
+<figure id="img-px-horizontal" class="fig-img" data-num="図">
 <img src="px_horizontal.svg" height="150" />
 <figcaption>偶数ズームレベルにおける周辺画素</figcaption>
 </figure>
 
-<figure id="img-px-vertical" data-num="図">
+<figure id="img-px-vertical" class="fig-img" data-num="図">
 <img src="px_vertical.svg" height="150" />
 <figcaption>奇数ズームレベルにおける周辺画素</figcaption>
 </figure>
@@ -127,7 +127,7 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 予測器は次の3つから選ぶことができます。チャンネルごとに指定するかズームレベルごとに指定するかが選べます。リファレンス実装のデフォルトでは、チャンネルごとにズームレベル 0 と 1 で試しにすべての予測器で予測させて、誤差が一番少ないものを選択します。
 
-<figure data-num="表">
+<figure class="fig-table" data-num="表">
 <figcaption>インターレース方式における予測器</figcaption>
 <table>
   <thead>
@@ -199,17 +199,17 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 まずは簡単な概念の説明のために、0～1の実数で考えてみます。 FLIF で使用される算術符号では「0」と「1」の2種類の記号だけが登場する（二値算術符号）記号列を扱うので、ここでも2種類の記号で考えます。例えば、「0」が 40% 、「1」が 60% の確率で出現することがわかっているとします。この確率によって、 0～1 の数直線を分割すると、このようになります。数直線上に点を置いたとき 0～0.4 の範囲にあるならば 0、 0.4～1 ならば 1 を表している、と解釈できます。
 
-<figure><img src="ac_fig1.svg" alt="算術符号を説明する数直線1" /></figure>
+<figure class="fig-img"><img src="ac_fig1.svg" alt="算術符号を説明する数直線1" /></figure>
 
 では、この分割を再帰的に用いて、記号列「101」を数直線上に表してみましょう。
 
 最初の記号は 1 なので、 0.4～1 の範囲に注目します。この範囲をさらに 40:60 に分割するとこのようになります。
 
-<figure><img src="ac_fig2.svg" alt="算術符号を説明する数直線2" /></figure>
+<figure class="fig-img"><img src="ac_fig2.svg" alt="算術符号を説明する数直線2" /></figure>
 
 2個目の記号は 0 なので、次は 0.4～0.64 の範囲に注目し、同じように分割します。
 
-<figure><img src="ac_fig3.svg" alt="算術符号を説明する数直線3" /></figure>
+<figure class="fig-img"><img src="ac_fig3.svg" alt="算術符号を説明する数直線3" /></figure>
 
 この結果から、記号列「101」をこの数直線上に表すと 0.496～0.64 の範囲となることがわかりました！ 符号化結果としては、範囲の左端を使って「0.496」とすることにしましょう。このように、記号列を記号の出現確率を使って数直線上に表す方法が、算術符号になります。復号化するときは、「0.496」がどの記号の範囲に含まれているかを、同じように分割しながら探索していきます。
 
@@ -255,7 +255,7 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 
 例えば、「5」を符号化すると次のようになります。
 
-<figure id="tbl-nz51" data-num="表">
+<figure id="tbl-nz51" class="fig-table" data-num="表">
 <figcaption>「5」を Near-zero Integer Coding で符号化</figcaption>
 <table>
 <tr>
@@ -285,7 +285,7 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 
 ただし、数値の取りうる範囲によっては、一部ビットが省略されることがあります。ここでは最小値を任意の負値、最大値を 5 として、 5 を符号化した例を見てみましょう。
 
-<figure id="tbl-nz52" data-num="表">
+<figure id="tbl-nz52" class="fig-table" data-num="表">
 <figcaption>「5」を最大値 5 の Near-zero Integer Coding で符号化</figcaption>
 <table>
 <tr>
@@ -319,7 +319,7 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 
 コンテキストについてざっくりいうと、符号化しようとしている画素に関する情報を条件とする決定木によって、使用する確率表が決定します（[](#img-ctx-summary)）。条件には他のチャンネルの画素値や、周辺画素同士の差といった情報が使えます。条件に使用できる情報をそれぞれプロパティと呼び、非インターレース方式で10種類、インターレース方式で17種類のプロパティがあります。プロパティ値がある値より大きい場合と、ある値以下の場合で分岐します。
 
-<figure id="img-ctx-summary" data-num="図">
+<figure id="img-ctx-summary" class="fig-img" data-num="図">
 <img src="ctx_summary.svg" />
 <figcaption>確率表のコンテキストを選択する決定木</figcaption>
 </figure>
@@ -330,28 +330,28 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 
 カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。
 
-<figure id="img-ctx-counter1" data-num="図">
+<figure id="img-ctx-counter1" class="fig-img" data-num="図">
 <img src="ctx_counter_1.svg" height="200" />
 <figcaption>決定木の初期状態</figcaption>
 </figure>
 
 この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。
 
-<figure id="img-ctx-counter2" data-num="図">
+<figure id="img-ctx-counter2" class="fig-img" data-num="図">
 <img src="ctx_counter_2.svg" height="200" />
 <figcaption>カウンターがデクリメントされる</figcaption>
 </figure>
 
 次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。
 
-<figure id="img-ctx-counter3" data-num="図">
+<figure id="img-ctx-counter3" class="fig-img" data-num="図">
 <img src="ctx_counter_3.svg" height="200" />
 <figcaption>カウンターが0になると子に確率表がコピーされる</figcaption>
 </figure>
 
 いま、確率表2と確率表3は、確率表1と同じ内容になっています。
 
-<figure id="img-ctx-counter4" data-num="図">
+<figure id="img-ctx-counter4" class="fig-img" data-num="図">
 <img src="ctx_counter_4.svg" height="200" />
 <figcaption>カウンターが0になると条件分岐が行われる</figcaption>
 </figure>

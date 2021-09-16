@@ -21,7 +21,7 @@ C# においても Reactive Streams は他人事ではなく、 `java.util.concu
 
 インターフェイスを見ていきましょう。 Reactive Streams では、送信者は <dfn>Publisher</dfn>、受信者は <dfn>Subscriber</dfn> と呼ばれます。 Publisher は Rx における Observable に対応し、 Subscriber は Observer に対応します。インターフェイスは次のようになっており、 `IPublisher.Subscribe` に、購読者のコールバックを表す `ISubscriber` インスタンスを渡すことによって、購読を開始します。
 
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/IPublisher.cs">IPublisher</a></figcaption>
 
 ```cs
@@ -33,7 +33,7 @@ public interface IPublisher<out T>
 
 </figure>
 
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscriber.cs">ISubscriber</a></figcaption>
 
 ```cs
@@ -54,7 +54,7 @@ public interface ISubscriber<in T>
 
 Observable と異なり、 Subscribe を呼び出した瞬間にデータが飛んでくる（`ISubscriber.OnNext` が呼び出される）ことはありません。 Publisher は Subscriber がどれだけのデータを受け取る準備があるかを確認してから、データを送信します。 Subscriber は、今どれだけのデータを受け取ることができるかを `OnSubscribe` で受け取った `ISubscription` インスタンスを通じて Publisher に申告します。 `ISubscription` は次のように定義されています。 `Request` メソッドに渡す引数が、どれだけデータを受信できるかを表します。 `Cancel` は先ほど説明した `IDisposable` の代わりとなるものです。
 
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://github.com/reactive-streams/reactive-streams-dotnet/blob/v1.0.2/src/api/Reactive.Streams/ISubscription.cs">ISubscription</a></figcaption>
 
 ```cs
@@ -73,14 +73,14 @@ Reactive Streams には、 Rx と同様に、 **Hot な Publisher と Cold な P
 
 最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。
 
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" />
 <figcaption>Reactive Streams のシーケンス図</figcaption>
 </figure>
 
 実際には、 Cold な Publisher を実装するときには、 `IPublisher` は `ISubscription` を作成するだけの存在となり、 `ISubscription` が実際に Subscriber と通信するような実装になります。
 
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" />
 <figcaption>Cold な Publisher のシーケンス図</figcaption>
 </figure>
@@ -93,7 +93,7 @@ Reactive Streams は流量についてプル型とまとめましたが、 TPL D
 
 まず、データフローブロック共通のインターフェイスである `IDataflowBlock` を導入します。 `Completion` はそのブロックがすべてのデータの処理が完了したら完了する（またはエラーとなる） `Task` を表します。 `Complete` と `Fault` は Reactive Streams の `ISubscriber.OnComplete`、`OnError` に対応するものですが、 Target 以外もこのメソッドを実装します。
 
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.idataflowblock?view=netcore-3.1">IDataflowBlock</a></figcaption>
 
 ```cs
@@ -111,7 +111,7 @@ Source から Target への接続は、リンクと呼ばれます。リンク�
 
 まずは Source のインターフェイスを見てみます。ユーザーが `LinkTo` を呼び出すことによって、 Source から Target へのリンクが作成されます。戻り値の `IDisposable` を使って、リンクを解除できます。その他のメソッドは Target によって呼び出されます。
 
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.isourceblock-1?view=netcore-3.1">ISourceBlock</a></figcaption>
 
 ```cs
@@ -128,7 +128,7 @@ public interface ISourceBlock<out TOutput> : IDataflowBlock
 
 対して、 Target のインターフェイスは、データを受信するための `OfferMessage` と、 Source の完了を受け取る `IDataflowBlock.Complete`、`Fault` になります。
 
-<figure>
+<figure class="fig-code">
 <figcaption><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.itargetblock-1?view=netcore-3.1">ITargetBlock</a></figcaption>
 
 ```cs
@@ -154,7 +154,7 @@ public interface ITargetBlock<in TInput> : IDataflowBlock
 
 最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 `LinkTo` のオプションとして、完了を通知する <code><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion</a> = true</code> を指定したものとします。
 
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" />
 <figcaption>TPL Dataflow のシーケンス図</figcaption>
 </figure>
@@ -163,7 +163,7 @@ public interface ITargetBlock<in TInput> : IDataflowBlock
 
 TPL Dataflow では、データフローブロック間のリンクが作成された時点で、 Source の準備ができていれば、データが送信されます。次の図は、 Source が送信したデータが Propagator（Target と Source の両方の性質を持つブロック）を経由して Target に到達するフローに対して、前から順にリンクを行ったときの動作の様子です。
 
-<figure>
+<figure class="fig-img">
 <img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子" />
 </figure>
 

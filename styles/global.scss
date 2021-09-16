@@ -113,21 +113,20 @@ footer {
   }
 }
 
-figure {
-  // figure 内のインライン要素をセンタリング（img のため）
+figcaption {
   text-align: center;
 }
 
-figure > *:not(figcaption) {
-  text-align: initial;
+.fig-img {
+  text-align: center;
 }
 
-figure > blockquote {
+.fig-quote blockquote {
   margin-bottom: 0;
 }
 
-// figure + blockquote のときは、 figcaption に引用元が書かれる
-blockquote + figcaption {
+// figcaption に引用元が書かれる
+.fig-quote figcaption {
   text-align: initial;
 
   &::before {

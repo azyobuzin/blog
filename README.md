@@ -51,7 +51,7 @@ Markdown を拡張しだすとキリがなくなるので、足りない機能�
 `data-num` 属性を指定すると、図表番号を表示するようになる。
 
 ```html
-<figure id="fig-x" data-num="図">
+<figure id="fig-x" class="fig-img" data-num="図">
   <img src="path/to/img.jpg" />
   <figcaption>タイトル</figcaption>
 </figure>
@@ -60,7 +60,7 @@ Markdown を拡張しだすとキリがなくなるので、足りない機能�
 ↓
 
 ```html
-<figure id="fig-x" data-num="図">
+<figure id="fig-x" class="fig-img" data-num="図">
   <img src="path/to/img.jpg" alt="タイトル" />
   <figcaption>図 1: タイトル</figcaption>
 </figure>
@@ -81,6 +81,8 @@ a タグの中身が空ならば、図表番号に置き換える。
 ```
 
 #### Admonitions
+
+DocBook の意味に従う。未実装のものは必要になったら追加する。
 
 ```html
 <ab-important>
