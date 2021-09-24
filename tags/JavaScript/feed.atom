@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/JavaScript/feed.atom</id><link href="https://blog.azyobuzi.net/tags/JavaScript/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/JavaScript/" rel="alternate" type="text/html" /><title>JavaScript | あじょろぐ</title><updated>2021-09-24T23:30:48+09:00</updated><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。&#x3C;/p>
+&#x3C;p>AsciiDoc というか Asciidoctor を使うことに思うところがあり、 Gatsby + Asciidoctor.js という構成をやめ、 Markdown + お手製静的サイトジェネレータ という構成に変更したというお話です。&#x3C;/p>
+&#x3C;p>（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）&#x3C;/p>
+&#x3C;h2>なぜ Markdown&#x3C;/h2>
+&#x3C;p>このブログを開設して最初の記事で、なぜ AsciiDoc を選んだかを説明しました。&#x3C;/p>
+&#x3C;figure class="fig-quote">
+&#x3C;blockquote cite="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/">
+&#x3C;p>プレーンな Markdown （GitHub Flavored ではない）を思い出してください。機能が何もかも足りていないですね。&#x3C;/p>
+&#x3C;p>Markdown 処理系を思い出してください。いくつ方言があるんだよお前ら。&#x3C;/p>
+&#x3C;p>というわけで、プレーンな Markdown は弱すぎ、方言はみんなバラバラ、 Markdown 対応サービス間でもコピペしたあとに修正を加えるなんて日常茶飯事な、そんなマークアップ言語で書きたくはありません。そこで、もともと機能が豊富で、さらに要素の拡張方法も仕様に含まれている AsciiDoc を採用することにしました。機能豊富なぶん、 HTML への変換結果と、それに必要なスタイルシートがつらいという問題はありますが、該当機能を使うまでは問題を先延ばしにできます。先延ばしていけ。&#x3C;/p>
+&#x3C;/blockquote>
+&#x3C;figcaption>3. なぜ AsciiDoc, &#x3C;a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/">&#x3C;cite>さよならはてなブログ、こんにちはGatsby&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>うんうん……。正直今ならほとんど反論できますね……。&#x3C;/p>
+&#x3C;p>まずは方言問題。使ってみてわかりましたが、 Asciidoctor という方言は強烈です。オリジナルの AsciiDoc に対する拡張がかなりあります。結局 Asciidoctor という方言を書くことになってしまいました。対して Markdown は &#x3C;a href="https://commonmark.org/">CommonMark&#x3C;/a> という最小かつ曖昧さのほとんどない仕様が存在します。またデファクトスタンダードである &#x3C;a href="https://github.github.com/gfm/">GitHub Flavored Markdown&#x3C;/a> は、 CommonMark への機能追加という形で仕様が公開されています。さまざまな方言があるように見えますが、 CommonMark 以外に目を向けなければ、かなり安定した仕様と言えます。&#x3C;/p>
+&#x3C;p>そして次に、 AsciiDoc は&#x3C;q>機能豊富なぶん、 HTML への変換結果と、それに必要なスタイルシートがつらい&#x3C;/q>と書きましたが、これがかなりつらさにつながっていました。ブログを書いて Web に公開するとはどういうことかというと、 HTML をアウトプットするということです。セマンティックの正しい HTML を出力することについて、 AsciiDoc の機能および Asciidoctor の出力はかなりの足かせになってしまいました。私は HTML が書きたいのであって、 AsciiDoc や DocBook を書きたいわけではないのです。この点において Markdown はとても優秀なツールです。 CommonMark の機能はほぼ HTML タグと1対1対応になっており、簡単に出力される HTML を予想することができます。また CommonMark では HTML をインラインまたはブロックとして直接書くことも許されています（AsciiDoc にも Passthrough Block という機能がありますが）。つまり Markdown に不満があったら HTML を書けばいいのです。 Markdown に多くを求めなければ Markdown は HTML の糖衣構文として使うことができるのです。&#x3C;/p>
+&#x3C;p>このような背景で、 Markdown への移行を決めました。基本方針は GitHub Flavored Markdown にある機能だけを使い、より複雑なことがしたいならば HTML を手書きする です。追加機能が欲しい場合は、カスタム要素を使用します（カスタム要素は静的サイトジェネレータで処理されます。インタラクティブな要素が必要になったときは、そのまま出力して Web Components にしてしまおうと考えています）。 Markdown 自体は拡張しません。&#x3C;/p>
+&#x3C;h2>静的サイトジェネレータ&#x3C;/h2>
+&#x3C;p>Next.js や Gatsby を一度でも使ったことがあれば共感していただけると思うのですが、 JSX って HTML テンプレート言語として最強だと思うんですよ。ということで JSX を捨てたくなかったのですが、どのツールもブラウザに React をロードさせることが前提になっていました。 Gatsby の時代は過激な名前のプラグインをインストールして &#x3C;code>&#x26;#x3C;script>&#x3C;/code> タグを潰していましたね。&#x3C;/p>
+&#x3C;figure class="fig-quote">
+&#x3C;blockquote cite="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/">
+&#x3C;p>私が作りたいのは React でできたサイトではなく、ブログ本文が書かれた HTML が置いてあるだけのシンプルなブログです。 PWA でプリロード？ 知らん、読むかもわからんページを先読みしたところでたかが知れてるし、そのスクリプト分だけデータ量は増え、ブラウザの負荷もあります。エコじゃない。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://www.gatsbyjs.org/packages/gatsby-plugin-no-javascript/">gatsby-plugin-no-javascript&#x3C;/a> という過激な名前のサードパーティープラグインがあり、吐き出される HTML の script タグを全部消し去ります。今は特に動的な部分はないので、これで満足しています。&#x3C;/p>
+&#x3C;/blockquote>
+&#x3C;figcaption>5.1. ブラウザにとって静的なサイトになりたい, &#x3C;a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/">&#x3C;cite>さよならはてなブログ、こんにちはGatsby&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>というわけで JSX を書けて React に依存しないものを探していました。ツールは見つかりませんでしたが、いい感じのライブラリは見つけました。 &#x3C;a href="https://github.com/syntax-tree/hastscript">hastscript&#x3C;/a>。これで JSX 構文で AST を吐き出すことができます。&#x3C;/p>
+&#x3C;h3>remark, rehype, unified&#x3C;/h3>
+&#x3C;p>最近 JavaScript で Markdown を解析するなら &#x3C;a href="https://github.com/remarkjs/remark">remark&#x3C;/a> が最有力でしょうか？ remark は &#x3C;a href="https://github.com/unifiedjs/unified">unified&#x3C;/a> という共通 AST 処理基盤を利用する仕組みになっており、 Markdown → Markdown AST (&#x3C;a href="https://github.com/syntax-tree/mdast">mdast&#x3C;/a>) → HTML AST (&#x3C;a href="https://github.com/syntax-tree/hast">hast&#x3C;/a>) → HTML といった変換工程を簡単に書くことができます。嘘です。すでに用意されてるパッケージを使うだけならうまく隠蔽されていますが、パイプラインとしてはなかなか最悪の実装になっており、それを理解してプラグインを自作することになります。&#x3C;/p>
+&#x3C;p>今見ているこのページの Markdown は、こんな感じのパイプラインで HTML 化されています。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>Markdown 処理パイプライン (&#x3C;a href="https://github.com/azyobuzin/blog/blob/7913138eff88596512ec8403c17005bba57beb31/generator/lib/posts.ts#L361-L385" rel="external">posts.ts&#x3C;/a>)&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-js">&#x3C;span class="hljs-keyword">const&#x3C;/span> processor = &#x3C;span class="hljs-title hljs-function">unified&#x3C;/span>()
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(remarkParse) &#x3C;span class="hljs-comment">// remark-parse (Parser): Markdown to mdast&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(remarkGfm) &#x3C;span class="hljs-comment">// remark-gfm: GFM 拡張のロード&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(remarkFrontmatter) &#x3C;span class="hljs-comment">// remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(remarkExtractFrontmatter, { &#x3C;span class="hljs-comment">// remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる&#x3C;/span>
+    &#x3C;span class="hljs-attr">yaml&#x3C;/span>: yaml.&#x3C;span class="hljs-property">parse&#x3C;/span>,
+    &#x3C;span class="hljs-attr">name&#x3C;/span>: &#x3C;span class="hljs-string">"frontmatter"&#x3C;/span>,
+    &#x3C;span class="hljs-attr">throws&#x3C;/span>: &#x3C;span class="hljs-literal">true&#x3C;/span>,
+  })
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(extractTitle) &#x3C;span class="hljs-comment">// 独自: # (h1) をタイトルとして扱う&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(remarkMath) &#x3C;span class="hljs-comment">// remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード&#x3C;/span>
+  &#x3C;span class="hljs-comment">// Markdown ここまで&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(remarkRehype, { &#x3C;span class="hljs-attr">allowDangerousHtml&#x3C;/span>: &#x3C;span class="hljs-literal">true&#x3C;/span> }) &#x3C;span class="hljs-comment">// remark-rehype: mdast → hast （「拡張のロード」と書いたシリーズはここで使われる）&#x3C;/span>
+  &#x3C;span class="hljs-comment">// HTML ここから&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(rehypeRaw) &#x3C;span class="hljs-comment">// remark-raw: Markdown に手書きした HTML を有効な hast ノードに変換する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(sectionNumbering) &#x3C;span class="hljs-comment">// 独自: 見出しにセクション番号を付与する（記事ごとに有効か無効かを設定できる）&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(sampElement) &#x3C;span class="hljs-comment">// 独自: &#x26;#x3C;code class="language-samp"> を &#x26;#x3C;samp> タグにすげ替える&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(assignNoHighlight) &#x3C;span class="hljs-comment">// 独自: ↓ で勝手にシンタックスハイライトされないように class="no-highlight" を設定する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(rehypeHighlight) &#x3C;span class="hljs-comment">// rehype-highlight: &#x26;#x3C;pre>&#x26;#x3C;code> をシンタックスハイライト&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(removeHljsClass) &#x3C;span class="hljs-comment">// 独自: ↑ で無駄な class が設定されるので削除&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(assignAlt) &#x3C;span class="hljs-comment">// 独自: &#x26;#x3C;figcaption> が兄弟にある &#x26;#x3C;img> に alt が設定されていなければ alt に &#x26;#x3C;figcaption> の中身を設定する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(figureNumbering) &#x3C;span class="hljs-comment">// 独自: 図表番号を付与する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(rehypeCustomElements) &#x3C;span class="hljs-comment">// 独自: カスタム属性を処理する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(rehypeKatex) &#x3C;span class="hljs-comment">// rehype-katex: remark-math で抽出した数式を KaTeX で処理する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(lintFigureClass) &#x3C;span class="hljs-comment">// 独自: &#x26;#x3C;figure> に class 属性を付け忘れていたら警告する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">use&#x3C;/span>(toPost) &#x3C;span class="hljs-comment">// 独自 (Compiler): 出力オブジェクトを生成する&#x3C;/span>
+  .&#x3C;span class="hljs-title hljs-function">freeze&#x3C;/span>()
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>できるだけシンプルにするぞと思っていたのですが、なかなか処理が多いですね。しかし Markdown 言語自体を拡張することはほとんどしておらず、処理のほとんどは HTML の AST を変形しています。このように HTML の世界に閉じ込めることで、言語を拡張するとかいう不毛なことを考えなくて済みます。&#x3C;/p>
+&#x3C;h3>hastscript ベースのページテンプレート&#x3C;/h3>
+&#x3C;p>素の hastscript は hast を生成するための簡単な操作しか行うことができませんが、ちょっとしたラッパーを書くことで React の関数コンポーネントの書き味を得ることができます。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>React の書き味に似せるためのラッパー (&#x3C;a href="https://github.com/azyobuzin/blog/blob/7913138eff88596512ec8403c17005bba57beb31/generator/lib/jsx.ts" rel="external">jsx.ts&#x3C;/a>)&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-js">&#x3C;span class="hljs-keyword">import&#x3C;/span> { h &#x3C;span class="hljs-keyword">as&#x3C;/span> hastscript } &#x3C;span class="hljs-keyword">from&#x3C;/span> &#x3C;span class="hljs-string">"hastscript"&#x3C;/span>
+
+&#x3C;span class="hljs-keyword">export&#x3C;/span> &#x3C;span class="hljs-keyword">function&#x3C;/span> &#x3C;span class="hljs-title hljs-function">h&#x3C;/span>(&#x3C;span class="hljs-params">selector, properties, ...children&#x3C;/span>) {
+  &#x3C;span class="hljs-keyword">return&#x3C;/span> &#x3C;span class="hljs-keyword">typeof&#x3C;/span> selector === &#x3C;span class="hljs-string">"function"&#x3C;/span>
+    ? &#x3C;span class="hljs-title hljs-function">selector&#x3C;/span>({ children, ...properties }) &#x3C;span class="hljs-comment">// 関数コンポーネント&#x3C;/span>
+    : &#x3C;span class="hljs-title hljs-function">hastscript&#x3C;/span>(
+        selector,
+        properties,
+        &#x3C;span class="hljs-comment">// hastscript は boolean を入力すると例外をスローするのでフィルター&#x3C;/span>
+        children.&#x3C;span class="hljs-title hljs-function">filter&#x3C;/span>(&#x3C;span class="hljs-function">(&#x3C;span class="hljs-params">x&#x3C;/span>) =>&#x3C;/span> x != &#x3C;span class="hljs-literal">null&#x3C;/span> &#x26;#x26;&#x26;#x26; x !== &#x3C;span class="hljs-literal">true&#x3C;/span> &#x26;#x26;&#x26;#x26; x !== &#x3C;span class="hljs-literal">false&#x3C;/span>)
+      )
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>このような関数を用意すると、ほぼ React の感覚で JSX を書くことができます。実際の使用例は、このブログのジェネレータのソースコード（&#x3C;a href="https://github.com/azyobuzin/blog/tree/7913138eff88596512ec8403c17005bba57beb31/generator/pages">pages ディレクトリ&#x3C;/a>）を見てください。&#x3C;/p>
+&#x3C;h2>まとめ&#x3C;/h2>
+&#x3C;p>以上が AsciiDoc を捨てて Markdown に移行した理由と、新しい静的サイトジェネレータの実装でした。 HTML が置いてあるトラディショナル静的サイトであることをモットーにしているので、このような構成が落ち着きますね。これからは Asciidoctor のドキュメントとにらめっこせず、 HTML を書いていきます。ブログ書けよ。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/09/24/01-markdown/</id><link href="https://blog.azyobuzi.net/2021/09/24/01-markdown/" rel="alternate" type="text/html" /><published>2021-09-24T23:30:00+09:00</published><title type="html">結局ブログをMarkdownで書くことにした話</title><updated>2021-09-24T23:30:48+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
+&#x3C;p>一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。&#x3C;/p>
+&#x3C;ins class="ins-block" datetime="2021-09-24" role="note">&#x3C;div class="icon">追記 &#x3C;time>2021-09-24&#x3C;/time>&#x3C;/div>&#x3C;div class="content">
+&#x3C;p>AsciiDoc をやめ Markdown に移行しました。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://blog.azyobuzi.net/2021/09/24/01-markdown/">&#x3C;cite>結局ブログをMarkdownで書くことにした話&#x3C;/cite>&#x3C;/a>&#x3C;/p>
+&#x3C;/div>&#x3C;/ins>
+&#x3C;h2>1. なぜ脱はてなブログ&#x3C;/h2>
+&#x3C;ol>
+&#x3C;li>
+&#x3C;p>URL の永続化&#x3C;/p>
+&#x3C;p>簡単に言えば、独自ドメインが良かった。例えば、はてなブログが突然サービスを終了すると言い出したら、今までの記事の URL は無効になってしまいます。そこで、独自ドメインに載せておけば、いざというときに URL を破壊せず、移行することができます。しかし、はてなブログ Pro は、少なくとも私のブログの利用状況に対して、料金が高い。高いよぉ。&#x3C;/p>
+&#x3C;p>とはいえ、もうすでにはてなブログに投稿してしまった分はどうしようもないので、このままにしておきます。もしサービスが終了するようなことがあって、私がまだ生きていたら、いくつかはこのドメイン下にコピーして来ようと思います。&#x3C;/p>
+&#x3C;/li>
+&#x3C;li>
+&#x3C;p>マークアップ言語&#x3C;/p>
+&#x3C;p>はてな記法は悪くないけど、 &#x3C;code>&#x26;#x3C;code>&#x3C;/code> タグを書きまくるのはつらかった。一方で Markdown は、はてな記法より表現力が低くて、あまり楽しく書けませんでした。&#x3C;/p>
+&#x3C;/li>
+&#x3C;li>
+&#x3C;p>（広告のロードが遅いので、全体的に遅く感じる）&#x3C;/p>
+&#x3C;/li>
+&#x3C;li>
+&#x3C;p>なぜ Qiita ではないのか&#x3C;/p>
+&#x3C;figure class="fig-quote">
+&#x3C;blockquote cite="https://mstdn.maud.io/@azyobuzin/103884235813994300">
+Qiita なんて承認欲求が通常のブログより満たせる以外のメリット何一つないのに、その一点のメリットに負けた人たちが使うサービスでしょゲラゲラって言ってる
+&#x3C;/blockquote>
+&#x3C;figcaption>&#x3C;a href="https://mstdn.maud.io/@azyobuzin/103884235813994300">@azyobuzin@mstdn.maud.io&#x3C;/a>&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;/li>
+&#x3C;/ol>
+&#x3C;h2>2. このブログの技術構成&#x3C;/h2>
+&#x3C;p>上記の要件を踏まえて、マークアップ言語に AsciiDoc（処理系として &#x3C;a href="https://github.com/asciidoctor/asciidoctor.js">Asciidoctor.js&#x3C;/a>）を、静的サイトジェネレータに &#x3C;a href="https://www.gatsbyjs.org/">Gatsby&#x3C;/a> を選択しました。本当は、管理画面とか欲しいので、静的サイトじゃないほうが好きなのですが、バージョン管理を考えると、実装したくないなぁという気持ちになりました。&#x3C;/p>
+&#x3C;p>デザインについては &#x3C;a href="https://milligram.io/">Milligram&#x3C;/a> を使用しました。もともとは 1 から CSS を組んでいたのですが、 Asciidoctor が要求する要素が多すぎて面倒になって、 CSS フレームワークに乗せました。&#x3C;/p>
+&#x3C;h2>3. なぜ AsciiDoc&#x3C;/h2>
+&#x3C;p>なぜ Markdown ではないのか。&#x3C;/p>
+&#x3C;p>プレーンな Markdown （GitHub Flavored ではない）を思い出してください。機能が何もかも足りていないですね。&#x3C;/p>
+&#x3C;p>Markdown 処理系を思い出してください。いくつ方言があるんだよお前ら。&#x3C;/p>
+&#x3C;p>というわけで、プレーンな Markdown は弱すぎ、方言はみんなバラバラ、 Markdown 対応サービス間でもコピペしたあとに修正を加えるなんて日常茶飯事な、そんなマークアップ言語で書きたくはありません。そこで、もともと機能が豊富で、さらに要素の拡張方法も仕様に含まれている AsciiDoc を採用することにしました。機能豊富なぶん、 HTML への変換結果と、それに必要なスタイルシートがつらいという問題はありますが、該当機能を使うまでは問題を先延ばしにできます。先延ばしていけ。&#x3C;/p>
+&#x3C;h2>4. なぜ Gatsby&#x3C;/h2>
+&#x3C;p>Gatsby、こいつだけはないなと思っていたツールでした。それなのに今は……。そういうラブコメ好きですよ。&#x3C;/p>
+&#x3C;p>静的サイトジェネレータといえば、 Jekyll を筆頭に、有名なものがいくつかありますが、大体どれも共通の問題があり、それは Frontmatter（文書の先頭の &#x3C;code>---&#x3C;/code> から始まる YAML ブロック）が必要ということです。こっちは AsciiDoc で書くつもりですから、そもそも Header Attribute という機能があります。それにも関わらず、 Jekyll も Hugo も Frontmatter を使うんです。許さない。&#x3C;/p>
+&#x3C;p>そんな状況なので、既存の静的サイトジェネレータに嫌気がさして、自作を始めましたが、ブログとなるとトップページの記事一覧を作ったり、タグがあったりと考えることが多い上、 HTML テンプレートの処理系に与えるヘルパー関数すら無い状況からのスタートだったので、疲れて飽きてしまいました。&#x3C;/p>
+&#x3C;p>そこで、改めて AsciiDoc を使える静的サイトジェネレータを調べていたとき、 Gatsby + AsciiDoc の組み合わせを見て、ふと Gatsby で AsciiDoc を読み込むプラグインである &#x3C;a href="https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-transformer-asciidoc">gatsby-transformer-asciidoc のソースコード&#x3C;/a>を読んでみたら、「なんだ、 Gatsby いいじゃん」となって、今に至ります&#x3C;/p>
+&#x3C;p>なぜ今まで Gatsby を避けてきたかというと、それはもう人々が声高に React！ PWA！ GraphQL！ モダン！ と叫んでいたからです。バズワードで埋め尽くされた、目的に対して無駄に遠回りなツールだと思っていました。こっちは 静的 HTML を吐き出したいんだ。静的と言いながらブラウザに大量のスクリプトを吐き出させるなんてごめんだという気持ちです。しかし、ちゃんと調べてみたら、まぁ無駄に遠回りなところもありますが、悪くないツールだということがわかりました。&#x3C;/p>
+&#x3C;h3>4.1. 静的サイトジェネレータで GraphQL ってどういうこと？&#x3C;/h3>
+&#x3C;p>Gatsby の基本的な設計は、&#x3C;a href="https://www.gatsbyjs.org/docs/gatsby-lifecycle-apis/#high-level-overview">ライフサイクルの図&#x3C;/a>がわかりやすいのですが、次のようになっています。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>入力データを集める&#x3C;/li>
+&#x3C;li>入力データを View に合わせて整形する&#x3C;/li>
+&#x3C;li>View をレンダリングする&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>「入力データを集める」では、このブログで言えば、ブログの設定や、記事のファイルがあります。ほかには、例えば時事的な内容で考えると、コロナウィルスの感染状況のオープンデータ（ローカルファイルまたは外部リソースとしてダウンロードしてくる）を入力とする、というのが考えられますね。そして、集めたデータを View、ここでは React に渡して、ブラウザで表示できる形式に変換します。&#x3C;/p>
+&#x3C;p>では、この流れの中のどこで GraphQL が登場するのかというと、それは、集めた入力データが「オブジェクトの森」として表され、この森の中から、 View に必要なデータを過不足なく取得するときの記述方法として、 GraphQL が向いている、という話になります。&#x3C;/p>
+&#x3C;h4>4.1.1. 入力データを集める&#x3C;/h4>
+&#x3C;p>入力データは、さまざまな形式であることが考えられるので、プラグイン機構によって柔軟に処理できることが求められます。&#x3C;/p>
+&#x3C;p>入力データを集めるだけでも、データソースからの取得と、データの解釈の 2 種類があります。前者は、ファイルシステムやインターネットからデータを取得してきます。後者は、例えば、データが Markdown なら、 Frontmatter を処理したり、 HTML に変換したりして、バイト列から View で使える意味のあるデータに変形します。&#x3C;/p>
+&#x3C;p>さて、この取得・解釈パイプラインにおいて、ひとつのデータについて、ひとつの解釈とは限りません。複数のプラグインが同じデータを異なる方法で解釈することもあります。つまり、まっすぐなパイプラインにはなりません。そこで Gatsby が採用した、共通の入力データ形式は「オブジェクトの森」でした。あるデータに対する解釈は、そのデータの子オブジェクトになる、と表現します（&#x3C;a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/#image-forest-example">図 1&#x3C;/a>）。このような表現を用いることで、非常に柔軟に入力データを扱うことができるようになりました。&#x3C;/p>
+&#x3C;figure class="fig-img" data-num="図">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" width="500" alt="データと、データの解釈結果オブジェクト">
+&#x3C;figcaption>図 1: データと、データの解釈結果オブジェクト&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>さて、ここで入力データを集めてできたオブジェクトの森をどのように扱うか、というのが鍵になります。静的サイトなので、 DB を使うことはできませんから、サイト生成時に集めてきた情報を、ページごとに、表示に必要なだけ抽出する必要があります。そこで、 JavaScript Way ということで、抽出してきたデータが JSON 形式なっていると考えましょう。すると、 JSON を入力とする React コンポーネントを作れば、レンダリングができそうですね。&#x3C;/p>
+&#x3C;h3>4.2. GraphQL と Gatsby のビルドプロセス&#x3C;/h3>
+&#x3C;p>必要なものは、オブジェクトの森からデータを取り出し、 JSON を作成する方法だということがわかりました。そこで満を持して GraphQL の登場です。 GraphQL はオブジェクトの森に対して柔軟なクエリを記述でき、出力が JSON となります。完璧にマッチしますね。&#x3C;/p>
+&#x3C;p>では、どのタイミングで、どのクエリが呼び出されるのでしょうか。答えは、ビルド時にすべてのクエリです。&#x3C;/p>
+&#x3C;p>まず、 Gatsby をまだ触っていない方のために、クエリの書き方を紹介します。あるページ &#x3C;code>/hoge&#x3C;/code> に対応する &#x3C;code>pages/hoge.js&#x3C;/code> があったとして、次のように、 &#x3C;code>query&#x3C;/code> または &#x3C;code>pageQuery&#x3C;/code> を &#x3C;code>export&#x3C;/code> することでクエリを指定すると、 &#x3C;code>export default&#x3C;/code> している関数の引数に &#x3C;code>data&#x3C;/code> として、そのクエリの結果が代入されます。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>pages/hoge.js&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-js">&#x3C;span class="hljs-keyword">import&#x3C;/span> &#x3C;span class="hljs-title hljs-class">React&#x3C;/span> &#x3C;span class="hljs-keyword">from&#x3C;/span> &#x3C;span class="hljs-string">"react"&#x3C;/span>
+&#x3C;span class="hljs-keyword">import&#x3C;/span> { graphql } &#x3C;span class="hljs-keyword">from&#x3C;/span> &#x3C;span class="hljs-string">"gatsby"&#x3C;/span>
+
+&#x3C;span class="hljs-keyword">export&#x3C;/span> &#x3C;span class="hljs-keyword">default&#x3C;/span> &#x3C;span class="hljs-keyword">function&#x3C;/span> (&#x3C;span class="hljs-params">{ data }&#x3C;/span>) {
+  &#x3C;span class="hljs-keyword">const&#x3C;/span> title = data.&#x3C;span class="hljs-property">site&#x3C;/span>.&#x3C;span class="hljs-property">siteMetadata&#x3C;/span>.&#x3C;span class="hljs-property">title&#x3C;/span>
+  &#x3C;span class="hljs-keyword">return&#x3C;/span> &#x3C;span class="xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">p&#x3C;/span>>&#x3C;/span>{title}&#x3C;span class="hljs-tag">&#x26;#x3C;/&#x3C;span class="hljs-name">p&#x3C;/span>>&#x3C;/span>&#x3C;/span>
+}
+
+&#x3C;span class="hljs-keyword">export&#x3C;/span> &#x3C;span class="hljs-keyword">const&#x3C;/span> query = graphql&#x3C;span class="hljs-string">`
+  query HogePage {
+    site {
+      siteMetadata {
+        title
+      }
+    }
+  }
+`&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>または、 &#x3C;a href="https://www.gatsbyjs.org/docs/static-query/">StaticQuery&#x3C;/a> コンポーネントを使うことができます。&#x3C;/p>
+&#x3C;p>これをビルドツールの観点から見ると、実行するべきクエリは、すべてのページの &#x3C;code>query&#x3C;/code> または &#x3C;code>pageQuery&#x3C;/code>、それと、一度だけ各ページをレンダリングしてみることで、 &#x3C;code>StaticQuery&#x3C;/code> から取得することができます。 Gatsby は、このようにすべてのクエリを収集し、クエリ結果を JSON ファイルとして保存します。&#x3C;/p>
+&#x3C;p>結果がすべて JSON ファイルとして保存してあると、 Gatsby の特徴である、静的ページの生成と、 Single Page Application の両立をすることができます。 SPA において、 GraphQL クエリ部分が、実行済みクエリ結果をダウンロードするよう振る舞えば、それ以外はただの React アプリになっているので、普通に React の SPA になってしまうのです。そして静的ページ生成は、 React の Server Side Rendering を行うだけになります。&#x3C;/p>
+&#x3C;p>というわけで、なぜ静的サイトジェネレータが GraphQL とかいう大層なものを取り出したのか、までつながりました。納得すると、 Gatsby 悪くないなと思えてきました。&#x3C;/p>
+&#x3C;h2>5. ここがつらいよ Gatsby&#x3C;/h2>
+&#x3C;p>このブログの構築に必要だったワークアラウンド集です。&#x3C;/p>
+&#x3C;h3>5.1. ブラウザにとって静的なサイトになりたい&#x3C;/h3>
+&#x3C;p>Gatsby がなぜ GraphQL を使っているのかについては、納得しました。しかし私が作りたいのは React でできたサイトではなく、ブログ本文が書かれた HTML が置いてあるだけのシンプルなブログです。 PWA でプリロード？ 知らん、読むかもわからんページを先読みしたところでたかが知れてるし、そのスクリプト分だけデータ量は増え、ブラウザの負荷もあります。エコじゃない。&#x3C;/p>
+&#x3C;p>しかしまぁ、一応は Server Side Rendering 済み HTML が吐き出されるので、やりようでどうにかできます。 &#x3C;a href="https://www.gatsbyjs.org/packages/gatsby-plugin-no-javascript/">gatsby-plugin-no-javascript&#x3C;/a> という過激な名前のサードパーティープラグインがあり、吐き出される HTML の &#x3C;code>script&#x3C;/code> タグを全部消し去ります。今は特に動的な部分はないので、これで満足しています。&#x3C;/p>
+&#x3C;p>あと、 SPA という前提に立っているので、デフォルトでは CSS が HTML の &#x3C;code>style&#x3C;/code> タグに全部入っています。外部リソースのダウンロードを減らす目的でしょうけれど、スクリプトを無効化すると、サイト内リンクは React 内でのルーティングではなく普通のリンクになるので、各ページに CSS が埋め込まれていると逆効果になりそうです。そこで &#x3C;code>style&#x3C;/code> タグではなく &#x3C;code>link&#x3C;/code> タグにしておきたいです。 &#x3C;code>link&#x3C;/code> タグへの変換は、ビルド中のフックで、簡単にできます（&#x3C;a href="https://github.com/gatsbyjs/gatsby/issues/1526#issuecomment-583740341">元ネタ&#x3C;/a>）。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>gatsby-ssr.js&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-js">&#x3C;span class="hljs-keyword">const&#x3C;/span> &#x3C;span class="hljs-title hljs-class">React&#x3C;/span> = &#x3C;span class="hljs-built_in">require&#x3C;/span>(&#x3C;span class="hljs-string">"react"&#x3C;/span>)
+
+&#x3C;span class="hljs-built_in">exports&#x3C;/span>.&#x3C;span class="hljs-property">onPreRenderHTML&#x3C;/span> = &#x3C;span class="hljs-function">(&#x3C;span class="hljs-params">{ getHeadComponents, replaceHeadComponents }&#x3C;/span>) =>&#x3C;/span> {
+  &#x3C;span class="hljs-title hljs-function">replaceHeadComponents&#x3C;/span>(
+    &#x3C;span class="hljs-title hljs-function">getHeadComponents&#x3C;/span>().&#x3C;span class="hljs-title hljs-function">map&#x3C;/span>(&#x3C;span class="hljs-function">(&#x3C;span class="hljs-params">el&#x3C;/span>) =>&#x3C;/span> {
+      &#x3C;span class="hljs-keyword">if&#x3C;/span> (el.&#x3C;span class="hljs-property">type&#x3C;/span> !== &#x3C;span class="hljs-string">"style"&#x3C;/span>) &#x3C;span class="hljs-keyword">return&#x3C;/span> el
+      &#x3C;span class="hljs-keyword">const&#x3C;/span> href = el.&#x3C;span class="hljs-property">props&#x3C;/span>[&#x3C;span class="hljs-string">"data-href"&#x3C;/span>]
+      &#x3C;span class="hljs-keyword">return&#x3C;/span> href ? &#x3C;span class="xml">&#x3C;span class="hljs-tag">&#x26;#x3C;&#x3C;span class="hljs-name">link&#x3C;/span> &#x3C;span class="hljs-attr">rel&#x3C;/span>=&#x3C;span class="hljs-string">"stylesheet"&#x3C;/span> &#x3C;span class="hljs-attr">href&#x3C;/span>=&#x3C;span class="hljs-string">{href}&#x3C;/span> />&#x3C;/span>&#x3C;/span> : el
+    })
+  )
+}
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;h3>5.2. 公式の AsciiDoc プラグインでは満足できない&#x3C;/h3>
+&#x3C;p>Gatsby で AsciiDoc を扱うには、公式より &#x3C;a href="https://www.gatsbyjs.org/packages/gatsby-transformer-asciidoc/">gatsby-transformer-asciidoc&#x3C;/a> プラグインが提供されており、これを使うのが一般的だと思います。しかし、 Header Attribute の取得があまり自由にできず、 &#x3C;code>page-&#x3C;/code> から始まる Header Attribute しか取得できません。これは、 Asciidoctor が使用するような AsciiDoc 的に一般的に用いられる属性と合わせられないという問題のほかに、まだ実装していませんが、数式表示が必要かを表す &#x3C;code>:stem:&#x3C;/code> を取得できないと、数式レンダリングライブラリをロードするべきかの判断ができない問題もあります。&#x3C;/p>
+&#x3C;p>この問題については、 gatsby-transformer-asciidoc の代わりを、適当に自作することにしました。 Asciidoctor.js を呼び出すだけなので、そんなに大がかりではありません。&#x3C;/p>
+&#x3C;h3>5.3. 「#」を含むパス問題&#x3C;/h3>
+&#x3C;p>私のブログなので、今後「C#」といったタグをつけた記事が出てくることが予想されるので、先に実験しておきました。タグのパスは &#x3C;code>/tags/:tag&#x3C;/code> の形式なのですが見事に死亡しました。「#」をエスケープすると 404 になり、エスケープしないとブラウザがフラグメント扱いします。&#x3C;/p>
+&#x3C;p>結局、 &#x3C;a href="https://www.gatsbyjs.org/docs/actions/#createPage">&#x3C;code>createPage&#x3C;/code>&#x3C;/a> に渡すパスはエスケープせず、 &#x3C;a href="https://www.gatsbyjs.org/docs/gatsby-link/">&#x3C;code>&#x26;#x3C;Link>&#x3C;/code>&#x3C;/a> に渡すパスはエスケープすることでお茶を濁しました。この方法では、静的サイトとして振る舞う場合は問題なく動作しますが、 SPA として振る舞う場合は死にます。より良い方法があれば教えてください。&#x3C;/p>
+&#x3C;p>追記: Netlify にデプロイしようとしたら &#x3C;samp>Deployed filenames cannot contain # or ? characters&#x3C;/samp> と怒られてしまいました。静的ファイルをホスティングするだけの分際で無駄な忖度をするんじゃないという気持ちになったので、 Vercel に移行しました。&#x3C;/p>
+&#x3C;h2>6. さいごに&#x3C;/h2>
+&#x3C;p>下手な既存ツールで満足できない人間が、自前でブログを構築しようとすると、要求が膨らんで大変だということがよくわかりました。そんな中で、妥協点として Gatsby を採用しました。いくらか不満はありますが、解決できるだけの柔軟性はあるので、これからも仲良くやっていきたいと思います。&#x3C;/p>
+&#x3C;p>ブログを構築しようとして、何日を無駄にしたのでしょう。この 4 月より大学院に進学し、これから 2 年間どんな研究をするのかを考える大事な時期に、研究（文献調査）の進捗が出ていません。そんな時期に現実逃避していたら、数年の悲願であった自作ブログ基盤ができてしまいました。せっかくブログを作ったので、いろいろアウトプットできたらいいなぁと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/</id><link href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/" rel="alternate" type="text/html" /><published>2020-04-04T02:29:00+09:00</published><title type="html">さよならはてなブログ、こんにちはGatsby</title><updated>2021-09-24T23:30:48+09:00</updated></entry></feed>

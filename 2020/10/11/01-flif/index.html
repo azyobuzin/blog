@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&#x26;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&#x26;display=swap" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>画像可逆圧縮形式 FLIF についてのメモ | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/2020/10/11/01-flif/"><meta property="og:title" content="画像可逆圧縮形式 FLIF についてのメモ"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/2020/10/11/01-flif/"><meta property="og:description" content="FLIF (Free Lossless Image Format) は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。
+<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&#x26;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&#x26;display=swap" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>画像可逆圧縮形式 FLIF についてのメモ | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/2020/10/11/01-flif/"><meta property="og:title" content="画像可逆圧縮形式 FLIF についてのメモ"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/2020/10/11/01-flif/"><meta property="og:description" content="FLIF (Free Lossless Image Format) は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。
 
 ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。
 
@@ -8,8 +8,8 @@
 
 FLIF は、すでに ImageMagick で実装されており、すぐに試すことができます。また、コーデックのリファレンス実装は GitHub にあります (FLIF-hub/FLIF)。
 
-なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2021-09-16T23:56:15+09:00"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
-最終更新: 2021/09/16 23:56">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/41da0ddaad6d3a1d7df32381c420ce1c97a30e62/posts/2020/10/11/01-flif" rel="external">History</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
+なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2021-09-24T23:30:48+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
+最終更新: 2021/09/24 23:30">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/f65f19fde91f122e1a22aef151d43393af580acb/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/tech/">tech</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
 <p>ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。</p>
 <p>圧縮手法としての特徴は、次の2点が挙げられます。</p>
 <ol>
@@ -168,9 +168,9 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <table>
   <thead>
     <tr>
-      <td>予測器</td>
-      <td>ズームレベル偶数</td>
-      <td>ズームレベル奇数</td>
+      <th scope="col">予測器</th>
+      <th scope="col">ズームレベル偶数</th>
+      <th scope="col">ズームレベル奇数</th>
     </tr>
   </thead>
   <tbody>
@@ -291,14 +291,14 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <figcaption>表 4: 「5」を最大値 5 の Near-zero Integer Coding で符号化</figcaption>
 <table>
 <tbody><tr>
-  <th>ビット
+  <th scope="row">ビット
   </th><td align="center">0
   </td><td align="center">1
   </td><td align="center">0
   </td><td align="center">0
   </td><td align="center">1
 </td></tr><tr>
-  <th>ビット名
+  <th scope="row">ビット名
   </th><td align="center">ZERO
   </td><td align="center">SIGN
   </td><td align="center">EXP(0, +)

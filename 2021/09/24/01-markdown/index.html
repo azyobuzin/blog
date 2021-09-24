@@ -1,0 +1,88 @@
+<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&#x26;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&#x26;display=swap" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>結局ブログをMarkdownで書くことにした話 | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/2021/09/24/01-markdown/"><meta property="og:title" content="結局ブログをMarkdownで書くことにした話"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/2021/09/24/01-markdown/"><meta property="og:description" content="blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。
+
+AsciiDoc というか Asciidoctor を使うことに思うところがあり、 Gatsby + Asciidoctor.js という構成をやめ、 Markdown + お手製静的サイトジェネレータ という構成に変更したというお話です。
+
+（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）"><meta property="og:article:published_time" content="2021-09-24T23:30+09:00"><meta property="og:article:modified_time" content="2021-09-24T23:30:48+09:00"><meta property="og:article:tag" content="tech"><meta property="og:article:tag" content="JavaScript"></head><body><div class="container"><article class="article-page"><header><h1>結局ブログをMarkdownで書くことにした話</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2021-09-24T23:30+09:00" title="公開: 2021/09/24 23:30
+最終更新: 2021/09/24 23:30">2021/09/24</time> ― <a href="https://github.com/azyobuzin/blog/commits/f65f19fde91f122e1a22aef151d43393af580acb/posts/2021/09/24/01-markdown" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/tech/">tech</a> <a class="button button-outline article-tag" href="/tags/JavaScript/">JavaScript</a></div></header><div class="article-content"><p>blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。</p>
+<p>AsciiDoc というか Asciidoctor を使うことに思うところがあり、 Gatsby + Asciidoctor.js という構成をやめ、 Markdown + お手製静的サイトジェネレータ という構成に変更したというお話です。</p>
+<p>（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）</p>
+<h2>なぜ Markdown</h2>
+<p>このブログを開設して最初の記事で、なぜ AsciiDoc を選んだかを説明しました。</p>
+<figure class="fig-quote">
+<blockquote cite="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/">
+<p>プレーンな Markdown （GitHub Flavored ではない）を思い出してください。機能が何もかも足りていないですね。</p>
+<p>Markdown 処理系を思い出してください。いくつ方言があるんだよお前ら。</p>
+<p>というわけで、プレーンな Markdown は弱すぎ、方言はみんなバラバラ、 Markdown 対応サービス間でもコピペしたあとに修正を加えるなんて日常茶飯事な、そんなマークアップ言語で書きたくはありません。そこで、もともと機能が豊富で、さらに要素の拡張方法も仕様に含まれている AsciiDoc を採用することにしました。機能豊富なぶん、 HTML への変換結果と、それに必要なスタイルシートがつらいという問題はありますが、該当機能を使うまでは問題を先延ばしにできます。先延ばしていけ。</p>
+</blockquote>
+<figcaption>3. なぜ AsciiDoc, <a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/"><cite>さよならはてなブログ、こんにちはGatsby</cite></a></figcaption>
+</figure>
+<p>うんうん……。正直今ならほとんど反論できますね……。</p>
+<p>まずは方言問題。使ってみてわかりましたが、 Asciidoctor という方言は強烈です。オリジナルの AsciiDoc に対する拡張がかなりあります。結局 Asciidoctor という方言を書くことになってしまいました。対して Markdown は <a href="https://commonmark.org/">CommonMark</a> という最小かつ曖昧さのほとんどない仕様が存在します。またデファクトスタンダードである <a href="https://github.github.com/gfm/">GitHub Flavored Markdown</a> は、 CommonMark への機能追加という形で仕様が公開されています。さまざまな方言があるように見えますが、 CommonMark 以外に目を向けなければ、かなり安定した仕様と言えます。</p>
+<p>そして次に、 AsciiDoc は<q>機能豊富なぶん、 HTML への変換結果と、それに必要なスタイルシートがつらい</q>と書きましたが、これがかなりつらさにつながっていました。ブログを書いて Web に公開するとはどういうことかというと、 HTML をアウトプットするということです。セマンティックの正しい HTML を出力することについて、 AsciiDoc の機能および Asciidoctor の出力はかなりの足かせになってしまいました。私は HTML が書きたいのであって、 AsciiDoc や DocBook を書きたいわけではないのです。この点において Markdown はとても優秀なツールです。 CommonMark の機能はほぼ HTML タグと1対1対応になっており、簡単に出力される HTML を予想することができます。また CommonMark では HTML をインラインまたはブロックとして直接書くことも許されています（AsciiDoc にも Passthrough Block という機能がありますが）。つまり Markdown に不満があったら HTML を書けばいいのです。 Markdown に多くを求めなければ Markdown は HTML の糖衣構文として使うことができるのです。</p>
+<p>このような背景で、 Markdown への移行を決めました。基本方針は GitHub Flavored Markdown にある機能だけを使い、より複雑なことがしたいならば HTML を手書きする です。追加機能が欲しい場合は、カスタム要素を使用します（カスタム要素は静的サイトジェネレータで処理されます。インタラクティブな要素が必要になったときは、そのまま出力して Web Components にしてしまおうと考えています）。 Markdown 自体は拡張しません。</p>
+<h2>静的サイトジェネレータ</h2>
+<p>Next.js や Gatsby を一度でも使ったことがあれば共感していただけると思うのですが、 JSX って HTML テンプレート言語として最強だと思うんですよ。ということで JSX を捨てたくなかったのですが、どのツールもブラウザに React をロードさせることが前提になっていました。 Gatsby の時代は過激な名前のプラグインをインストールして <code>&#x3C;script></code> タグを潰していましたね。</p>
+<figure class="fig-quote">
+<blockquote cite="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/">
+<p>私が作りたいのは React でできたサイトではなく、ブログ本文が書かれた HTML が置いてあるだけのシンプルなブログです。 PWA でプリロード？ 知らん、読むかもわからんページを先読みしたところでたかが知れてるし、そのスクリプト分だけデータ量は増え、ブラウザの負荷もあります。エコじゃない。</p>
+<p><a href="https://www.gatsbyjs.org/packages/gatsby-plugin-no-javascript/">gatsby-plugin-no-javascript</a> という過激な名前のサードパーティープラグインがあり、吐き出される HTML の script タグを全部消し去ります。今は特に動的な部分はないので、これで満足しています。</p>
+</blockquote>
+<figcaption>5.1. ブラウザにとって静的なサイトになりたい, <a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/"><cite>さよならはてなブログ、こんにちはGatsby</cite></a></figcaption>
+</figure>
+<p>というわけで JSX を書けて React に依存しないものを探していました。ツールは見つかりませんでしたが、いい感じのライブラリは見つけました。 <a href="https://github.com/syntax-tree/hastscript">hastscript</a>。これで JSX 構文で AST を吐き出すことができます。</p>
+<h3>remark, rehype, unified</h3>
+<p>最近 JavaScript で Markdown を解析するなら <a href="https://github.com/remarkjs/remark">remark</a> が最有力でしょうか？ remark は <a href="https://github.com/unifiedjs/unified">unified</a> という共通 AST 処理基盤を利用する仕組みになっており、 Markdown → Markdown AST (<a href="https://github.com/syntax-tree/mdast">mdast</a>) → HTML AST (<a href="https://github.com/syntax-tree/hast">hast</a>) → HTML といった変換工程を簡単に書くことができます。嘘です。すでに用意されてるパッケージを使うだけならうまく隠蔽されていますが、パイプラインとしてはなかなか最悪の実装になっており、それを理解してプラグインを自作することになります。</p>
+<p>今見ているこのページの Markdown は、こんな感じのパイプラインで HTML 化されています。</p>
+<figure class="fig-code">
+<figcaption>Markdown 処理パイプライン (<a href="https://github.com/azyobuzin/blog/blob/7913138eff88596512ec8403c17005bba57beb31/generator/lib/posts.ts#L361-L385" rel="external">posts.ts</a>)</figcaption>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> processor = <span class="hljs-title hljs-function">unified</span>()
+  .<span class="hljs-title hljs-function">use</span>(remarkParse) <span class="hljs-comment">// remark-parse (Parser): Markdown to mdast</span>
+  .<span class="hljs-title hljs-function">use</span>(remarkGfm) <span class="hljs-comment">// remark-gfm: GFM 拡張のロード</span>
+  .<span class="hljs-title hljs-function">use</span>(remarkFrontmatter) <span class="hljs-comment">// remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード</span>
+  .<span class="hljs-title hljs-function">use</span>(remarkExtractFrontmatter, { <span class="hljs-comment">// remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる</span>
+    <span class="hljs-attr">yaml</span>: yaml.<span class="hljs-property">parse</span>,
+    <span class="hljs-attr">name</span>: <span class="hljs-string">"frontmatter"</span>,
+    <span class="hljs-attr">throws</span>: <span class="hljs-literal">true</span>,
+  })
+  .<span class="hljs-title hljs-function">use</span>(extractTitle) <span class="hljs-comment">// 独自: # (h1) をタイトルとして扱う</span>
+  .<span class="hljs-title hljs-function">use</span>(remarkMath) <span class="hljs-comment">// remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード</span>
+  <span class="hljs-comment">// Markdown ここまで</span>
+  .<span class="hljs-title hljs-function">use</span>(remarkRehype, { <span class="hljs-attr">allowDangerousHtml</span>: <span class="hljs-literal">true</span> }) <span class="hljs-comment">// remark-rehype: mdast → hast （「拡張のロード」と書いたシリーズはここで使われる）</span>
+  <span class="hljs-comment">// HTML ここから</span>
+  .<span class="hljs-title hljs-function">use</span>(rehypeRaw) <span class="hljs-comment">// remark-raw: Markdown に手書きした HTML を有効な hast ノードに変換する</span>
+  .<span class="hljs-title hljs-function">use</span>(sectionNumbering) <span class="hljs-comment">// 独自: 見出しにセクション番号を付与する（記事ごとに有効か無効かを設定できる）</span>
+  .<span class="hljs-title hljs-function">use</span>(sampElement) <span class="hljs-comment">// 独自: &#x3C;code class="language-samp"> を &#x3C;samp> タグにすげ替える</span>
+  .<span class="hljs-title hljs-function">use</span>(assignNoHighlight) <span class="hljs-comment">// 独自: ↓ で勝手にシンタックスハイライトされないように class="no-highlight" を設定する</span>
+  .<span class="hljs-title hljs-function">use</span>(rehypeHighlight) <span class="hljs-comment">// rehype-highlight: &#x3C;pre>&#x3C;code> をシンタックスハイライト</span>
+  .<span class="hljs-title hljs-function">use</span>(removeHljsClass) <span class="hljs-comment">// 独自: ↑ で無駄な class が設定されるので削除</span>
+  .<span class="hljs-title hljs-function">use</span>(assignAlt) <span class="hljs-comment">// 独自: &#x3C;figcaption> が兄弟にある &#x3C;img> に alt が設定されていなければ alt に &#x3C;figcaption> の中身を設定する</span>
+  .<span class="hljs-title hljs-function">use</span>(figureNumbering) <span class="hljs-comment">// 独自: 図表番号を付与する</span>
+  .<span class="hljs-title hljs-function">use</span>(rehypeCustomElements) <span class="hljs-comment">// 独自: カスタム属性を処理する</span>
+  .<span class="hljs-title hljs-function">use</span>(rehypeKatex) <span class="hljs-comment">// rehype-katex: remark-math で抽出した数式を KaTeX で処理する</span>
+  .<span class="hljs-title hljs-function">use</span>(lintFigureClass) <span class="hljs-comment">// 独自: &#x3C;figure> に class 属性を付け忘れていたら警告する</span>
+  .<span class="hljs-title hljs-function">use</span>(toPost) <span class="hljs-comment">// 独自 (Compiler): 出力オブジェクトを生成する</span>
+  .<span class="hljs-title hljs-function">freeze</span>()
+</code></pre>
+</figure>
+<p>できるだけシンプルにするぞと思っていたのですが、なかなか処理が多いですね。しかし Markdown 言語自体を拡張することはほとんどしておらず、処理のほとんどは HTML の AST を変形しています。このように HTML の世界に閉じ込めることで、言語を拡張するとかいう不毛なことを考えなくて済みます。</p>
+<h3>hastscript ベースのページテンプレート</h3>
+<p>素の hastscript は hast を生成するための簡単な操作しか行うことができませんが、ちょっとしたラッパーを書くことで React の関数コンポーネントの書き味を得ることができます。</p>
+<figure class="fig-code">
+<figcaption>React の書き味に似せるためのラッパー (<a href="https://github.com/azyobuzin/blog/blob/7913138eff88596512ec8403c17005bba57beb31/generator/lib/jsx.ts" rel="external">jsx.ts</a>)</figcaption>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> { h <span class="hljs-keyword">as</span> hastscript } <span class="hljs-keyword">from</span> <span class="hljs-string">"hastscript"</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title hljs-function">h</span>(<span class="hljs-params">selector, properties, ...children</span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">typeof</span> selector === <span class="hljs-string">"function"</span>
+    ? <span class="hljs-title hljs-function">selector</span>({ children, ...properties }) <span class="hljs-comment">// 関数コンポーネント</span>
+    : <span class="hljs-title hljs-function">hastscript</span>(
+        selector,
+        properties,
+        <span class="hljs-comment">// hastscript は boolean を入力すると例外をスローするのでフィルター</span>
+        children.<span class="hljs-title hljs-function">filter</span>(<span class="hljs-function">(<span class="hljs-params">x</span>) =></span> x != <span class="hljs-literal">null</span> &#x26;&#x26; x !== <span class="hljs-literal">true</span> &#x26;&#x26; x !== <span class="hljs-literal">false</span>)
+      )
+}
+</code></pre>
+</figure>
+<p>このような関数を用意すると、ほぼ React の感覚で JSX を書くことができます。実際の使用例は、このブログのジェネレータのソースコード（<a href="https://github.com/azyobuzin/blog/tree/7913138eff88596512ec8403c17005bba57beb31/generator/pages">pages ディレクトリ</a>）を見てください。</p>
+<h2>まとめ</h2>
+<p>以上が AsciiDoc を捨てて Markdown に移行した理由と、新しい静的サイトジェネレータの実装でした。 HTML が置いてあるトラディショナル静的サイトであることをモットーにしているので、このような構成が落ち着きますね。これからは Asciidoctor のドキュメントとにらめっこせず、 HTML を書いていきます。ブログ書けよ。</p></div></article><footer><hr><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></body></html>
