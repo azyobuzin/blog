@@ -64,7 +64,7 @@ Next.js や Gatsby を一度でも使ったことがあれば共感していた�
 
 ```js
 const processor = unified()
-  .use(remarkParse) // remark-parse (Parser): Markdown to mdast
+  .use(remarkParse) // remark-parse (Parser): Markdown → mdast （この後の「拡張のロード」はここで使われる）
   .use(remarkGfm) // remark-gfm: GFM 拡張のロード
   .use(remarkFrontmatter) // remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード
   .use(remarkExtractFrontmatter, { // remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる
@@ -75,7 +75,7 @@ const processor = unified()
   .use(extractTitle) // 独自: # (h1) をタイトルとして扱う
   .use(remarkMath) // remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード
   // Markdown ここまで
-  .use(remarkRehype, { allowDangerousHtml: true }) // remark-rehype: mdast → hast （「拡張のロード」と書いたシリーズはここで使われる）
+  .use(remarkRehype, { allowDangerousHtml: true }) // remark-rehype: mdast → hast
   // HTML ここから
   .use(rehypeRaw) // remark-raw: Markdown に手書きした HTML を有効な hast ノードに変換する
   .use(sectionNumbering) // 独自: 見出しにセクション番号を付与する（記事ごとに有効か無効かを設定できる）
