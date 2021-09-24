@@ -1,6 +1,7 @@
 import { execFile } from "child_process"
 import { stat } from "fs/promises"
 import * as path from "path"
+import chalk from "chalk"
 import glob from "glob"
 import type {
   Element,
@@ -102,7 +103,7 @@ async function readPost(postDir: string): Promise<Post> {
   for (const msg of resultFile.messages) {
     if (msg.fatal === true) throw msg
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    console.warn(msg.toString())
+    console.warn(chalk.yellow(msg.toString()))
   }
 
   return resultFile.result
@@ -304,6 +305,19 @@ function assignTextToAnchor(
   }
 }
 
+/** `<figure>` に class が指定されていなかったら警告 */
+const lintFigureClass: Plugin<[], HastRoot> = () => {
+  const expectedClasses = ["fig-code", "fig-img", "fig-quote", "fig-table"]
+  let selector = "figure"
+  for (const c of expectedClasses) selector += `:not(figure.${c})`
+
+  return (tree: HastRoot, file: VFile) => {
+    for (const el of selectAll(selector, tree)) {
+      file.message("No class is specified for <figure>", el.position)
+    }
+  }
+}
+
 const toPost: Plugin<[], HastRoot> = function () {
   this.Compiler = (tree: HastRoot, file: VFile): Post => {
     const slug = path
@@ -366,6 +380,7 @@ const processor = unified()
   .use(figureNumbering)
   .use(rehypeCustomElements)
   .use(rehypeKatex)
+  .use(lintFigureClass)
   .use(toPost)
   .freeze() as FrozenProcessor<MdastRoot, HastRoot, HastRoot, Post>
 
@@ -430,5 +445,3 @@ export function removeRelativeLink<T extends HastNode>(
     return { ...node }
   }) as T
 }
-
-// TODO: figure タグに class がなかったら警告

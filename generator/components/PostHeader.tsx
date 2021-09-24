@@ -41,7 +41,7 @@ const PostHeader: VFC<{ post: Post; link: boolean; showHistory: boolean }> = ({
           aria-hidden="true"
           title="公開日"
         />{" "}
-        <time dateTime={pubdate.toISOString(true)} title={dateDetails}>
+        <time dateTime={post.pubdate} title={dateDetails}>
           {pubdate.format(dateFormat)}
         </time>
         {historyUrl != null && (

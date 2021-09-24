@@ -11,6 +11,7 @@
     "fix": "eslint --ignore-path ../.gitignore --fix ."
   },
   "dependencies": {
+    "chalk": "^4.1.2",
     "glob": "^7.1.7",
     "hast-util-classnames": "^2.0.0",
     "hast-util-has-property": "^2.0.0",

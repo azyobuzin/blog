@@ -47,3 +47,16 @@ export function h(
         children.filter((x) => x != null && x !== true && x !== false)
       )
 }
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    interface ElementChildrenAttribute {
+      children: any
+    }
+
+    interface IntrinsicElements {
+      [name: string]: any
+    }
+  }
+}
