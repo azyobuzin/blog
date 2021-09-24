@@ -1,6 +1,6 @@
 ---
 pubdate: 2020-09-14T22:13+09:00
-tags: [Docker]
+tags: [tech, Docker]
 ---
 
 # 結局、理想のネットワークは Docker で実現できなかった

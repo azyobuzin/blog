@@ -1,6 +1,6 @@
 ---
 pubdate: 2020-04-30T02:36+09:00
-tags: [C#]
+tags: [tech, C#]
 sectnums: true
 ---
 

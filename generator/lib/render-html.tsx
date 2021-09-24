@@ -63,5 +63,6 @@ const processor = unified()
   .use(mathStyle)
   .use(rehypeStringify, {
     allowDangerousHtml: true,
+    upperDoctype: true,
   })
   .freeze()

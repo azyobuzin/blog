@@ -68,27 +68,16 @@ article header {
   text-transform: none;
 }
 
-footer {
+footer,
+.error-heading {
   text-align: center;
 }
 
-.admonitionblock {
+@mixin note-block {
   background: $color-tertiary;
   border-left: 0.3rem solid $color-primary;
   padding: 1rem 1.5rem;
   margin: 2.5rem 0;
-
-  &.important {
-    border-left-color: #d14;
-  }
-
-  &.caution {
-    border-left-color: rgb(194, 83, 18);
-  }
-
-  &.warning {
-    border-left-color: rgb(207, 195, 17);
-  }
 
   .icon {
     text-transform: uppercase;
@@ -113,10 +102,33 @@ footer {
   }
 }
 
-figcaption {
-  text-align: center;
+.admonitionblock {
+  @include note-block();
+
+  &.important {
+    border-left-color: #d14;
+  }
+
+  &.caution {
+    border-left-color: rgb(194, 83, 18);
+  }
+
+  &.warning {
+    border-left-color: rgb(207, 195, 17);
+  }
 }
 
+.ins-block {
+  @include note-block();
+  display: block;
+  text-decoration: none;
+}
+
+aside {
+  @include note-block();
+}
+
+figcaption,
 .fig-img {
   text-align: center;
 }
@@ -136,12 +148,7 @@ figcaption {
 
 // pre > code と同じスタイルを pre > samp に適用
 samp {
-  background: $color-tertiary;
-  border-radius: 0.4rem;
-  font-size: 86%;
-  margin: 0 0.2rem;
-  padding: 0.2rem 0.5rem;
-  white-space: nowrap;
+  @extend code;
 }
 
 pre > samp {

@@ -1,6 +1,6 @@
 ---
 pubdate: 2021-08-27T03:24+09:00
-tags: [C#, Android]
+tags: [tech, C#, Android]
 ---
 
 # Xamarin.Android アプリが例外で落ちるということ

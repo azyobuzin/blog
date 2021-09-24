@@ -1,6 +1,6 @@
 ---
 pubdate: 2021-03-23T03:44+09:00
-tags: [C#]
+tags: [tech, C#]
 thumbnail: https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210323/20210323033433.png
 ---
 

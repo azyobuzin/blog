@@ -1,4 +1,5 @@
 #!/bin/bash
+# 記事のディレクトリと index.md を生成します。
 slug=$([ -z $1 ] && echo "01" || echo $1)
 dir="posts/$(date '+%Y/%m/%d')/${slug}"
 mkdir -p "${dir}"

@@ -1,12 +1,14 @@
 import { Root } from "hast"
 import { Plugin } from "unified"
 import { SKIP, visit } from "unist-util-visit"
+import InsBlock from "./InsBlock"
 import { Caution, Important, Warning } from "./admonitions"
 
 export const components = {
   "ab-important": Important,
   "ab-caution": Caution,
   "ab-warning": Warning,
+  "ab-insblock": InsBlock,
 }
 
 export const rehypeCustomElements: Plugin<[], Root> = () => {

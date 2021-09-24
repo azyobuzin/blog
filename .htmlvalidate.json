@@ -1,0 +1,9 @@
+{
+  "root": true,
+  "extends": ["html-validate:standard"],
+  "rules": {
+    "element-required-attributes": "warn",
+    "no-deprecated-attr": "warn",
+    "no-raw-characters": "off"
+  }
+}

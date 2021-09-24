@@ -7,7 +7,7 @@ const NotFound: VFC = () => {
     <Layout head={<title>そんなページないよ！ | {SITE_TITLE}</title>}>
       <div className="container">
         <main>
-          <h1 style={{ textAlign: "center" }}>
+          <h1 className="error-heading">
             404
             <br />
             そんなページないよ！

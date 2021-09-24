@@ -1,6 +1,6 @@
 ---
 pubdate: 2020-09-28T02:29+09:00
-tags: [C#, Docker]
+tags: [tech, C#, Docker]
 ---
 
 # Visual Studio と VSCode どちらでも使える Docker Compose 環境

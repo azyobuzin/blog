@@ -1,5 +1,6 @@
 ---
 pubdate: 2020-04-04T02:29+09:00
+tags: [tech, JavaScript]
 sectnums: true
 ---
 
@@ -9,7 +10,13 @@ Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き�
 
 一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。
 
-<ins datetime="2021-09-01">AsciiDoc をやめ Markdown に移行しました。いくつか理由があるので、そのうち書こうと思います。</ins>
+<ab-insblock datetime="2021-09-24">
+
+AsciiDoc をやめ Markdown に移行しました。
+
+[<cite>結局ブログをMarkdownで書くことにした話</cite>](/2021/09/24/01-markdown/)
+
+</ab-insblock>
 
 ## なぜ脱はてなブログ
 

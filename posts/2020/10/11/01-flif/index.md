@@ -1,5 +1,6 @@
 ---
 pubdate: 2020-10-11T20:51+09:00
+tags: [tech]
 sectnums: true
 thumbnail: https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png
 ---
@@ -132,9 +133,9 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 <table>
   <thead>
     <tr>
-      <td>予測器</td>
-      <td>ズームレベル偶数</td>
-      <td>ズームレベル奇数</td>
+      <th scope="col">予測器</th>
+      <th scope="col">ズームレベル偶数</th>
+      <th scope="col">ズームレベル奇数</th>
     </tr>
   </thead>
   <tbody>
@@ -289,14 +290,14 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 <figcaption>「5」を最大値 5 の Near-zero Integer Coding で符号化</figcaption>
 <table>
 <tr>
-  <th>ビット
+  <th scope="row">ビット
   <td align="center">0
   <td align="center">1
   <td align="center">0
   <td align="center">0
   <td align="center">1
 <tr>
-  <th>ビット名
+  <th scope="row">ビット名
   <td align="center">ZERO
   <td align="center">SIGN
   <td align="center">EXP(0, +)

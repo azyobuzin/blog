@@ -1,6 +1,6 @@
 ---
 pubdate: 2020-05-03T04:07+09:00
-tags: [C#]
+tags: [tech, C#]
 ---
 
 # ProjectReference にバージョン範囲を指定したい

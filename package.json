@@ -9,13 +9,14 @@
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.0.0-rc.0",
+    "html-validate": "^5.5.0",
     "parcel": "^2.0.0-rc.0",
     "prettier": "^2.4.1",
     "prettier-plugin-md-nocjsp": "^1.2.0",
     "serve": "^12.0.1"
   },
   "scripts": {
-    "build": "npm start -w generator; parcel build --dist-dir public styles/global.scss",
+    "build": "npm start -w generator; parcel build --dist-dir public styles/global.scss; html-validate public",
     "serve": "serve public",
     "fix": "npm run fix --workspaces; prettier --ignore-path .gitignore --write ."
   },
