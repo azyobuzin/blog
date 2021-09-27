@@ -52,7 +52,7 @@ Markdown を拡張しだすとキリがなくなるので、足りない機能�
 
 ```html
 <figure id="fig-x" class="fig-img" data-num="図">
-  <img src="path/to/img.jpg" />
+  <img src="path/to/img.jpg" alt="" />
   <figcaption>タイトル</figcaption>
 </figure>
 ```
@@ -61,7 +61,7 @@ Markdown を拡張しだすとキリがなくなるので、足りない機能�
 
 ```html
 <figure id="fig-x" class="fig-img" data-num="図">
-  <img src="path/to/img.jpg" alt="タイトル" />
+  <img src="path/to/img.jpg" alt="" />
   <figcaption>図 1: タイトル</figcaption>
 </figure>
 ```
@@ -121,4 +121,23 @@ DocBook の意味に従う。未実装のものは必要になったら追加す
     <p>従わないとやばいことになる可能性があること</p>
   </div>
 </div>
+```
+
+#### 追記
+
+```html
+<ab-insblock datetime="2021-09-27">
+  <p>変更がありました。</p>
+</ab-insblock>
+```
+
+↓
+
+```html
+<ins class="ins-block" datetime="2021-09-27" role="note">
+  <div class="icon">追記 <time>2021-09-27</time></div>
+  <div class="content">
+    <p>変更がありました。</p>
+  </div>
+</ins>
 ```

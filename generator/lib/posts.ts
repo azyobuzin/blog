@@ -15,7 +15,6 @@ import { heading as isHastHeading } from "hast-util-heading"
 import { headingRank } from "hast-util-heading-rank"
 import { isElement as isHastElement } from "hast-util-is-element"
 import { selectAll } from "hast-util-select"
-import { toText } from "hast-util-to-text"
 import type { Parent as MdastParent, Root as MdastRoot } from "mdast"
 import { toHast } from "mdast-util-to-hast"
 import rehypeHighlight from "rehype-highlight"
@@ -231,31 +230,6 @@ const removeHljsClass: Plugin<[], HastRoot> = () => {
   }
 }
 
-/** img の alt に figcaption をセットする */
-const assignAlt: Plugin<[], HastRoot> = () => {
-  return (tree: HastRoot) => {
-    visit(tree, (node, _index, parent) => {
-      if (!isHastElement(node, "img") || !isHastElement(parent, "figure"))
-        return
-
-      const currentAlt = node.properties?.alt
-      if (typeof currentAlt === "string" && currentAlt.length > 0) return
-
-      let alt: string | undefined
-      for (const child of parent.children) {
-        if (isHastElement(child, "figcaption")) {
-          alt = toText(child)
-          break
-        }
-      }
-
-      if (alt == null) return
-
-      node.properties = { ...node.properties, alt }
-    })
-  }
-}
-
 /** 図表番号 */
 const figureNumbering: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
@@ -376,7 +350,6 @@ const processor = unified()
   .use(assignNoHighlight)
   .use(rehypeHighlight)
   .use(removeHljsClass)
-  .use(assignAlt)
   .use(figureNumbering)
   .use(rehypeCustomElements)
   .use(rehypeKatex)

@@ -1,9 +1,11 @@
 {
   "root": true,
-  "extends": ["html-validate:standard"],
+  "extends": ["html-validate:recommended"],
   "rules": {
     "element-required-attributes": "warn",
     "no-deprecated-attr": "warn",
-    "no-raw-characters": "off"
+    "no-inline-style": "off",
+    "no-raw-characters": "off",
+    "prefer-native-element": "off"
   }
 }

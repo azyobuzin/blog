@@ -50,7 +50,7 @@ TPL Dataflow のソースコードを読むと、 TargetBlock または Propagat
 
 そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。
 
-<figure class="fig-img"><img src="deadlock1.svg" /></figure>
+<figure class="fig-img"><img src="deadlock1.svg" alt="デッドロックが発生する例" /></figure>
 
 見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。
 

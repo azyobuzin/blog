@@ -4,7 +4,7 @@
     "prefix": "fig-img",
     "body": [
       "<figure class=\"fig-img\">",
-      "<img src=\"${1:src}\" />",
+      "<img src=\"${1:src}\" alt=\"\" />",
       "<figcaption>${2:caption}</figcaption>",
       "</figure>"
     ]
@@ -14,7 +14,7 @@
     "prefix": "fig-img-num",
     "body": [
       "<figure id=\"${1:id}\" class=\"fig-img\" data-num=\"図\">",
-      "<img src=\"${2:src}\" />",
+      "<img src=\"${2:src}\" alt=\"\" />",
       "<figcaption>${3:caption}</figcaption>",
       "</figure>"
     ]

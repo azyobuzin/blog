@@ -67,11 +67,11 @@ const processor = unified()
   .use(remarkParse) // remark-parse (Parser): Markdown → mdast （この後の「拡張のロード」はここで使われる）
   .use(remarkGfm) // remark-gfm: GFM 拡張のロード
   .use(remarkFrontmatter) // remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード
-  .use(remarkExtractFrontmatter, { // remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる
+  .use(remarkExtractFrontmatter, {
     yaml: yaml.parse,
     name: "frontmatter",
     throws: true,
-  })
+  }) // remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる
   .use(extractTitle) // 独自: # (h1) をタイトルとして扱う
   .use(remarkMath) // remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード
   // Markdown ここまで
@@ -83,7 +83,6 @@ const processor = unified()
   .use(assignNoHighlight) // 独自: ↓ で勝手にシンタックスハイライトされないように class="no-highlight" を設定する
   .use(rehypeHighlight) // rehype-highlight: <pre><code> をシンタックスハイライト
   .use(removeHljsClass) // 独自: ↑ で無駄な class が設定されるので削除
-  .use(assignAlt) // 独自: <figcaption> が兄弟にある <img> に alt が設定されていなければ alt に <figcaption> の中身を設定する
   .use(figureNumbering) // 独自: 図表番号を付与する
   .use(rehypeCustomElements) // 独自: カスタム属性を処理する
   .use(rehypeKatex) // rehype-katex: remark-math で抽出した数式を KaTeX で処理する

@@ -74,14 +74,14 @@ Reactive Streams には、 Rx と同様に、 **Hot な Publisher と Cold な P
 最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" alt="" />
 <figcaption>Reactive Streams のシーケンス図</figcaption>
 </figure>
 
 実際には、 Cold な Publisher を実装するときには、 `IPublisher` は `ISubscription` を作成するだけの存在となり、 `ISubscription` が実際に Subscriber と通信するような実装になります。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" alt="" />
 <figcaption>Cold な Publisher のシーケンス図</figcaption>
 </figure>
 
@@ -155,7 +155,7 @@ public interface ITargetBlock<in TInput> : IDataflowBlock
 最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 `LinkTo` のオプションとして、完了を通知する <code><a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion</a> = true</code> を指定したものとします。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" alt="" />
 <figcaption>TPL Dataflow のシーケンス図</figcaption>
 </figure>
 
