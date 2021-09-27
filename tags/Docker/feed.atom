@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/Docker/feed.atom</id><link href="https://blog.azyobuzi.net/tags/Docker/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/Docker/" rel="alternate" type="text/html" /><title>Docker | あじょろぐ</title><updated>2021-09-24T23:30:48+09:00</updated><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/Docker/feed.atom</id><link href="https://blog.azyobuzi.net/tags/Docker/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/Docker/" rel="alternate" type="text/html" /><title>Docker | あじょろぐ</title><updated>2021-09-27T19:22:31+09:00</updated><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
 &#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
 &#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
 &#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>
@@ -148,7 +148,7 @@
 &#x3C;p>Docker 標準の bridge ネットワークの表現力を確認して、課題を確認します。&#x3C;/p>
 &#x3C;p>まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 &#x3C;code>docker network connect&#x3C;/code> コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="コンテナとネットワークの関係">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="">
 &#x3C;figcaption>コンテナとネットワークの関係&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>基本的なネットワークの種類である bridge ネットワークでは、ネットワークごとに次のような設定ができます。&#x3C;/p>
@@ -159,7 +159,7 @@
 &#x3C;p>これの何が不満かというと、コンテナ間の通信の可否はネットワーク単位でしか設定できないということです。&#x3C;/p>
 &#x3C;p>例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="DBを参照するふたつのアプリ">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="">
 &#x3C;figcaption>DBを参照するふたつのアプリ&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>このような想定をし始めると、 bridge ネットワークに不満を感じてくるでしょう。コンテナ間の通信を制御しているのは iptables なので、 iptables を直接いじってあげればどうにかできなくはないですが、自分でやりたくはないです。&#x3C;/p>
@@ -214,4 +214,4 @@
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/blockquote>
 &#x3C;figcaption>&#x3C;a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">&#x3C;cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
-&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2021-09-24T23:30:48+09:00</updated></entry></feed>
+&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2021-09-27T19:22:31+09:00</updated></entry></feed>

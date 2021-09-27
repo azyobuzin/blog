@@ -8,8 +8,8 @@
 
 FLIF は、すでに ImageMagick で実装されており、すぐに試すことができます。また、コーデックのリファレンス実装は GitHub にあります (FLIF-hub/FLIF)。
 
-なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2021-09-24T23:30:48+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
-最終更新: 2021/09/24 23:30">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/f65f19fde91f122e1a22aef151d43393af580acb/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/tech/">tech</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
+なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2021-09-27T19:22:31+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
+最終更新: 2021/09/27 19:22">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/14e840e88542d8128c6b55246d382ed223151696/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/tech/">tech</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
 <p>ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。</p>
 <p>圧縮手法としての特徴は、次の2点が挙げられます。</p>
 <ol>
@@ -47,7 +47,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 </ol>
 <p>実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 <a href="#img-px-noninterlace">図 1</a> に示すように、予測する画素 X の左上、上、左です。</p>
 <figure id="img-px-noninterlace" class="fig-img" data-num="図">
-<img src="px_noninterlace.svg" height="75" alt="非インターレース方式で参照する周辺画素">
+<img src="px_noninterlace.svg" height="75" alt="">
 <figcaption>図 1: 非インターレース方式で参照する周辺画素</figcaption>
 </figure>
 <p>予測値は、 L+T-TL, L, T の中央値です。 X-予測値 が実際に符号化される値になります。</p>
@@ -149,16 +149,16 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>予測器はズームレベルが偶数か奇数かで少し挙動が変わります。なぜなら周囲の画素の復号化状況が異なるからです。偶数では行を復号化するため、下側の画素を参照することができますが、右側を参照することはできません。奇数では列を復号化するため、逆に右側を参照することできますが、下側を参照することができません。</p>
 <p>実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。</p>
 <figure id="img-px-interlace" class="fig-img" data-num="図">
-<img src="px_interlace.svg" height="150" alt="インターレース方式で参照する周辺画素">
+<img src="px_interlace.svg" height="150" alt="">
 <figcaption>図 2: インターレース方式で参照する周辺画素</figcaption>
 </figure>
 <p>次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。</p>
 <figure id="img-px-horizontal" class="fig-img" data-num="図">
-<img src="px_horizontal.svg" height="150" alt="偶数ズームレベルにおける周辺画素">
+<img src="px_horizontal.svg" height="150" alt="">
 <figcaption>図 3: 偶数ズームレベルにおける周辺画素</figcaption>
 </figure>
 <figure id="img-px-vertical" class="fig-img" data-num="図">
-<img src="px_vertical.svg" height="150" alt="奇数ズームレベルにおける周辺画素">
+<img src="px_vertical.svg" height="150" alt="">
 <figcaption>図 4: 奇数ズームレベルにおける周辺画素</figcaption>
 </figure>
 <p>また、画像の端っこの画素を処理するときには、参照できない周辺画素があります。その場合は、偶数ズームレベルでは必ず T があり、奇数ズームレベルでは L があるので、その値を代用します。</p>
@@ -314,29 +314,29 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>ここまでで、各画素値を周囲の画素値を使って予測し、その予測誤差を確率表を使って適応的算術符号化して記録するということがわかりました。しかしまだ終わりではありません。 FLIF では確率表を状況に応じて使い分けます。つまり<strong>確率表のコンテキスト</strong>を考えます。これが FLIF 用語での「コンテキスト」になります。</p>
 <p>コンテキストについてざっくりいうと、符号化しようとしている画素に関する情報を条件とする決定木によって、使用する確率表が決定します（<a href="#img-ctx-summary">図 5</a>）。条件には他のチャンネルの画素値や、周辺画素同士の差といった情報が使えます。条件に使用できる情報をそれぞれプロパティと呼び、非インターレース方式で10種類、インターレース方式で17種類のプロパティがあります。プロパティ値がある値より大きい場合と、ある値以下の場合で分岐します。</p>
 <figure id="img-ctx-summary" class="fig-img" data-num="図">
-<img src="ctx_summary.svg" alt="確率表のコンテキストを選択する決定木">
+<img src="ctx_summary.svg" alt="">
 <figcaption>図 5: 確率表のコンテキストを選択する決定木</figcaption>
 </figure>
 <h4 id="sec-counter">4.4.2. カウンター</h4>
 <p>さらに踏み込んで見てみます。もし最初から <a href="#img-ctx-summary">図 5</a> のように使用する確率表が決まるとすると、それぞれの確率表の初期値はどのように決まるのでしょうか？ 確率表それぞれが別々に適応を行っていくので、すべての確率表を仕様で定められた確率で初期化したら、適応によって確率表が温まるまでの間に全画素についての処理が終わってしまいます。そこで FLIF の決定木にはカウンターという機能が盛り込まれています。</p>
 <p>カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。</p>
 <figure id="img-ctx-counter1" class="fig-img" data-num="図">
-<img src="ctx_counter_1.svg" height="200" alt="決定木の初期状態">
+<img src="ctx_counter_1.svg" height="200" alt="">
 <figcaption>図 6: 決定木の初期状態</figcaption>
 </figure>
 <p>この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。</p>
 <figure id="img-ctx-counter2" class="fig-img" data-num="図">
-<img src="ctx_counter_2.svg" height="200" alt="カウンターがデクリメントされる">
+<img src="ctx_counter_2.svg" height="200" alt="">
 <figcaption>図 7: カウンターがデクリメントされる</figcaption>
 </figure>
 <p>次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。</p>
 <figure id="img-ctx-counter3" class="fig-img" data-num="図">
-<img src="ctx_counter_3.svg" height="200" alt="カウンターが0になると子に確率表がコピーされる">
+<img src="ctx_counter_3.svg" height="200" alt="">
 <figcaption>図 8: カウンターが0になると子に確率表がコピーされる</figcaption>
 </figure>
 <p>いま、確率表2と確率表3は、確率表1と同じ内容になっています。</p>
 <figure id="img-ctx-counter4" class="fig-img" data-num="図">
-<img src="ctx_counter_4.svg" height="200" alt="カウンターが0になると条件分岐が行われる">
+<img src="ctx_counter_4.svg" height="200" alt="">
 <figcaption>図 9: カウンターが0になると条件分岐が行われる</figcaption>
 </figure>
 <p>次の画素を復号化します。まず決定木の根に注目します。するとカウンターの値は 0 です。注目したノードのカウンターが 0 のとき、そのノードの条件を評価します。ここではプロパティAの値はX以下だったとします。決定木にしたがって分岐を行い、左側の子ノードに注目します。このノードは葉ノードなので、この確率表を使って復号化します。このとき適応によって確率表2が更新されます。</p>

@@ -2,8 +2,8 @@
 
 AsciiDoc というか Asciidoctor を使うことに思うところがあり、 Gatsby + Asciidoctor.js という構成をやめ、 Markdown + お手製静的サイトジェネレータ という構成に変更したというお話です。
 
-（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）"><meta property="og:article:published_time" content="2021-09-24T23:30+09:00"><meta property="og:article:modified_time" content="2021-09-25T00:32:53+09:00"><meta property="og:article:tag" content="tech"><meta property="og:article:tag" content="JavaScript"></head><body><div class="container"><article class="article-page"><header><h1>結局ブログをMarkdownで書くことにした話</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2021-09-24T23:30+09:00" title="公開: 2021/09/24 23:30
-最終更新: 2021/09/25 00:32">2021/09/24</time> ― <a href="https://github.com/azyobuzin/blog/commits/1fd614c52a2579f91e4c00214aa5e4cc430b1ecb/posts/2021/09/24/01-markdown" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/tech/">tech</a> <a class="button button-outline article-tag" href="/tags/JavaScript/">JavaScript</a></div></header><div class="article-content"><p>blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。</p>
+（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）"><meta property="og:article:published_time" content="2021-09-24T23:30+09:00"><meta property="og:article:modified_time" content="2021-09-27T19:22:31+09:00"><meta property="og:article:tag" content="tech"><meta property="og:article:tag" content="JavaScript"></head><body><div class="container"><article class="article-page"><header><h1>結局ブログをMarkdownで書くことにした話</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i> <time datetime="2021-09-24T23:30+09:00" title="公開: 2021/09/24 23:30
+最終更新: 2021/09/27 19:22">2021/09/24</time> ― <a href="https://github.com/azyobuzin/blog/commits/14e840e88542d8128c6b55246d382ed223151696/posts/2021/09/24/01-markdown" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i> <a class="button button-outline article-tag" href="/tags/tech/">tech</a> <a class="button button-outline article-tag" href="/tags/JavaScript/">JavaScript</a></div></header><div class="article-content"><p>blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。</p>
 <p>AsciiDoc というか Asciidoctor を使うことに思うところがあり、 Gatsby + Asciidoctor.js という構成をやめ、 Markdown + お手製静的サイトジェネレータ という構成に変更したというお話です。</p>
 <p>（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）</p>
 <h2>なぜ Markdown</h2>
@@ -39,11 +39,11 @@ AsciiDoc というか Asciidoctor を使うことに思うところがあり、 
   .<span class="hljs-title hljs-function">use</span>(remarkParse) <span class="hljs-comment">// remark-parse (Parser): Markdown → mdast （この後の「拡張のロード」はここで使われる）</span>
   .<span class="hljs-title hljs-function">use</span>(remarkGfm) <span class="hljs-comment">// remark-gfm: GFM 拡張のロード</span>
   .<span class="hljs-title hljs-function">use</span>(remarkFrontmatter) <span class="hljs-comment">// remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード</span>
-  .<span class="hljs-title hljs-function">use</span>(remarkExtractFrontmatter, { <span class="hljs-comment">// remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる</span>
+  .<span class="hljs-title hljs-function">use</span>(remarkExtractFrontmatter, {
     <span class="hljs-attr">yaml</span>: yaml.<span class="hljs-property">parse</span>,
     <span class="hljs-attr">name</span>: <span class="hljs-string">"frontmatter"</span>,
     <span class="hljs-attr">throws</span>: <span class="hljs-literal">true</span>,
-  })
+  }) <span class="hljs-comment">// remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる</span>
   .<span class="hljs-title hljs-function">use</span>(extractTitle) <span class="hljs-comment">// 独自: # (h1) をタイトルとして扱う</span>
   .<span class="hljs-title hljs-function">use</span>(remarkMath) <span class="hljs-comment">// remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード</span>
   <span class="hljs-comment">// Markdown ここまで</span>
@@ -55,7 +55,6 @@ AsciiDoc というか Asciidoctor を使うことに思うところがあり、 
   .<span class="hljs-title hljs-function">use</span>(assignNoHighlight) <span class="hljs-comment">// 独自: ↓ で勝手にシンタックスハイライトされないように class="no-highlight" を設定する</span>
   .<span class="hljs-title hljs-function">use</span>(rehypeHighlight) <span class="hljs-comment">// rehype-highlight: &#x3C;pre>&#x3C;code> をシンタックスハイライト</span>
   .<span class="hljs-title hljs-function">use</span>(removeHljsClass) <span class="hljs-comment">// 独自: ↑ で無駄な class が設定されるので削除</span>
-  .<span class="hljs-title hljs-function">use</span>(assignAlt) <span class="hljs-comment">// 独自: &#x3C;figcaption> が兄弟にある &#x3C;img> に alt が設定されていなければ alt に &#x3C;figcaption> の中身を設定する</span>
   .<span class="hljs-title hljs-function">use</span>(figureNumbering) <span class="hljs-comment">// 独自: 図表番号を付与する</span>
   .<span class="hljs-title hljs-function">use</span>(rehypeCustomElements) <span class="hljs-comment">// 独自: カスタム属性を処理する</span>
   .<span class="hljs-title hljs-function">use</span>(rehypeKatex) <span class="hljs-comment">// rehype-katex: remark-math で抽出した数式を KaTeX で処理する</span>
