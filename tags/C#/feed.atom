@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/C%23/feed.atom</id><link href="https://blog.azyobuzi.net/tags/C%23/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/C%23/" rel="alternate" type="text/html" /><title>C# | あじょろぐ</title><updated>2021-09-27T19:22:31+09:00</updated><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Android" label="Android" /><content type="html">&#x3C;p>TL;DR: Xamarin.Android のグローバル例外ハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（&#x3C;a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211&#x3C;/a>）。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/C%23/feed.atom</id><link href="https://blog.azyobuzi.net/tags/C%23/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/C%23/" rel="alternate" type="text/html" /><title>C# | あじょろぐ</title><updated>2021-09-28T01:15:17+09:00</updated><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Android" label="Android" /><content type="html">&#x3C;p>TL;DR: Xamarin.Android のグローバル例外ハンドラは &#x3C;code>AppDomain.UnhandledException&#x3C;/code>。これで Java の例外も拾えます。ただし、例外が発生したスレッドによってはうまく拾えないケースがあり、現在修正中です（&#x3C;a href="https://github.com/xamarin/xamarin-android/issues/6211">xamarin-android#6211&#x3C;/a>）。&#x3C;/p>
 &#x3C;h2>はじめに&#x3C;/h2>
 &#x3C;p>ハンドルされない例外は、アプリにとって異常事態ですから、さっさと&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/916d24b7d83a79853dd1d1cf060d327f98c46e77/src/java-runtime/java/mono/android/Seppuku.java">切腹&#x3C;/a>する必要があります。 Xamarin.Android アプリでは、 Java の例外と .NET の例外が入り混じり、境界ではそれぞれの例外に相互変換されています。では、相互変換を繰り返し、最終的に誰にもキャッチされなかった例外は、どのように処理されるのでしょうか？ そして、もし最後の砦、グローバル例外ハンドラを設定するなら、どこに設定するのが良いのでしょうか？&#x3C;/p>
 &#x3C;h2>普通の Android アプリの死に方&#x3C;/h2>
@@ -146,12 +146,12 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>PropagatorBlock は Source と Target 両方の性質を持っており、 Target で受信したデータを加工して Source がデータを出力します。 Target 部は1件ずつ受信を行い、加工を行うタスクへ投げ、加工が終わったデータは Source 部のキューに積まれ、 Source 部は1件ずつ送信を行います。つまり PropagatorBlock においては Target と Source は並列に動いています。&#x3C;/p>
 &#x3C;p>TPL Dataflow のソースコードを読むと、 TargetBlock または PropagatorBlock の Target 部を直列化するために使用されるロックを &#x3C;code>IncomingLock&#x3C;/code>、 SourceBlock または PropagatorBlock の Source 部を直列化するために使用されるロックを &#x3C;code>OutgoingLock&#x3C;/code> と呼んでいるので、この名称を使っていきます。&#x3C;/p>
 &#x3C;p>では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子" width="492" height="1144" loading="lazy">&#x3C;/figure>
 &#x3C;p>もう複数のロックがあるという時点で嫌ですね。&#x3C;/p>
 &#x3C;p>ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子" width="774" height="532" loading="lazy">&#x3C;/figure>
 &#x3C;p>そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg" alt="デッドロックが発生する例">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg" alt="デッドロックが発生する例" width="797" height="502" loading="lazy">&#x3C;/figure>
 &#x3C;p>見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。&#x3C;/p>
 &#x3C;p>ただ、このデッドロックは実は回避できます。「(1) OfferMessage」のところで Propagator が「(2) ConsumeMessage」を実行中でまだ返ってきてないぞと判断して、このメッセージを延期させてしまえば、 OutgoingLock が外れるので先に進むことができます。&#x3C;/p>
 &#x3C;p>今の例では、 Source, Propagator, Target が 1:1:1 だったので回避できました。が、1:N:1、つまりひとつの Source が複数の Propagator に接続されていて、さらにその Propagator たちがひとつの Target に接続されている場合はどうでしょう。先程の図の (1) が Propagator1 で、 (2) が Propagator2 で起こっていたら、 Propagator 同士はお互いを知らないので調停することができません。&#x3C;/p>
@@ -167,10 +167,10 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>1. Visual Studio で連携を設定する&#x3C;/h3>
 &#x3C;p>ここで説明する手順を実行するには、 Visual Studio 2019 で「ASP.NET と Web 開発」または「.NET Core クロスプラットフォームの開発」ワークロードがインストールされている必要があります。&#x3C;/p>
 &#x3C;p>ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" width="726" height="625" alt="「コンテナー オーケストレーターのサポート」を追加" loading="lazy">&#x3C;/figure>
 &#x3C;p>いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。&#x3C;/p>
 &#x3C;p>完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" width="281" height="174" alt="完了後のソリューション" loading="lazy">&#x3C;/figure>
 &#x3C;p>これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。&#x3C;/p>
 &#x3C;h3>2. Dockerfile を改変する&#x3C;/h3>
 &#x3C;p>生成された Dockerfile を確認すると、本番ビルド用のスクリプトが書かれています。今回はこれを完全に捨てることにします。ただ、プロジェクトディレクトリ下に Dockerfile がないと Visual Studio が認識してくれないので、ここに開発環境を作成するスクリプトを書きましょう。本番用 Dockerfile はどこか別のところに置いてください……。&#x3C;/p>
@@ -178,7 +178,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>3. docker-compose.yml を改変する&#x3C;/h3>
 &#x3C;p>ここからの操作は Visual Studio を破壊するので、すべてが完了するまで Visual Studio は閉じておきましょう。&#x3C;/p>
 &#x3C;p>いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" width="269" height="246" alt="docker-compose.yml を .devcontainer へ移動" loading="lazy">&#x3C;/figure>
 &#x3C;p>さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。&#x3C;/p>
 &#x3C;p>いま docker-compose.yml の中身はこのようになっていると思います。&#x3C;/p>
 &#x3C;figure class="fig-code">
@@ -297,7 +297,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>頑張れば Visual Studio でも VSCode でも使える Docker Compose 環境がつくれることを示しました。これで開発が捗ればいいね。捗らんか……。&#x3C;/p>
 &#x3C;p>ここまでの内容を clone するだけでお試しできるものを GitHub に置いておきました。&#x3C;/p>
-&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-24T23:30:48+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-28T01:15:17+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
 &#x3C;p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 &#x3C;strong>以上&#x3C;/strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。&#x3C;/p>
 &#x3C;h2>サンプルプロジェクト&#x3C;/h2>
 &#x3C;p>文章でだらだらと説明されても読みたくないのはわかります。ので、実際の csproj を示しておきます。&#x3C;/p>
@@ -410,12 +410,12 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>Reactive Streams には、 Rx と同様に、 &#x3C;strong>Hot な Publisher と Cold な Publisher があります&#x3C;/strong>。 Hot と Cold の違いについては&#x3C;a href="https://blog.xin9le.net/entry/2012/01/18/105003">「&#x3C;cite>Rx入門 (13) - HotとCold - xin9le.net&#x3C;/cite>」&#x3C;/a>が参考になります。ただし、 Reactive Streams では、 Rx と異なり流量制限があります。したがって、 Hot な Publisher や、時系列データを扱う Publisher が Subscriber に対してデータを送信しようとしたとき、キャパシティが足りない Subscriber がいる可能性があります。そのときに、どのような動作をするかは、実装次第です。例えば RxJava において Observable から Publisher に変換するときは、あふれた値を破棄したり、例外を送出したり、などの選択肢が与えられています（参考: &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Observable.html#toFlowable-io.reactivex.rxjava3.core.BackpressureStrategy-">Observable#toFlowable&#x3C;/a>）。&#x3C;/p>
 &#x3C;p>最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" width="442" height="410" alt="" loading="lazy">
 &#x3C;figcaption>Reactive Streams のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>実際には、 Cold な Publisher を実装するときには、 &#x3C;code>IPublisher&#x3C;/code> は &#x3C;code>ISubscription&#x3C;/code> を作成するだけの存在となり、 &#x3C;code>ISubscription&#x3C;/code> が実際に Subscriber と通信するような実装になります。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" width="462" height="453" alt="" loading="lazy">
 &#x3C;figcaption>Cold な Publisher のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>2. TPL Dataflow&#x3C;/h2>
@@ -462,13 +462,13 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>ここまでだらだらと文章で説明してきましたが、&#x3C;strong>アホほど面倒くさい&#x3C;/strong>インターフェイスだということがわかったと思います。&#x3C;/p>
 &#x3C;p>最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 &#x3C;code>LinkTo&#x3C;/code> のオプションとして、完了を通知する &#x3C;code>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion&#x3C;/a> = true&#x3C;/code> を指定したものとします。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" width="343" height="439" alt="" loading="lazy">
 &#x3C;figcaption>TPL Dataflow のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>3. 動作開始タイミングの違いについて&#x3C;/h2>
 &#x3C;p>TPL Dataflow では、データフローブロック間のリンクが作成された時点で、 Source の準備ができていれば、データが送信されます。次の図は、 Source が送信したデータが Propagator（Target と Source の両方の性質を持つブロック）を経由して Target に到達するフローに対して、前から順にリンクを行ったときの動作の様子です。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" width="694" height="124" alt="TPL Dataflow が動作を開始する様子" loading="lazy">
 &#x3C;/figure>
 &#x3C;p>一方で、 Reactive Streams では、上の図のような使い方もできますが、通常はフローを作成し、それに対して Subscribe を呼び出すことで実際の処理を開始する、という使い方のほうが一般的かと思います。例えば、次の RxJava の例では、 &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Flowable.html#range-int-int-">&#x3C;code>range&#x3C;/code>&#x3C;/a> という Publisher と、それを加工する &#x3C;code>map&#x3C;/code> を接続したストリーム &#x3C;code>flowable&#x3C;/code>（&#x3C;code>Publisher&#x26;#x3C;Integer>&#x3C;/code> を実装しています）を定義していますが、 &#x3C;code>subscribe&#x3C;/code> を呼び出すまでは、何も処理を行いません。また、 &#x3C;code>range&#x3C;/code> は Cold なストリームなので、複数回 &#x3C;code>subscribe&#x3C;/code> すると、そのたびに値が送信されます。&#x3C;/p>
 &#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">var&#x3C;/span> &#x3C;span class="hljs-variable">flowable&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> Flowable.range(&#x3C;span class="hljs-number">1&#x3C;/span>, &#x3C;span class="hljs-number">1&#x3C;/span>).map(x -> x + &#x3C;span class="hljs-number">1&#x3C;/span>);
@@ -501,4 +501,4 @@ flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">/
 &#x3C;p>一方で、並列処理という観点では TPL Dataflow は非常に良質なライブラリです。並列処理において困る部分が隠蔽されており、本質的な処理を書くことに集中できます。&#x3C;/p>
 &#x3C;p>現在の私の野心としては、 AsyncEnumerable のメソッドチェーンの中に、 TPL Dataflow を導入することと、 &#x3C;code>IAsyncEnumerable&#x3C;/code> と &#x3C;code>IPublisher&#x3C;/code> の相互変換です。前者によって、 AsyncEnumerable を並列に処理する表現力が向上します。後者は Akka.NET Streams のような Java 由来のライブラリで Reactive Streams の利用が考えられることから、相互変換が容易に行えると便利だという考えです。これらは現在開発中のライブラリ（&#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a>）で実現できればなと考えています。&#x3C;/p>
 &#x3C;h2>7. おわりに&#x3C;/h2>
-&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-27T19:22:31+09:00</updated></entry></feed>
+&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-28T01:15:17+09:00</updated></entry></feed>

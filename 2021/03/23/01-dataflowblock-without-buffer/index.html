@@ -39,12 +39,12 @@ ISourceBlock<T> CreateSource()
 <p>PropagatorBlock は Source と Target 両方の性質を持っており、 Target で受信したデータを加工して Source がデータを出力します。 Target 部は1件ずつ受信を行い、加工を行うタスクへ投げ、加工が終わったデータは Source 部のキューに積まれ、 Source 部は1件ずつ送信を行います。つまり PropagatorBlock においては Target と Source は並列に動いています。</p>
 <p>TPL Dataflow のソースコードを読むと、 TargetBlock または PropagatorBlock の Target 部を直列化するために使用されるロックを <code>IncomingLock</code>、 SourceBlock または PropagatorBlock の Source 部を直列化するために使用されるロックを <code>OutgoingLock</code> と呼んでいるので、この名称を使っていきます。</p>
 <p>では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。</p>
-<figure class="fig-img"><img src="basicoffer.svg" alt="Source から Target へデータを送信する様子"></figure>
+<figure class="fig-img"><img src="basicoffer.svg" alt="Source から Target へデータを送信する様子" width="492" height="1144" loading="lazy"></figure>
 <p>もう複数のロックがあるという時点で嫌ですね。</p>
 <p>ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。</p>
-<figure class="fig-img"><img src="offerbypropagator.svg" alt="Propagator が送信を開始する様子"></figure>
+<figure class="fig-img"><img src="offerbypropagator.svg" alt="Propagator が送信を開始する様子" width="774" height="532" loading="lazy"></figure>
 <p>そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。</p>
-<figure class="fig-img"><img src="deadlock1.svg" alt="デッドロックが発生する例"></figure>
+<figure class="fig-img"><img src="deadlock1.svg" alt="デッドロックが発生する例" width="797" height="502" loading="lazy"></figure>
 <p>見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。</p>
 <p>ただ、このデッドロックは実は回避できます。「(1) OfferMessage」のところで Propagator が「(2) ConsumeMessage」を実行中でまだ返ってきてないぞと判断して、このメッセージを延期させてしまえば、 OutgoingLock が外れるので先に進むことができます。</p>
 <p>今の例では、 Source, Propagator, Target が 1:1:1 だったので回避できました。が、1:N:1、つまりひとつの Source が複数の Propagator に接続されていて、さらにその Propagator たちがひとつの Target に接続されている場合はどうでしょう。先程の図の (1) が Propagator1 で、 (2) が Propagator2 で起こっていたら、 Propagator 同士はお互いを知らないので調停することができません。</p>
