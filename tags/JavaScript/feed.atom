@@ -81,7 +81,7 @@
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>以上が AsciiDoc を捨てて Markdown に移行した理由と、新しい静的サイトジェネレータの実装でした。 HTML が置いてあるトラディショナル静的サイトであることをモットーにしているので、このような構成が落ち着きますね。これからは Asciidoctor のドキュメントとにらめっこせず、 HTML を書いていきます。ブログ書けよ。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/09/24/01-markdown/</id><link href="https://blog.azyobuzi.net/2021/09/24/01-markdown/" rel="alternate" type="text/html" /><published>2021-09-24T23:30:00+09:00</published><title type="html">結局ブログをMarkdownで書くことにした話</title><updated>2021-09-27T19:22:31+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
 &#x3C;p>一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。&#x3C;/p>
-&#x3C;ins class="ins-block" datetime="2021-09-24" role="note">&#x3C;div class="icon">追記 &#x3C;time>2021-09-24&#x3C;/time>&#x3C;/div>&#x3C;div class="content">
+&#x3C;ins class="ins-block" datetime="2021-09-24" role="note">&#x3C;div class="icon">追記 &#x3C;time datetime="2021-09-24">2021/09/24&#x3C;/time>&#x3C;/div>&#x3C;div class="content">
 &#x3C;p>AsciiDoc をやめ Markdown に移行しました。&#x3C;/p>
 &#x3C;p>&#x3C;a href="https://blog.azyobuzi.net/2021/09/24/01-markdown/">&#x3C;cite>結局ブログをMarkdownで書くことにした話&#x3C;/cite>&#x3C;/a>&#x3C;/p>
 &#x3C;/div>&#x3C;/ins>
