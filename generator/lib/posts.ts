@@ -281,9 +281,15 @@ function assignTextToAnchor(
 
 /** `<figure>` に class が指定されていなかったら警告 */
 const lintFigureClass: Plugin<[], HastRoot> = () => {
-  const expectedClasses = ["fig-code", "fig-img", "fig-quote", "fig-table"]
+  const allowedClasses = [
+    "fig-code",
+    "fig-img",
+    "fig-quote",
+    "fig-table",
+    "fig-tweet",
+  ]
   let selector = "figure"
-  for (const c of expectedClasses) selector += `:not(figure.${c})`
+  for (const c of allowedClasses) selector += `:not(figure.${c})`
 
   return (tree: HastRoot, file: VFile) => {
     for (const el of selectAll(selector, tree)) {

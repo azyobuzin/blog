@@ -146,6 +146,11 @@ figcaption,
   }
 }
 
+.fig-tweet .twitter-tweet {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 // pre > code と同じスタイルを pre > samp に適用
 samp {
   @extend code;
