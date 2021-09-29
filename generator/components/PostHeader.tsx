@@ -1,5 +1,4 @@
-import moment from "moment-timezone"
-import { TIMEZONE } from "../lib/constants"
+import { formatDate } from "../lib/date"
 import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
 import LinkToPost from "./LinkToPost"
@@ -12,16 +11,9 @@ export interface PostHeaderProps {
 }
 
 const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
-  const pubdate = moment.tz(post.pubdate, TIMEZONE)
-  const revdate =
-    post.revdate != null ? moment.tz(post.revdate, TIMEZONE) : null
-  const dateFormat = "YYYY/MM/DD"
-  const displayFormat = "YYYY/MM/DD HH:mm"
-  let dateDetails =
-    "公開: " +
-    pubdate.format(post.pubdate.includes("T") ? displayFormat : dateFormat)
-  if (revdate != null)
-    dateDetails += "\n最終更新: " + revdate.format(displayFormat)
+  let dateDetails = "公開: " + formatDate(post.pubdate, true)
+  if (post.revdate != null)
+    dateDetails += "\n最終更新: " + formatDate(post.revdate, true)
 
   const historyUrl =
     showHistory === true && post.commitHash != null
@@ -45,7 +37,7 @@ const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
         />
         <span className="sr-only">公開日</span>{" "}
         <time dateTime={post.pubdate} title={dateDetails}>
-          {pubdate.format(dateFormat)}
+          {formatDate(post.pubdate, false)}
         </time>
         {historyUrl != null && (
           <>

@@ -184,10 +184,7 @@ const sectionNumbering: Plugin<[], HastRoot> = () => {
 
       const id = node.properties?.id
       if (id != null) {
-        sectionById.set(
-          id as string,
-          "Section " + sectnum.substring(0, sectnum.length - 1)
-        )
+        sectionById.set(id as string, "Section " + sectnum.slice(0, -1))
       }
 
       return SKIP
@@ -271,7 +268,7 @@ function assignTextToAnchor(
   nameById: Map<string, string>
 ): void {
   for (const el of selectAll("a[href^=#]:empty", tree)) {
-    const figNumStr = nameById.get((el.properties!.href as string).substring(1))
+    const figNumStr = nameById.get((el.properties!.href as string).slice(1))
     if (figNumStr != null) {
       const textNode: HastText = { type: "text", value: figNumStr }
       el.children = [textNode]

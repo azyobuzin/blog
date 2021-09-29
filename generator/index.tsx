@@ -65,7 +65,7 @@ function postPages(posts: Post[]): Record<string, Renderer> {
 function tagPages(posts: Post[]): Record<string, Renderer> {
   const tags = new Set<string>(posts.flatMap((x) => x.tags))
   return Object.fromEntries(
-    Array.from(tags, (tag) => {
+    [...tags].flatMap((tag) => {
       const postsByTag = posts.filter((x) => x.tags.includes(tag))
       return [
         [
@@ -74,7 +74,7 @@ function tagPages(posts: Post[]): Record<string, Renderer> {
         ],
         [`tags/${tag}/feed.atom`, xmlFile(tagFeed(tag, postsByTag))],
       ]
-    }).flat()
+    })
   )
 }
 

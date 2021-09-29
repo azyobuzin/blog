@@ -1,3 +1,4 @@
+import { formatDate } from "../lib/date"
 import { FC, h } from "../lib/jsx"
 
 const InsBlock: FC<{ dateTime: string }> = ({ dateTime, children }) => {
@@ -6,7 +7,7 @@ const InsBlock: FC<{ dateTime: string }> = ({ dateTime, children }) => {
   return (
     <ins className="ins-block" dateTime={dateTime} role="note">
       <div className="icon">
-        追記 <time>{dateTime}</time>
+        追記 <time dateTime={dateTime}>{formatDate(dateTime, true)}</time>
       </div>
       <div className="content">{children}</div>
     </ins>

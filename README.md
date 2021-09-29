@@ -135,7 +135,7 @@ DocBook の意味に従う。未実装のものは必要になったら追加す
 
 ```html
 <ins class="ins-block" datetime="2021-09-27" role="note">
-  <div class="icon">追記 <time>2021-09-27</time></div>
+  <div class="icon">追記 <time datetime="2021-09-27">2021/09/27</time></div>
   <div class="content">
     <p>変更がありました。</p>
   </div>
