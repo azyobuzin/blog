@@ -5,11 +5,13 @@ import { Post } from "../lib/posts"
 import LinkToPost from "./LinkToPost"
 import LinkToTag from "./LinkToTag"
 
-const PostHeader: VFC<{ post: Post; link: boolean; showHistory: boolean }> = ({
-  post,
-  link,
-  showHistory,
-}) => {
+export interface PostHeaderProps {
+  post: Post
+  titleLink?: boolean
+  showHistory?: boolean
+}
+
+const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
   const pubdate = moment.tz(post.pubdate, TIMEZONE)
   const revdate =
     post.revdate != null ? moment.tz(post.revdate, TIMEZONE) : null
@@ -22,14 +24,14 @@ const PostHeader: VFC<{ post: Post; link: boolean; showHistory: boolean }> = ({
     dateDetails += "\n最終更新: " + revdate.format(displayFormat)
 
   const historyUrl =
-    showHistory && post.commitHash != null
+    showHistory === true && post.commitHash != null
       ? `https://github.com/azyobuzin/blog/commits/${post.commitHash}/posts/${post.slug}`
       : null
 
   return (
     <header>
       <h1>
-        {link ? (
+        {titleLink === true ? (
           <LinkToPost slug={post.slug}>{post.title}</LinkToPost>
         ) : (
           post.title
@@ -40,7 +42,8 @@ const PostHeader: VFC<{ post: Post; link: boolean; showHistory: boolean }> = ({
           className="fa fa-pencil-square-o"
           aria-hidden="true"
           title="公開日"
-        />{" "}
+        />
+        <span className="sr-only">公開日</span>{" "}
         <time dateTime={post.pubdate} title={dateDetails}>
           {pubdate.format(dateFormat)}
         </time>
@@ -56,6 +59,7 @@ const PostHeader: VFC<{ post: Post; link: boolean; showHistory: boolean }> = ({
       {post.tags.length > 0 && (
         <div className="article-meta">
           <i className="fa fa-tags" aria-hidden="true" title="タグ" />
+          <span className="sr-only">タグ</span>
           {post.tags.map((x) => (
             <>
               {" "}

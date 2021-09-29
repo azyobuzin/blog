@@ -16,6 +16,18 @@ $color-secondary: #444d53;
  */
 @import "node_modules/highlight.js/scss/xcode";
 
+/*!
+ * Bootstrap v5.1.1 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ */
+@import "node_modules/bootstrap/scss/mixins/visually-hidden";
+
+.sr-only {
+  @include visually-hidden();
+}
+
 @import "FixHeader";
 
 body {

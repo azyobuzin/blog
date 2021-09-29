@@ -35,6 +35,7 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
             {" > "}
             <span role="listitem" aria-current="page">
               <i className="fa fa-tag" aria-hidden="true" title="タグ" />
+              <span className="sr-only">タグ</span>
               {" " + tag}
             </span>
           </p>

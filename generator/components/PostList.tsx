@@ -8,7 +8,7 @@ const PostPreview: VFC<{ post: Post }> = ({ post }) => {
     <article className="article-list-item">
       <hr aria-hidden="true" />
       <div className="article-list-item-content">
-        <PostHeader post={post} link showHistory={false} />
+        <PostHeader post={post} titleLink />
 
         <div className="article-content">
           {post.preamble}
@@ -25,11 +25,11 @@ const PostPreview: VFC<{ post: Post }> = ({ post }) => {
 
 const PostList: VFC<{ posts: Post[] }> = ({ posts }) => {
   return (
-    <main className="article-list" role="feed">
+    <div className="article-list" role="feed">
       {posts.map((x) => (
         <PostPreview post={x} />
       ))}
-    </main>
+    </div>
   )
 }
 

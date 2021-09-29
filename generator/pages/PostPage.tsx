@@ -42,7 +42,7 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
     >
       <div className="container">
         <article className="article-page">
-          <PostHeader post={post} link={false} showHistory />
+          <PostHeader post={post} showHistory />
           <div className="article-content">{post.content}</div>
         </article>
 

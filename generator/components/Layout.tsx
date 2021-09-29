@@ -10,6 +10,7 @@ const Layout: FC<{ head?: Node }> = (props) => {
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="generator" content="https://github.com/azyobuzin/blog" />
           <link
             rel="stylesheet"
             href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css"
