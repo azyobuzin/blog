@@ -12,7 +12,7 @@
     "@parcel/transformer-sass": "^2.1.1",
     "html-validate": "^6.1.6",
     "parcel": "^2.1.1",
-    "prettier": "^2.4.1",
+    "prettier": "^2.5.1",
     "prettier-plugin-md-nocjsp": "^1.2.0",
     "serve": "^13.0.2"
   },
