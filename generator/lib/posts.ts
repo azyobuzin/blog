@@ -276,6 +276,43 @@ function assignTextToAnchor(
   }
 }
 
+/** equation 環境をレスポンシブにする */
+const flexEquation: Plugin<[], HastRoot> = () => {
+  return (tree: HastRoot) => {
+    for (const kh of selectAll(".katex-display>.katex>.katex-html", tree)) {
+      let baseEl: Element | undefined
+      let tagEl: Element | undefined
+      let foundUnknownElement = false
+      for (const child of kh.children) {
+        if (isHastElement(child)) {
+          const childClasses = classnames(
+            child.properties?.className
+          ) as string[]
+          if (childClasses.includes("base")) {
+            if (baseEl != null) {
+              foundUnknownElement = true
+              break
+            }
+            baseEl = child
+          } else if (childClasses.includes("tag")) {
+            if (tagEl != null) {
+              foundUnknownElement = true
+              break
+            }
+            tagEl = child
+          } else {
+            foundUnknownElement = true
+          }
+        }
+      }
+      if (!foundUnknownElement && baseEl != null && tagEl != null) {
+        // base と tag がひとつずつなので equation と判断
+        classnames(kh, "ab-equation")
+      }
+    }
+  }
+}
+
 /** `<figure>` に class が指定されていなかったら警告 */
 const lintFigureClass: Plugin<[], HastRoot> = () => {
   const allowedClasses = [
@@ -356,6 +393,7 @@ const processor = unified()
   .use(figureNumbering)
   .use(rehypeCustomElements)
   .use(rehypeKatex)
+  .use(flexEquation)
   .use(lintFigureClass)
   .use(toPost)
   .freeze() as FrozenProcessor<MdastRoot, HastRoot, HastRoot, Post>

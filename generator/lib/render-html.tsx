@@ -42,12 +42,6 @@ const mathStyle: Plugin<[], HastRoot> = () => {
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
       />,
-      <link
-        rel="stylesheet"
-        href={katexDist + "contrib/copy-tex.min.css"}
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-      />,
       <script
         src={katexDist + "contrib/copy-tex.min.js"}
         crossorigin="anonymous"

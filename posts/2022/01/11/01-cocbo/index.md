@@ -183,7 +183,9 @@ for (size_t k = 0; k < n; k++) {
 ふたつ目の制約条件も行ってみましょう。制約条件 $\underline{K} \leq \sum_{k=1}^n u_{ki} \leq \overline{K} \ (i=1,\cdots,c)$ は、展開するとこのようになります。
 
 $$
+\begin{equation}
 \underline{K} \leq 0u_{1,1} + \cdots + 0u_{1,i-1} + 1u_{1,i} + 0u_{1,i+1} + \cdots + 0u_{2,i-1} + 1u_{2,i} + 0u_{2,i+1} + \cdots 0u_{n,c} \leq \overline{K}
+\end{equation}
 $$
 
 実装方法は、ひとつ目と同じ感じです。
