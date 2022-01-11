@@ -29,6 +29,7 @@ import remarkRehype from "remark-rehype"
 import { read as readVFile } from "to-vfile"
 import { FrozenProcessor, Plugin, unified } from "unified"
 import { map } from "unist-util-map"
+import { parents } from "unist-util-parents"
 import { SKIP, visit } from "unist-util-visit"
 import type { VFile } from "vfile"
 import yaml from "yaml"
@@ -279,36 +280,11 @@ function assignTextToAnchor(
 /** equation 環境をレスポンシブにする */
 const flexEquation: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
-    for (const kh of selectAll(".katex-display>.katex>.katex-html", tree)) {
-      let baseEl: Element | undefined
-      let tagEl: Element | undefined
-      let foundUnknownElement = false
-      for (const child of kh.children) {
-        if (isHastElement(child)) {
-          const childClasses = classnames(
-            child.properties?.className
-          ) as string[]
-          if (childClasses.includes("base")) {
-            if (baseEl != null) {
-              foundUnknownElement = true
-              break
-            }
-            baseEl = child
-          } else if (childClasses.includes("tag")) {
-            if (tagEl != null) {
-              foundUnknownElement = true
-              break
-            }
-            tagEl = child
-          } else {
-            foundUnknownElement = true
-          }
-        }
-      }
-      if (!foundUnknownElement && baseEl != null && tagEl != null) {
-        // base と tag がひとつずつなので equation と判断
-        classnames(kh, "ab-equation")
-      }
+    for (const el of selectAll(
+      ".katex-display>.katex>.katex-html>.tag",
+      parents(tree)
+    )) {
+      classnames(el.parent, "ab-equation")
     }
   }
 }
