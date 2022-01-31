@@ -3,6 +3,8 @@ pubdate: 2020-10-11T20:51+09:00
 tags: [tech]
 sectnums: true
 thumbnail: https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png
+style: |-
+  #tbl-nz51 td, #tbl-nz52 td { text-align: center; }
 ---
 
 # 画像可逆圧縮形式 FLIF についてのメモ
@@ -78,25 +80,28 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 <figure class="fig-table" data-num="表">
 <figcaption>インターレース方式で画素が復元される様子</figcaption>
-
-| ズームレベル |         サイズ         |                        画像                        |
-| :----------: | :--------------------: | :------------------------------------------------: |
-|      0       | 120×120 (原画像サイズ) |    ![ZL=0](interlace/dec_i01_fr00_z00_p00.png)     |
-|      1       |         120×60         |    ![ZL=1](interlace/dec_i00_fr00_z01_p00.png)     |
-|      2       |         60×60          | ![ZL=2](interlace/dec_rough_i30_fr00_z02_p00.png)  |
-|      3       |         60×30          | ![ZL=3](interlace/dec_rough_i27_fr00_z03_p00.png)  |
-|      4       |         30×30          | ![ZL=4](interlace/dec_rough_i24_fr00_z04_p00.png)  |
-|      5       |         30×15          | ![ZL=5](interlace/dec_rough_i21_fr00_z05_p00.png)  |
-|      6       |         15×15          | ![ZL=6](interlace/dec_rough_i18_fr00_z06_p00.png)  |
-|      7       |          15×8          | ![ZL=7](interlace/dec_rough_i15_fr00_z07_p00.png)  |
-|      8       |          8×8           | ![ZL=8](interlace/dec_rough_i12_fr00_z08_p00.png)  |
-|      9       |          8×4           | ![ZL=9](interlace/dec_rough_i09_fr00_z09_p00.png)  |
-|      10      |          4×4           | ![ZL=10](interlace/dec_rough_i06_fr00_z10_p00.png) |
-|      11      |          4×2           | ![ZL=11](interlace/dec_rough_i04_fr00_z11_p00.png) |
-|      12      |          2×2           | ![ZL=12](interlace/dec_rough_i02_fr00_z12_p00.png) |
-|      13      |          2×1           | ![ZL=13](interlace/dec_rough_i01_fr00_z13_p00.png) |
-|      14      |          1×1           | ![ZL=14](interlace/dec_rough_i00_fr00_z14_p00.png) |
-
+<table style="text-align: center">
+<thead>
+  <tr><th scope="col">ズームレベル<th scope="col">サイズ<th scope="col">画像
+</thead>
+<tbody>
+  <tr><td>0<td>120×120 (原画像サイズ)<td><img src="interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0" />
+  <tr><td>1<td>120×60<td><img src="interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1" />
+  <tr><td>2<td>60×60<td><img src="interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2" />
+  <tr><td>3<td>60×30<td><img src="interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3" />
+  <tr><td>4<td>30×30<td><img src="interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4" />
+  <tr><td>5<td>30×15<td><img src="interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5" />
+  <tr><td>6<td>15×15<td><img src="interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6" />
+  <tr><td>7<td>15×8<td><img src="interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7" />
+  <tr><td>8<td>8×8<td><img src="interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8" />
+  <tr><td>9<td>8×4<td><img src="interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9" />
+  <tr><td>10<td>4×4<td><img src="interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10" />
+  <tr><td>11<td>4×2<td><img src="interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11" />
+  <tr><td>12<td>2×2<td><img src="interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12" />
+  <tr><td>13<td>2×1<td><img src="interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13" />
+  <tr><td>14<td>1×1<td><img src="interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14" />
+</tbody>
+</table>
 </figure>
 
 具体的なアルゴリズムを書くと長くなるので、以上のように画素が埋まっていくんだなと解釈してください（雑）。最後のズームレベルは 1×1 になるので、より大きな画像ではズームレベルがさらに多くなります。また、横長、縦長の画像では、あるズームレベルで 1 ピクセルも復元されないことがあります。
@@ -261,22 +266,22 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 <table>
 <tr>
   <th scope="row">ビット
-  <td align="center">0
-  <td align="center">1
-  <td align="center">0
-  <td align="center">0
-  <td align="center">1
-  <td align="center">0
-  <td align="center">1
+  <td>0
+  <td>1
+  <td>0
+  <td>0
+  <td>1
+  <td>0
+  <td>1
 <tr>
   <th scope="row">ビット名
-  <td align="center">ZERO
-  <td align="center">SIGN
-  <td align="center">EXP(0, +)
-  <td align="center">EXP(1, +)
-  <td align="center">EXP(2, +)
-  <td align="center">MANT(1)
-  <td align="center">MANT(0)
+  <td>ZERO
+  <td>SIGN
+  <td>EXP(0, +)
+  <td>EXP(1, +)
+  <td>EXP(2, +)
+  <td>MANT(1)
+  <td>MANT(0)
 </table>
 </figure>
 
@@ -291,18 +296,18 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 <table>
 <tr>
   <th scope="row">ビット
-  <td align="center">0
-  <td align="center">1
-  <td align="center">0
-  <td align="center">0
-  <td align="center">1
+  <td>0
+  <td>1
+  <td>0
+  <td>0
+  <td>1
 <tr>
   <th scope="row">ビット名
-  <td align="center">ZERO
-  <td align="center">SIGN
-  <td align="center">EXP(0, +)
-  <td align="center">EXP(1, +)
-  <td align="center">MANT(0)
+  <td>ZERO
+  <td>SIGN
+  <td>EXP(0, +)
+  <td>EXP(1, +)
+  <td>MANT(0)
 </table>
 </figure>
 

@@ -22,7 +22,6 @@ import rehypeKatex from "rehype-katex"
 import rehypeRaw from "rehype-raw"
 import remarkExtractFrontmatter from "remark-extract-frontmatter"
 import remarkFrontmatter from "remark-frontmatter"
-import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
@@ -52,6 +51,7 @@ export interface Post {
   /** preamble に全文入っていれば false */
   truncated: boolean
   commitHash?: string
+  style?: string
 }
 
 interface Frontmatter {
@@ -62,6 +62,7 @@ interface Frontmatter {
   /** meta タグの説明文 */
   description?: string
   thumbnail?: string
+  style?: string
 }
 
 export async function readPosts(postsDir: string): Promise<Post[]> {
@@ -344,13 +345,13 @@ const toPost: Plugin<[], HastRoot> = function () {
       preamble,
       truncated: headingIndex >= 0,
       commitHash: file.data.commitHash as string | undefined,
+      style: frontmatter?.style,
     }
   }
 }
 
 const processor = unified()
   .use(remarkParse)
-  .use(remarkGfm)
   .use(remarkFrontmatter)
   .use(remarkExtractFrontmatter, {
     yaml: yaml.parse,

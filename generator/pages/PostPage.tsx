@@ -1,6 +1,7 @@
 import { toText } from "hast-util-to-text"
 import Layout from "../components/Layout"
 import PostHeader from "../components/PostHeader"
+import StyleTags from "../components/StyleTags"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
 import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
@@ -37,6 +38,7 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
           {post.thumbnail != null && (
             <meta property="og:image" content={post.thumbnail} />
           )}
+          {post.style != null && <StyleTags styles={[post.style]} />}
         </>
       }
     >

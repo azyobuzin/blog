@@ -1,5 +1,6 @@
 import Layout from "../components/Layout"
 import PostList from "../components/PostList"
+import StyleTags from "../components/StyleTags"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
 import { VFC, h } from "../lib/jsx"
 import { Post } from "../lib/posts"
@@ -22,6 +23,7 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
             href={tagUrl(tag) + "feed.atom"}
             type="application/atom+xml"
           />
+          <StyleTags styles={posts.map((x) => x.style)} />
         </>
       }
     >

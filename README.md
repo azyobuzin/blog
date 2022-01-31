@@ -21,6 +21,8 @@ tags: [tag]
 sectnums: true
 description: SEO！
 thumbnail: thumbnail.jpg
+stlye: |
+  CSS is Awesome
 ---
 ```
 
