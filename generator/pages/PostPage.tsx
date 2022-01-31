@@ -51,11 +51,16 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
         <footer>
           <hr />
           <nav>
-            <a href="/">{SITE_TITLE}</a>
-            {"　|　"}
-            <a href="https://twitter.com/azyobuzin" rel="author external">
-              @azyobuzin
-            </a>
+            <ul>
+              <li>
+                <a href="/">{SITE_TITLE}</a>
+              </li>
+              <li>
+                <a href="https://twitter.com/azyobuzin" rel="author external">
+                  @azyobuzin
+                </a>
+              </li>
+            </ul>
           </nav>
         </footer>
       </div>
