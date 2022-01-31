@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2022-01-12T04:48:42+09:00</updated><entry><category term="tech" label="tech" /><category term="C++" label="C++" /><content type="html">&#x3C;p>あけましておめでとうございます。季節感もなにもないブログですが、修論締切間近の時期に研究で使った技術をまとめようという点は季節感かもしれません。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2022-02-01T03:44:24+09:00</updated><entry><category term="tech" label="tech" /><category term="C++" label="C++" /><content type="html">&#x3C;p>あけましておめでとうございます。季節感もなにもないブログですが、修論締切間近の時期に研究で使った技術をまとめようという点は季節感かもしれません。&#x3C;/p>
 &#x3C;p>今回のネタは、クラスタサイズに制約を設けてクラスタリングをしようという話です。&#x3C;/p>
 &#x3C;p>クラスタリングといったら、もっとも代表的な手法は k-means です。 k-means は&#x3C;b>クラスタ数&#x3C;/b>を事前に指定して、クラスタリングを行います。つまり、 k-means を使うときは、データを &#x3C;var>k&#x3C;/var> 個に分けたら何か傾向が見えるかもな～という気持ちで使うことになります。このとき、1クラスタに属するデータ数（&#x3C;b>クラスタサイズ&#x3C;/b>）は、クラスタごとに異なります。&#x3C;/p>
 &#x3C;p>では、クラスタサイズを事前に指定するような方法はないのでしょうか。データが大量にあるので、データを &#x3C;var>c&#x3C;/var> 個に均等に分割して処理したいな～というときに、どうしたらいいのでしょうか。というわけで今日の論文紹介です。&#x3C;/p>
@@ -555,92 +555,28 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>次の表は実際の復号化中のデータを Y チャンネル（輝度値）について取り出したものです。この場合では、ズームレベル 14 から順番に復元していきます。&#x3C;/p>
 &#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 1: インターレース方式で画素が復元される様子&#x3C;/figcaption>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-&#x3C;table>&#x3C;thead>&#x3C;tr>&#x3C;th align="center">ズームレベル&#x3C;/th>&#x3C;th align="center">サイズ&#x3C;/th>&#x3C;th align="center">画像&#x3C;/th>&#x3C;/tr>&#x3C;/thead>&#x3C;tbody>&#x3C;tr>&#x3C;td align="center">0&#x3C;/td>&#x3C;td align="center">120×120 (原画像サイズ)&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">1&#x3C;/td>&#x3C;td align="center">120×60&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">2&#x3C;/td>&#x3C;td align="center">60×60&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">3&#x3C;/td>&#x3C;td align="center">60×30&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">4&#x3C;/td>&#x3C;td align="center">30×30&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">5&#x3C;/td>&#x3C;td align="center">30×15&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">6&#x3C;/td>&#x3C;td align="center">15×15&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">7&#x3C;/td>&#x3C;td align="center">15×8&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">8&#x3C;/td>&#x3C;td align="center">8×8&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">9&#x3C;/td>&#x3C;td align="center">8×4&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">10&#x3C;/td>&#x3C;td align="center">4×4&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">11&#x3C;/td>&#x3C;td align="center">4×2&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">12&#x3C;/td>&#x3C;td align="center">2×2&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">13&#x3C;/td>&#x3C;td align="center">2×1&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13">&#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td align="center">14&#x3C;/td>&#x3C;td align="center">1×1&#x3C;/td>&#x3C;td align="center">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14">&#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>
+&#x3C;table style="text-align: center">
+&#x3C;thead>
+  &#x3C;tr>&#x3C;th scope="col">ズームレベル&#x3C;/th>&#x3C;th scope="col">サイズ&#x3C;/th>&#x3C;th scope="col">画像
+&#x3C;/th>&#x3C;/tr>&#x3C;/thead>
+&#x3C;tbody>
+  &#x3C;tr>&#x3C;td>0&#x3C;/td>&#x3C;td>120×120 (原画像サイズ)&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>1&#x3C;/td>&#x3C;td>120×60&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>2&#x3C;/td>&#x3C;td>60×60&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>3&#x3C;/td>&#x3C;td>60×30&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>4&#x3C;/td>&#x3C;td>30×30&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>5&#x3C;/td>&#x3C;td>30×15&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>6&#x3C;/td>&#x3C;td>15×15&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>7&#x3C;/td>&#x3C;td>15×8&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>8&#x3C;/td>&#x3C;td>8×8&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>9&#x3C;/td>&#x3C;td>8×4&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>10&#x3C;/td>&#x3C;td>4×4&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>11&#x3C;/td>&#x3C;td>4×2&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>12&#x3C;/td>&#x3C;td>2×2&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>13&#x3C;/td>&#x3C;td>2×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>14&#x3C;/td>&#x3C;td>1×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14">
+&#x3C;/td>&#x3C;/tr>&#x3C;/tbody>
+&#x3C;/table>
 &#x3C;/figure>
 &#x3C;p>具体的なアルゴリズムを書くと長くなるので、以上のように画素が埋まっていくんだなと解釈してください（雑）。最後のズームレベルは 1×1 になるので、より大きな画像ではズームレベルがさらに多くなります。また、横長、縦長の画像では、あるズームレベルで 1 ピクセルも復元されないことがあります。&#x3C;/p>
 &#x3C;p>このように圧縮すると何がうれしいかというと、すでに復号化されている隣接画素の情報を画素値予測に使うことができることができます。図からも 4×4 くらいになれば、手がかりになりそうなデータになっていることが分かると思います。実際、インターレース方式で使用する予測器は、非インターレース方式の予測器よりもリッチです。&#x3C;/p>
@@ -764,22 +700,22 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;table>
 &#x3C;tbody>&#x3C;tr>
   &#x3C;th scope="row">ビット
-  &#x3C;/th>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">1
-  &#x3C;/td>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">1
-  &#x3C;/td>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">1
+  &#x3C;/th>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>1
+  &#x3C;/td>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>1
+  &#x3C;/td>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>1
 &#x3C;/td>&#x3C;/tr>&#x3C;tr>
   &#x3C;th scope="row">ビット名
-  &#x3C;/th>&#x3C;td align="center">ZERO
-  &#x3C;/td>&#x3C;td align="center">SIGN
-  &#x3C;/td>&#x3C;td align="center">EXP(0, +)
-  &#x3C;/td>&#x3C;td align="center">EXP(1, +)
-  &#x3C;/td>&#x3C;td align="center">EXP(2, +)
-  &#x3C;/td>&#x3C;td align="center">MANT(1)
-  &#x3C;/td>&#x3C;td align="center">MANT(0)
+  &#x3C;/th>&#x3C;td>ZERO
+  &#x3C;/td>&#x3C;td>SIGN
+  &#x3C;/td>&#x3C;td>EXP(0, +)
+  &#x3C;/td>&#x3C;td>EXP(1, +)
+  &#x3C;/td>&#x3C;td>EXP(2, +)
+  &#x3C;/td>&#x3C;td>MANT(1)
+  &#x3C;/td>&#x3C;td>MANT(0)
 &#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>
 &#x3C;/figure>
 &#x3C;p>指数部は数値が何ビットあるかを表します。数値が何ビットあるかは 0 が連続した数で決まります。この例では、 0 が 2 個続き、その次が 1 なので、 3 ビットの数値を表していることを表現しています。&#x3C;/p>
@@ -790,18 +726,18 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;table>
 &#x3C;tbody>&#x3C;tr>
   &#x3C;th scope="row">ビット
-  &#x3C;/th>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">1
-  &#x3C;/td>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">0
-  &#x3C;/td>&#x3C;td align="center">1
+  &#x3C;/th>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>1
+  &#x3C;/td>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>0
+  &#x3C;/td>&#x3C;td>1
 &#x3C;/td>&#x3C;/tr>&#x3C;tr>
   &#x3C;th scope="row">ビット名
-  &#x3C;/th>&#x3C;td align="center">ZERO
-  &#x3C;/td>&#x3C;td align="center">SIGN
-  &#x3C;/td>&#x3C;td align="center">EXP(0, +)
-  &#x3C;/td>&#x3C;td align="center">EXP(1, +)
-  &#x3C;/td>&#x3C;td align="center">MANT(0)
+  &#x3C;/th>&#x3C;td>ZERO
+  &#x3C;/td>&#x3C;td>SIGN
+  &#x3C;/td>&#x3C;td>EXP(0, +)
+  &#x3C;/td>&#x3C;td>EXP(1, +)
+  &#x3C;/td>&#x3C;td>MANT(0)
 &#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>
 &#x3C;/figure>
 &#x3C;p>まず、指数部の最後のビットが省略されました。なぜなら、最大値 5 は 3 ビットで表されるので 0 が 2 個続いた時点で、 3 ビットであることが確定するからです。次に仮数部の下位2ビット目が省略されました。なぜなら、 3 ビットで表す必要がある数値は 4 または 5 だけなので、下位 2 ビット目は必ず 0 になることが確定しているからです。このように実際に書き込まなくてもわかる場合は、ビットを省略する動作をします。&#x3C;/p>
@@ -902,7 +838,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;/li>
 &#x3C;/ol>
-&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2021-09-27T19:22:31+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2022-02-01T03:44:24+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
 &#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
 &#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
 &#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>

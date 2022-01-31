@@ -8,8 +8,8 @@
 
 FLIF は、すでに ImageMagick で実装されており、すぐに試すことができます。また、コーデックのリファレンス実装は GitHub にあります (FLIF-hub/FLIF)。
 
-なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2021-09-27T19:22:31+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i><span class="sr-only">公開日</span> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
-最終更新: 2021/09/27 19:22">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/30f95fbf80c9d9cd0873c8c5fcb291c59e8d83bc/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i><span class="sr-only">タグ</span> <a class="button button-outline article-tag" href="/tags/tech/">tech</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
+なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2022-02-01T03:44:24+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"><style>#tbl-nz51 td, #tbl-nz52 td { text-align: center; }</style></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i><span class="sr-only">公開日</span> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
+最終更新: 2022/02/01 03:44">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/ad2c281a92afe50241fa13ceba345a2616f78cb7/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i><span class="sr-only">タグ</span> <a class="button button-outline article-tag" href="/tags/tech/">tech</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
 <p>ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。</p>
 <p>圧縮手法としての特徴は、次の2点が挙げられます。</p>
 <ol>
@@ -57,92 +57,28 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>次の表は実際の復号化中のデータを Y チャンネル（輝度値）について取り出したものです。この場合では、ズームレベル 14 から順番に復元していきます。</p>
 <figure class="fig-table" data-num="表">
 <figcaption>表 1: インターレース方式で画素が復元される様子</figcaption>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th align="center">ズームレベル</th><th align="center">サイズ</th><th align="center">画像</th></tr></thead><tbody><tr><td align="center">0</td><td align="center">120×120 (原画像サイズ)</td><td align="center"><img src="interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0"></td></tr><tr><td align="center">1</td><td align="center">120×60</td><td align="center"><img src="interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1"></td></tr><tr><td align="center">2</td><td align="center">60×60</td><td align="center"><img src="interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2"></td></tr><tr><td align="center">3</td><td align="center">60×30</td><td align="center"><img src="interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3"></td></tr><tr><td align="center">4</td><td align="center">30×30</td><td align="center"><img src="interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4"></td></tr><tr><td align="center">5</td><td align="center">30×15</td><td align="center"><img src="interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5"></td></tr><tr><td align="center">6</td><td align="center">15×15</td><td align="center"><img src="interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6"></td></tr><tr><td align="center">7</td><td align="center">15×8</td><td align="center"><img src="interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7"></td></tr><tr><td align="center">8</td><td align="center">8×8</td><td align="center"><img src="interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8"></td></tr><tr><td align="center">9</td><td align="center">8×4</td><td align="center"><img src="interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9"></td></tr><tr><td align="center">10</td><td align="center">4×4</td><td align="center"><img src="interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10"></td></tr><tr><td align="center">11</td><td align="center">4×2</td><td align="center"><img src="interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11"></td></tr><tr><td align="center">12</td><td align="center">2×2</td><td align="center"><img src="interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12"></td></tr><tr><td align="center">13</td><td align="center">2×1</td><td align="center"><img src="interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13"></td></tr><tr><td align="center">14</td><td align="center">1×1</td><td align="center"><img src="interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14"></td></tr></tbody></table>
+<table style="text-align: center">
+<thead>
+  <tr><th scope="col">ズームレベル</th><th scope="col">サイズ</th><th scope="col">画像
+</th></tr></thead>
+<tbody>
+  <tr><td>0</td><td>120×120 (原画像サイズ)</td><td><img src="interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0">
+  </td></tr><tr><td>1</td><td>120×60</td><td><img src="interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1">
+  </td></tr><tr><td>2</td><td>60×60</td><td><img src="interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2">
+  </td></tr><tr><td>3</td><td>60×30</td><td><img src="interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3">
+  </td></tr><tr><td>4</td><td>30×30</td><td><img src="interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4">
+  </td></tr><tr><td>5</td><td>30×15</td><td><img src="interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5">
+  </td></tr><tr><td>6</td><td>15×15</td><td><img src="interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6">
+  </td></tr><tr><td>7</td><td>15×8</td><td><img src="interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7">
+  </td></tr><tr><td>8</td><td>8×8</td><td><img src="interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8">
+  </td></tr><tr><td>9</td><td>8×4</td><td><img src="interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9">
+  </td></tr><tr><td>10</td><td>4×4</td><td><img src="interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10">
+  </td></tr><tr><td>11</td><td>4×2</td><td><img src="interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11">
+  </td></tr><tr><td>12</td><td>2×2</td><td><img src="interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12">
+  </td></tr><tr><td>13</td><td>2×1</td><td><img src="interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13">
+  </td></tr><tr><td>14</td><td>1×1</td><td><img src="interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14">
+</td></tr></tbody>
+</table>
 </figure>
 <p>具体的なアルゴリズムを書くと長くなるので、以上のように画素が埋まっていくんだなと解釈してください（雑）。最後のズームレベルは 1×1 になるので、より大きな画像ではズームレベルがさらに多くなります。また、横長、縦長の画像では、あるズームレベルで 1 ピクセルも復元されないことがあります。</p>
 <p>このように圧縮すると何がうれしいかというと、すでに復号化されている隣接画素の情報を画素値予測に使うことができることができます。図からも 4×4 くらいになれば、手がかりになりそうなデータになっていることが分かると思います。実際、インターレース方式で使用する予測器は、非インターレース方式の予測器よりもリッチです。</p>
@@ -266,22 +202,22 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <table>
 <tbody><tr>
   <th scope="row">ビット
-  </th><td align="center">0
-  </td><td align="center">1
-  </td><td align="center">0
-  </td><td align="center">0
-  </td><td align="center">1
-  </td><td align="center">0
-  </td><td align="center">1
+  </th><td>0
+  </td><td>1
+  </td><td>0
+  </td><td>0
+  </td><td>1
+  </td><td>0
+  </td><td>1
 </td></tr><tr>
   <th scope="row">ビット名
-  </th><td align="center">ZERO
-  </td><td align="center">SIGN
-  </td><td align="center">EXP(0, +)
-  </td><td align="center">EXP(1, +)
-  </td><td align="center">EXP(2, +)
-  </td><td align="center">MANT(1)
-  </td><td align="center">MANT(0)
+  </th><td>ZERO
+  </td><td>SIGN
+  </td><td>EXP(0, +)
+  </td><td>EXP(1, +)
+  </td><td>EXP(2, +)
+  </td><td>MANT(1)
+  </td><td>MANT(0)
 </td></tr></tbody></table>
 </figure>
 <p>指数部は数値が何ビットあるかを表します。数値が何ビットあるかは 0 が連続した数で決まります。この例では、 0 が 2 個続き、その次が 1 なので、 3 ビットの数値を表していることを表現しています。</p>
@@ -292,18 +228,18 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <table>
 <tbody><tr>
   <th scope="row">ビット
-  </th><td align="center">0
-  </td><td align="center">1
-  </td><td align="center">0
-  </td><td align="center">0
-  </td><td align="center">1
+  </th><td>0
+  </td><td>1
+  </td><td>0
+  </td><td>0
+  </td><td>1
 </td></tr><tr>
   <th scope="row">ビット名
-  </th><td align="center">ZERO
-  </td><td align="center">SIGN
-  </td><td align="center">EXP(0, +)
-  </td><td align="center">EXP(1, +)
-  </td><td align="center">MANT(0)
+  </th><td>ZERO
+  </td><td>SIGN
+  </td><td>EXP(0, +)
+  </td><td>EXP(1, +)
+  </td><td>MANT(0)
 </td></tr></tbody></table>
 </figure>
 <p>まず、指数部の最後のビットが省略されました。なぜなら、最大値 5 は 3 ビットで表されるので 0 が 2 個続いた時点で、 3 ビットであることが確定するからです。次に仮数部の下位2ビット目が省略されました。なぜなら、 3 ビットで表す必要がある数値は 4 または 5 だけなので、下位 2 ビット目は必ず 0 になることが確定しているからです。このように実際に書き込まなくてもわかる場合は、ビットを省略する動作をします。</p>
@@ -404,4 +340,4 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 </ol>
 </li>
 </ol>
-<p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。</p></div></article><footer><hr><nav><a href="/">あじょろぐ</a>　|　<a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></nav></footer></div></body></html>
+<p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。</p></div></article><footer><hr><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>
