@@ -119,6 +119,7 @@ p {
 
 h1 {
   color: var(--ab-accent);
+  font-family: sans-serif;
 }
 
 h2::before,
@@ -286,6 +287,7 @@ thead th {
 .note-heading {
   font-size: 1rem;
   font-weight: bold;
+  font-family: sans-serif;
   background-color: var(--ab-accent);
   color: var(--ab-background);
   margin: 0;
