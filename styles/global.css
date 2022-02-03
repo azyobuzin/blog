@@ -19,7 +19,7 @@ body {
   margin: 0;
   background-color: var(--ab-background);
   color: var(--ab-text);
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
 .container {
@@ -103,6 +103,7 @@ code,
 kbd,
 samp {
   font-family: "Consolas", monospace;
+  font-size: 0.92rem;
   background-color: var(--ab-note);
   padding: 0.1em 0.25em;
   border-radius: 0.25rem;
