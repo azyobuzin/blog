@@ -3,8 +3,18 @@ pubdate: 2020-10-11T20:51+09:00
 tags: [tech]
 sectnums: true
 thumbnail: https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png
-style: |-
-  #tbl-nz51 td, #tbl-nz52 td { text-align: center; }
+style: >-
+  #tbl-interlaced-pred th,
+  #tbl-interlaced-pred td:first-child,
+  #tbl-nz51 td,
+  #tbl-nz52 td {
+    text-align: center;
+  }
+  #tbl-interlaced-pred table,
+  #tbl-nz51 table,
+  #tbl-nz52 table {
+    white-space: nowrap;
+  }
 ---
 
 # 画像可逆圧縮形式 FLIF についてのメモ
@@ -133,7 +143,7 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 
 予測器は次の3つから選ぶことができます。チャンネルごとに指定するかズームレベルごとに指定するかが選べます。リファレンス実装のデフォルトでは、チャンネルごとにズームレベル 0 と 1 で試しにすべての予測器で予測させて、誤差が一番少ないものを選択します。
 
-<figure class="fig-table" data-num="表">
+<figure id="tbl-interlaced-pred" class="fig-table" data-num="表">
 <figcaption>インターレース方式における予測器</figcaption>
 <table>
   <thead>

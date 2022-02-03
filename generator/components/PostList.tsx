@@ -6,7 +6,6 @@ import PostHeader from "./PostHeader"
 const PostPreview: VFC<{ post: Post }> = ({ post }) => {
   return (
     <article className="article-list-item">
-      <hr aria-hidden="true" />
       <div className="article-list-item-content">
         <PostHeader post={post} titleLink />
 

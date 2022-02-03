@@ -52,14 +52,15 @@ const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
         <div className="article-meta">
           <i className="fa fa-tags" aria-hidden="true" title="タグ" />
           <span className="sr-only">タグ</span>
-          {post.tags.map((x) => (
-            <>
-              {" "}
-              <LinkToTag className="button button-outline article-tag" tag={x}>
-                {x}
-              </LinkToTag>
-            </>
-          ))}
+          <ul className="article-tags">
+            {post.tags.map((x) => (
+              <li>
+                <LinkToTag className="article-tag" tag={x}>
+                  {x}
+                </LinkToTag>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </header>

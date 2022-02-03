@@ -204,11 +204,12 @@ devcontainer.json は VSCode にコンテナ作成を指示する設定ファイ
 
 また、 Visual Studio でも docker-compose プロジェクトをスタートアッププロジェクトに設定して実行できるはずです！
 
-<ab-caution>
-
+<div role="note" class="note note-caution">
+<h4 class="note-heading">注意！</h4>
+<div class="note-content">
 Visual Studio と VSCode の同時実行は危険です。同じマウント先のデータベースがふたつ動くことになってしまいます。また、それぞれ終了後 30 秒くらいはコンテナが動いているので、コンテナが終了されたことを確認してから、他方を使ってください。
-
-</ab-caution>
+</div>
+</div>
 
 ## まとめ
 

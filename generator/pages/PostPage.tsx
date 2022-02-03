@@ -49,7 +49,6 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
         </article>
 
         <footer>
-          <hr />
           <nav>
             <ul>
               <li>

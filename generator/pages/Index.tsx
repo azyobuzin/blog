@@ -32,12 +32,13 @@ const Index: VFC<{ posts: Post[] }> = ({ posts }) => {
 
         <PostList posts={posts} />
 
-        <hr />
-        <p>
-          <a href="https://azyobuzin.hatenablog.com/" rel="external">
-            もっと古い記事（はてなブログ）
-          </a>
-        </p>
+        <div className="article-list-item">
+          <p>
+            <a href="https://azyobuzin.hatenablog.com/" rel="external">
+              もっと古い記事（はてなブログ）
+            </a>
+          </p>
+        </div>
       </div>
     </Layout>
   )

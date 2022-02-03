@@ -46,7 +46,6 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
         <PostList posts={posts} />
 
         <footer>
-          <hr />
           <nav>
             <a href="/">{SITE_TITLE}</a>
           </nav>

@@ -3,13 +3,9 @@
   "private": true,
   "version": "0.2.0",
   "dependencies": {
-    "bootstrap": "^5.1.3",
-    "highlight.js": "^11.4.0",
-    "milligram": "~1.4.1",
-    "normalize.css": "~8.0.1"
+    "highlight.js": "^11.4.0"
   },
   "devDependencies": {
-    "@parcel/transformer-sass": "^2.1.1",
     "html-validate": "^6.1.6",
     "parcel": "^2.1.1",
     "prettier": "^2.5.1",
@@ -17,7 +13,7 @@
     "serve": "^13.0.2"
   },
   "scripts": {
-    "build": "npm start -w generator; parcel build --dist-dir public --no-source-maps styles/global.scss; html-validate public",
+    "build": "npm start -w generator; parcel build --dist-dir public --no-source-maps styles/global.css; html-validate public",
     "serve": "serve public",
     "fix": "npm run fix --workspaces; prettier --ignore-path .gitignore --write ."
   },

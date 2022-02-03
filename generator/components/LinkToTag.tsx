@@ -6,7 +6,7 @@ const LinkToTag: FC<{
   className?: string
 }> = ({ tag, children, ...rest }) => {
   return (
-    <a {...rest} href={tagUrl(tag)}>
+    <a rel="tag" {...rest} href={tagUrl(tag)}>
       {children}
     </a>
   )

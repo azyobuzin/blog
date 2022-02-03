@@ -87,40 +87,29 @@ a タグの中身が空ならば、図表番号に置き換える。
 DocBook の意味に従う。未実装のものは必要になったら追加する。
 
 ```html
-<ab-important>
-  <p>重要なこと</p>
-</ab-important>
-
-<ab-caution>
-  <p>注意深く行動すること</p>
-</ab-caution>
-
-<ab-warning>
-  <p>従わないとやばいことになる可能性があること</p>
-</ab-warning>
-```
-
-↓
-
-```html
-<div class="admonitionblock important" role="note">
-  <div class="icon">Important</div>
-  <div class="content">
-    <p>重要なこと</p>
+<div role="note" class="note note-important">
+  <h4 class="note-heading">重要なこと</h4>
+  <div class="note-content">
+    <p>
+      Nonumy clita delenit accusam dolore consetetur rebum velit amet duis
+      nonumy.
+    </p>
   </div>
 </div>
 
-<div class="admonitionblock caution" role="note">
-  <div class="icon">Caution</div>
-  <div class="content">
-    <p>注意深く行動すること</p>
+<div role="note" class="note note-caution">
+  <h4 class="note-heading">注意深く行動すること</h4>
+  <div class="note-content">
+    <p>Erat dolores wisi sed aliquip labore rebum.</p>
   </div>
 </div>
 
-<div class="admonitionblock warning" role="note">
-  <div class="icon">Warning</div>
-  <div class="content">
-    <p>従わないとやばいことになる可能性があること</p>
+<div role="note" class="note note-warning">
+  <h4 class="note-heading">従わないとやばいことになる可能性があること</h4>
+  <div class="note-content">
+    <p>
+      Invidunt diam tation elitr erat at eum dolor erat aliquyam nonumy ipsum.
+    </p>
   </div>
 </div>
 ```
@@ -136,9 +125,11 @@ DocBook の意味に従う。未実装のものは必要になったら追加す
 ↓
 
 ```html
-<ins class="ins-block" datetime="2021-09-27" role="note">
-  <div class="icon">追記 <time datetime="2021-09-27">2021/09/27</time></div>
-  <div class="content">
+<ins class="note ins-block" datetime="2021-09-27" role="note">
+  <div class="note-heading">
+    追記 <time datetime="2021-09-27">2021/09/27</time>
+  </div>
+  <div class="note-content">
     <p>変更がありました。</p>
   </div>
 </ins>

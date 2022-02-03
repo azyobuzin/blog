@@ -278,6 +278,25 @@ function assignTextToAnchor(
   }
 }
 
+/** <table> → <div class="table-wrapper"><table> */
+const tableWrapper: Plugin<[], HastRoot> = () => {
+  return (tree: HastRoot) => {
+    visit(tree, (node, index, parent) => {
+      if (!isHastElement(node, "table") || !isHastElement(parent, "figure"))
+        return
+
+      parent.children[index] = {
+        type: "element",
+        tagName: "div",
+        properties: { className: "table-wrapper" },
+        children: [node],
+      }
+
+      return SKIP
+    })
+  }
+}
+
 /** equation 環境をレスポンシブにする */
 const flexEquation: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
@@ -368,6 +387,7 @@ const processor = unified()
   .use(rehypeHighlight)
   .use(removeHljsClass)
   .use(figureNumbering)
+  .use(tableWrapper)
   .use(rehypeCustomElements)
   .use(rehypeKatex)
   .use(flexEquation)

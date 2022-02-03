@@ -5,11 +5,11 @@ const InsBlock: FC<{ dateTime: string }> = ({ dateTime, children }) => {
   if (dateTime == null) throw new TypeError("dateTime is required")
 
   return (
-    <ins className="ins-block" dateTime={dateTime} role="note">
-      <div className="icon">
+    <ins className="note ins-block" dateTime={dateTime} role="note">
+      <div className="note-heading">
         追記 <time dateTime={dateTime}>{formatDate(dateTime, true)}</time>
       </div>
-      <div className="content">{children}</div>
+      <div className="note-content">{children}</div>
     </ins>
   )
 }

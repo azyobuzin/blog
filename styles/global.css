@@ -1,0 +1,376 @@
+/*
+ * 全体
+ */
+
+:root {
+  /* 参考: https://www.schemecolor.com/calming-shores.php */
+  --ab-background: white;
+  --ab-text: #333333;
+  --ab-link: #576ea3;
+  --ab-note: #f2f2f2;
+  --ab-accent: #3d9098;
+  --ab-border: #e1e1e1;
+  --ab-important: #d14;
+  --ab-caution: rgb(194, 83, 18);
+  --ab-warning: rgb(207, 195, 17);
+}
+
+body {
+  margin: 0;
+  background-color: var(--ab-background);
+  color: var(--ab-text);
+  line-height: 1.7;
+}
+
+.container {
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  max-width: 1120px;
+}
+
+article header {
+  margin-bottom: 1.5em;
+}
+
+.article-tags {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+.article-tags > li {
+  display: inline;
+}
+
+.article-tags > li::before {
+  content: " / ";
+}
+
+.article-tags > li:first-child::before {
+  content: " ";
+}
+
+hr,
+.article-list-item,
+footer {
+  border: 0;
+  border-top: 1pt solid var(--ab-border);
+}
+
+footer,
+.error-heading {
+  text-align: center;
+}
+
+footer nav {
+  margin: 1em 0;
+}
+
+footer nav ul {
+  padding: 0;
+}
+
+footer nav li {
+  display: inline-block;
+  padding-left: 1em;
+  padding-right: 1em;
+  border-right: 1pt solid var(--ab-border);
+}
+
+footer nav ul :last-child {
+  border-right-style: none;
+}
+
+/*
+ * インライン
+ */
+
+a {
+  color: var(--ab-link);
+  text-decoration: none;
+  font-weight: bolder;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+cite {
+  font-style: normal;
+}
+
+code,
+kbd,
+samp {
+  font-family: "Consolas", monospace;
+  background-color: var(--ab-note);
+  padding: 0.1em 0.25em;
+  border-radius: 0.25rem;
+}
+
+/*
+ * 記事内のブロック
+ */
+
+p {
+  margin: 1em 0;
+}
+
+h1 {
+  color: var(--ab-accent);
+}
+
+h2::before,
+h3::before,
+h4::before,
+h5::before,
+h6::before {
+  color: var(--ab-accent);
+  font-family: "Arial";
+  padding-right: 0.5em;
+}
+
+h2:not(figure *):not(.note *)::before {
+  content: "##";
+}
+
+h3:not(figure *):not(.note *)::before {
+  content: "###";
+}
+
+h4:not(figure *):not(.note *)::before {
+  content: "####";
+}
+
+h5:not(figure *):not(.note *)::before {
+  content: "#####";
+}
+
+h6:not(figure *):not(.note *)::before {
+  content: "######";
+}
+
+pre {
+  margin: 1.5em 0;
+  background-color: var(--ab-note);
+  border-top: 0.2em solid var(--ab-accent);
+  padding: 0.5em 1em;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+blockquote pre {
+  /* blockquote の背景と被るので、範囲がわかるように左側に線を出す */
+  border-top: 0;
+  border-left: 0.3em solid var(--ab-accent);
+}
+
+/*
+ * figure
+ */
+
+figure,
+.math-display {
+  margin: 1.5em 0;
+}
+
+figcaption {
+  font-size: 0.95rem;
+  font-weight: bolder;
+}
+
+figure.fig-code > figcaption,
+figure.fig-img,
+figure.fig-table > figcaption,
+figure.fig-tweet > figcaption {
+  text-align: center;
+}
+
+figure.fig-code > pre {
+  margin: 0;
+}
+
+figure.fig-img > img {
+  max-width: 100%;
+}
+
+figure.fig-quote {
+  display: grid;
+  grid-template-areas:
+    "symbol content"
+    "symbol caption";
+  grid-template-columns: auto 1fr;
+  padding-right: 1em;
+  background-color: var(--ab-note);
+}
+
+figure.fig-quote::before {
+  font: normal normal normal 14px/1 ForkAwesome;
+  content: "\f10d";
+  font-size: 2rem;
+  color: var(--ab-accent);
+  padding: 0.5em;
+  display: block;
+  grid-area: symbol;
+}
+
+figure.fig-quote > blockquote {
+  grid-area: content;
+  margin: 0;
+  padding: 1.5em 0;
+}
+
+figure.fig-quote > blockquote > *:first-child {
+  margin-top: 0;
+}
+
+figure.fig-quote > blockquote > *:last-child {
+  margin-bottom: 0;
+}
+
+/* figcaption に引用元が書かれる */
+figure.fig-quote > figcaption {
+  grid-area: caption;
+  text-align: initial;
+  margin: 0 0 1.5em 0;
+}
+
+figure.fig-quote > figcaption::before {
+  content: " — ";
+  font-weight: normal;
+}
+
+figure.fig-tweet .twitter-tweet {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/*
+ * table
+ */
+
+table {
+  margin: 0 auto;
+  border-spacing: 0;
+}
+
+td,
+th {
+  margin: 0;
+  padding: 1em 1.5em;
+  border-bottom: 1pt solid var(--ab-border);
+}
+
+thead td,
+thead th {
+  border-bottom-width: 1.5pt;
+}
+
+/* table に max-width を設定しても効果がないので、 div で囲んでなんとかする */
+.table-wrapper {
+  margin: 0 -1.5rem;
+  width: calc(100% + 3rem);
+  overflow-x: auto;
+}
+
+/*
+ * 囲み
+ */
+
+.note {
+  margin: 1.5em 1em;
+  background-color: var(--ab-note);
+}
+
+.note-heading {
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: var(--ab-accent);
+  color: var(--ab-background);
+  margin: 0;
+  padding: 0.25em 1em;
+}
+
+.note-content {
+  padding: 1em;
+}
+
+.note-content > *:first-child {
+  margin-top: 0;
+}
+
+.note-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.note-important {
+  --ab-accent: var(--ab-important);
+}
+
+.note-caution {
+  --ab-accent: var(--ab-caution);
+}
+
+.note-warning {
+  --ab-accent: var(--ab-warning);
+}
+
+.ins-block {
+  display: block;
+  text-decoration: none;
+}
+
+/*!
+ * https://github.com/twbs/bootstrap/blob/v5.1.1/scss/mixins/_visually-hidden.scss
+ * Bootstrap v5.1.1 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/*
+ * highlight.js
+ */
+
+/*! XCode style (c) Angel Garcia <angelgarcia.mail@gmail.com> */
+@import "../node_modules/highlight.js/styles/xcode.css";
+
+/*
+ * KaTeX
+ */
+
+@import "../node_modules/katex/dist/contrib/copy-tex.css";
+
+/* 改行を許可 */
+/* https://katex.org/docs/issues.html */
+.katex-display > .katex {
+  white-space: normal !important;
+}
+
+/* equation のレスポンシブ化 */
+.ab-equation {
+  display: flex !important;
+  width: 100%;
+}
+
+.ab-equation > .base {
+  display: block !important;
+  flex: 1;
+  overflow: auto hidden;
+}
+
+.ab-equation > .tag {
+  position: static !important;
+  margin-left: 1.5rem;
+}
