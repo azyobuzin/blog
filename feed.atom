@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2022-02-01T03:44:24+09:00</updated><entry><category term="tech" label="tech" /><category term="C++" label="C++" /><content type="html">&#x3C;p>あけましておめでとうございます。季節感もなにもないブログですが、修論締切間近の時期に研究で使った技術をまとめようという点は季節感かもしれません。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2022-02-04T07:15:49+09:00</updated><entry><category term="tech" label="tech" /><category term="C++" label="C++" /><content type="html">&#x3C;p>あけましておめでとうございます。季節感もなにもないブログですが、修論締切間近の時期に研究で使った技術をまとめようという点は季節感かもしれません。&#x3C;/p>
 &#x3C;p>今回のネタは、クラスタサイズに制約を設けてクラスタリングをしようという話です。&#x3C;/p>
 &#x3C;p>クラスタリングといったら、もっとも代表的な手法は k-means です。 k-means は&#x3C;b>クラスタ数&#x3C;/b>を事前に指定して、クラスタリングを行います。つまり、 k-means を使うときは、データを &#x3C;var>k&#x3C;/var> 個に分けたら何か傾向が見えるかもな～という気持ちで使うことになります。このとき、1クラスタに属するデータ数（&#x3C;b>クラスタサイズ&#x3C;/b>）は、クラスタごとに異なります。&#x3C;/p>
 &#x3C;p>では、クラスタサイズを事前に指定するような方法はないのでしょうか。データが大量にあるので、データを &#x3C;var>c&#x3C;/var> 個に均等に分割して処理したいな～というときに、どうしたらいいのでしょうか。というわけで今日の論文紹介です。&#x3C;/p>
@@ -555,7 +555,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>次の表は実際の復号化中のデータを Y チャンネル（輝度値）について取り出したものです。この場合では、ズームレベル 14 から順番に復元していきます。&#x3C;/p>
 &#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 1: インターレース方式で画素が復元される様子&#x3C;/figcaption>
-&#x3C;table style="text-align: center">
+&#x3C;div class="table-wrapper">&#x3C;table style="text-align: center">
 &#x3C;thead>
   &#x3C;tr>&#x3C;th scope="col">ズームレベル&#x3C;/th>&#x3C;th scope="col">サイズ&#x3C;/th>&#x3C;th scope="col">画像
 &#x3C;/th>&#x3C;/tr>&#x3C;/thead>
@@ -576,7 +576,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
   &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>13&#x3C;/td>&#x3C;td>2×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13">
   &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>14&#x3C;/td>&#x3C;td>1×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14">
 &#x3C;/td>&#x3C;/tr>&#x3C;/tbody>
-&#x3C;/table>
+&#x3C;/table>&#x3C;/div>
 &#x3C;/figure>
 &#x3C;p>具体的なアルゴリズムを書くと長くなるので、以上のように画素が埋まっていくんだなと解釈してください（雑）。最後のズームレベルは 1×1 になるので、より大きな画像ではズームレベルがさらに多くなります。また、横長、縦長の画像では、あるズームレベルで 1 ピクセルも復元されないことがあります。&#x3C;/p>
 &#x3C;p>このように圧縮すると何がうれしいかというと、すでに復号化されている隣接画素の情報を画素値予測に使うことができることができます。図からも 4×4 くらいになれば、手がかりになりそうなデータになっていることが分かると思います。実際、インターレース方式で使用する予測器は、非インターレース方式の予測器よりもリッチです。&#x3C;/p>
@@ -599,7 +599,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>予測器は次の3つから選ぶことができます。チャンネルごとに指定するかズームレベルごとに指定するかが選べます。リファレンス実装のデフォルトでは、チャンネルごとにズームレベル 0 と 1 で試しにすべての予測器で予測させて、誤差が一番少ないものを選択します。&#x3C;/p>
 &#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 2: インターレース方式における予測器&#x3C;/figcaption>
-&#x3C;table>
+&#x3C;div class="table-wrapper">&#x3C;table>
   &#x3C;thead>
     &#x3C;tr>
       &#x3C;th scope="col">予測器&#x3C;/th>
@@ -652,7 +652,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
       &#x3C;/td>
     &#x3C;/tr>
   &#x3C;/tbody>
-&#x3C;/table>
+&#x3C;/table>&#x3C;/div>
 &#x3C;/figure>
 &#x3C;p>「>> 1」は 2 で割って切り捨てなので、平均を求めていることになります。予測器 0 では両隣の平均、予測器 1 では斜め方向も含めて計算してみて中央値を取る、予測器 3 では周囲の中央値を取るという戦略になっています。予測器で使われない TT や LL といった画素は、 &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#sec-meta-adaptive">Section 4.4&#x3C;/a> で説明する決定木の条件として参照されます。&#x3C;/p>
 &#x3C;h2>4. 符号化&#x3C;/h2>
@@ -697,7 +697,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>例えば、「5」を符号化すると次のようになります。&#x3C;/p>
 &#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 3: 「5」を Near-zero Integer Coding で符号化&#x3C;/figcaption>
-&#x3C;table>
+&#x3C;div class="table-wrapper">&#x3C;table>
 &#x3C;tbody>&#x3C;tr>
   &#x3C;th scope="row">ビット
   &#x3C;/th>&#x3C;td>0
@@ -716,14 +716,14 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
   &#x3C;/td>&#x3C;td>EXP(2, +)
   &#x3C;/td>&#x3C;td>MANT(1)
   &#x3C;/td>&#x3C;td>MANT(0)
-&#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>
+&#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>&#x3C;/div>
 &#x3C;/figure>
 &#x3C;p>指数部は数値が何ビットあるかを表します。数値が何ビットあるかは 0 が連続した数で決まります。この例では、 0 が 2 個続き、その次が 1 なので、 3 ビットの数値を表していることを表現しています。&#x3C;/p>
 &#x3C;p>仮数部は、最上位ビット以外の値がそのまま出力されます。最上位ビットについては、何ビットあるかが指数部で示されているので、 1 であることが確定しています。&#x3C;/p>
 &#x3C;p>ただし、数値の取りうる範囲によっては、一部ビットが省略されることがあります。ここでは最小値を任意の負値、最大値を 5 として、 5 を符号化した例を見てみましょう。&#x3C;/p>
 &#x3C;figure class="fig-table" data-num="表">
 &#x3C;figcaption>表 4: 「5」を最大値 5 の Near-zero Integer Coding で符号化&#x3C;/figcaption>
-&#x3C;table>
+&#x3C;div class="table-wrapper">&#x3C;table>
 &#x3C;tbody>&#x3C;tr>
   &#x3C;th scope="row">ビット
   &#x3C;/th>&#x3C;td>0
@@ -738,7 +738,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
   &#x3C;/td>&#x3C;td>EXP(0, +)
   &#x3C;/td>&#x3C;td>EXP(1, +)
   &#x3C;/td>&#x3C;td>MANT(0)
-&#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>
+&#x3C;/td>&#x3C;/tr>&#x3C;/tbody>&#x3C;/table>&#x3C;/div>
 &#x3C;/figure>
 &#x3C;p>まず、指数部の最後のビットが省略されました。なぜなら、最大値 5 は 3 ビットで表されるので 0 が 2 個続いた時点で、 3 ビットであることが確定するからです。次に仮数部の下位2ビット目が省略されました。なぜなら、 3 ビットで表す必要がある数値は 4 または 5 だけなので、下位 2 ビット目は必ず 0 になることが確定しているからです。このように実際に書き込まなくてもわかる場合は、ビットを省略する動作をします。&#x3C;/p>
 &#x3C;p>&#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#tbl-nz51">表 3&#x3C;/a>、&#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#tbl-nz52">表 4&#x3C;/a> には、ビット名という行を用意しました。これは &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#sec-context">Section 4.1.3&#x3C;/a> で説明したコンテキストが実際どのように使用されているのかを表しています。ビット名単位で適応が行われます。つまり予測器の出力が 0 になることが多ければ ZERO が 1 になる確率が適応によって段々と大きくなるし、正になることが多ければ SIGN が 1 になる確率が適応によって段々と大きくなるということです。&#x3C;/p>
@@ -838,7 +838,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;/li>
 &#x3C;/ol>
-&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2022-02-01T03:44:24+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2022-02-04T07:15:49+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
 &#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
 &#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
 &#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>
@@ -972,13 +972,16 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>完成！&#x3C;/h3>
 &#x3C;p>これで準備完了です。 VSCode で「Reopen in Container」を実行すると、コンテナ上で VSCode が動き始めます。 Dockerfile のビルドが走るので気長に待ちましょう。&#x3C;/p>
 &#x3C;p>また、 Visual Studio でも docker-compose プロジェクトをスタートアッププロジェクトに設定して実行できるはずです！&#x3C;/p>
-&#x3C;div class="admonitionblock caution" role="note">&#x3C;div class="icon">Caution&#x3C;/div>&#x3C;div class="content">
-&#x3C;p>Visual Studio と VSCode の同時実行は危険です。同じマウント先のデータベースがふたつ動くことになってしまいます。また、それぞれ終了後 30 秒くらいはコンテナが動いているので、コンテナが終了されたことを確認してから、他方を使ってください。&#x3C;/p>
-&#x3C;/div>&#x3C;/div>
+&#x3C;div role="note" class="note note-caution">
+&#x3C;h4 class="note-heading">注意！&#x3C;/h4>
+&#x3C;div class="note-content">
+Visual Studio と VSCode の同時実行は危険です。同じマウント先のデータベースがふたつ動くことになってしまいます。また、それぞれ終了後 30 秒くらいはコンテナが動いているので、コンテナが終了されたことを確認してから、他方を使ってください。
+&#x3C;/div>
+&#x3C;/div>
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>頑張れば Visual Studio でも VSCode でも使える Docker Compose 環境がつくれることを示しました。これで開発が捗ればいいね。捗らんか……。&#x3C;/p>
 &#x3C;p>ここまでの内容を clone するだけでお試しできるものを GitHub に置いておきました。&#x3C;/p>
-&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2021-09-24T23:30:48+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2022-02-04T07:15:49+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
 &#x3C;h2>イントロダクション&#x3C;/h2>
 &#x3C;p>ケチケチしたインターネットライフに Kubernetes は無縁です。&#x3C;/p>
 &#x3C;p>以前、 Docker のネットワークに細かい設定ができないという不満があって、 Kubernetes の調査をしていたこともありました（&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/03/21/024504">「&#x3C;cite>Kubernetesで隔離Mastodonネットワークを作った&#x3C;/cite>」&#x3C;/a>）。しかしながら、趣味で動かしている web サーバに Kubernetes を導入するのは、ケチケチした人間には不可能です。メモリ 2GB (GMO の株主優待を受けて、スペックアップしました！) の VPS に詰め込めるだけのアプリを詰める、そういうことをしている人間にとっては、 Kubernetes の導入はデメリットの方が多くなります。&#x3C;/p>
@@ -1260,7 +1263,7 @@ flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">/
 &#x3C;h2>7. おわりに&#x3C;/h2>
 &#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-27T19:22:31+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
 &#x3C;p>一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。&#x3C;/p>
-&#x3C;ins class="ins-block" datetime="2021-09-24" role="note">&#x3C;div class="icon">追記 &#x3C;time datetime="2021-09-24">2021/09/24&#x3C;/time>&#x3C;/div>&#x3C;div class="content">
+&#x3C;ins class="note ins-block" datetime="2021-09-24" role="note">&#x3C;div class="note-heading">追記 &#x3C;time datetime="2021-09-24">2021/09/24&#x3C;/time>&#x3C;/div>&#x3C;div class="note-content">
 &#x3C;p>AsciiDoc をやめ Markdown に移行しました。&#x3C;/p>
 &#x3C;p>&#x3C;a href="https://blog.azyobuzi.net/2021/09/24/01-markdown/">&#x3C;cite>結局ブログをMarkdownで書くことにした話&#x3C;/cite>&#x3C;/a>&#x3C;/p>
 &#x3C;/div>&#x3C;/ins>

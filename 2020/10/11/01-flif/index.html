@@ -8,8 +8,12 @@
 
 FLIF は、すでに ImageMagick で実装されており、すぐに試すことができます。また、コーデックのリファレンス実装は GitHub にあります (FLIF-hub/FLIF)。
 
-なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2022-02-01T03:44:24+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"><style>#tbl-nz51 td, #tbl-nz52 td { text-align: center; }</style></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i><span class="sr-only">公開日</span> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
-最終更新: 2022/02/01 03:44">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/ad2c281a92afe50241fa13ceba345a2616f78cb7/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i><span class="sr-only">タグ</span> <a class="button button-outline article-tag" href="/tags/tech/">tech</a></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
+なお、現在 FLIF の開発はストップしており、 FLIF の成果は JPEG XL に取り込まれるようです。ただ JPEG XL の説明を読む限り、以上に挙げた特徴とは違っているので、手法としては別物になるのではないかと思っています。"><meta property="og:article:published_time" content="2020-10-11T20:51+09:00"><meta property="og:article:modified_time" content="2022-02-04T07:15:49+09:00"><meta property="og:article:tag" content="tech"><meta property="og:image" content="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png"><style>#tbl-interlaced-pred th, #tbl-interlaced-pred td:first-child, #tbl-nz51 td, #tbl-nz52 td {
+  text-align: center;
+} #tbl-interlaced-pred table, #tbl-nz51 table, #tbl-nz52 table {
+  white-space: nowrap;
+}</style></head><body><div class="container"><article class="article-page"><header><h1>画像可逆圧縮形式 FLIF についてのメモ</h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i><span class="sr-only">公開日</span> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
+最終更新: 2022/02/04 07:15">2020/10/11</time> ― <a href="https://github.com/azyobuzin/blog/commits/1f8d8c627eda9853f78fc7b828f4ca46e2bdd195/posts/2020/10/11/01-flif" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i><span class="sr-only">タグ</span><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li></ul></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
 <p>ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。</p>
 <p>圧縮手法としての特徴は、次の2点が挙げられます。</p>
 <ol>
@@ -57,7 +61,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>次の表は実際の復号化中のデータを Y チャンネル（輝度値）について取り出したものです。この場合では、ズームレベル 14 から順番に復元していきます。</p>
 <figure class="fig-table" data-num="表">
 <figcaption>表 1: インターレース方式で画素が復元される様子</figcaption>
-<table style="text-align: center">
+<div class="table-wrapper"><table style="text-align: center">
 <thead>
   <tr><th scope="col">ズームレベル</th><th scope="col">サイズ</th><th scope="col">画像
 </th></tr></thead>
@@ -78,7 +82,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
   </td></tr><tr><td>13</td><td>2×1</td><td><img src="interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13">
   </td></tr><tr><td>14</td><td>1×1</td><td><img src="interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14">
 </td></tr></tbody>
-</table>
+</table></div>
 </figure>
 <p>具体的なアルゴリズムを書くと長くなるので、以上のように画素が埋まっていくんだなと解釈してください（雑）。最後のズームレベルは 1×1 になるので、より大きな画像ではズームレベルがさらに多くなります。また、横長、縦長の画像では、あるズームレベルで 1 ピクセルも復元されないことがあります。</p>
 <p>このように圧縮すると何がうれしいかというと、すでに復号化されている隣接画素の情報を画素値予測に使うことができることができます。図からも 4×4 くらいになれば、手がかりになりそうなデータになっていることが分かると思います。実際、インターレース方式で使用する予測器は、非インターレース方式の予測器よりもリッチです。</p>
@@ -99,9 +103,9 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 </figure>
 <p>また、画像の端っこの画素を処理するときには、参照できない周辺画素があります。その場合は、偶数ズームレベルでは必ず T があり、奇数ズームレベルでは L があるので、その値を代用します。</p>
 <p>予測器は次の3つから選ぶことができます。チャンネルごとに指定するかズームレベルごとに指定するかが選べます。リファレンス実装のデフォルトでは、チャンネルごとにズームレベル 0 と 1 で試しにすべての予測器で予測させて、誤差が一番少ないものを選択します。</p>
-<figure class="fig-table" data-num="表">
+<figure id="tbl-interlaced-pred" class="fig-table" data-num="表">
 <figcaption>表 2: インターレース方式における予測器</figcaption>
-<table>
+<div class="table-wrapper"><table>
   <thead>
     <tr>
       <th scope="col">予測器</th>
@@ -154,7 +158,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
       </td>
     </tr>
   </tbody>
-</table>
+</table></div>
 </figure>
 <p>「>> 1」は 2 で割って切り捨てなので、平均を求めていることになります。予測器 0 では両隣の平均、予測器 1 では斜め方向も含めて計算してみて中央値を取る、予測器 3 では周囲の中央値を取るという戦略になっています。予測器で使われない TT や LL といった画素は、 <a href="#sec-meta-adaptive">Section 4.4</a> で説明する決定木の条件として参照されます。</p>
 <h2>4. 符号化</h2>
@@ -199,7 +203,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>例えば、「5」を符号化すると次のようになります。</p>
 <figure id="tbl-nz51" class="fig-table" data-num="表">
 <figcaption>表 3: 「5」を Near-zero Integer Coding で符号化</figcaption>
-<table>
+<div class="table-wrapper"><table>
 <tbody><tr>
   <th scope="row">ビット
   </th><td>0
@@ -218,14 +222,14 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
   </td><td>EXP(2, +)
   </td><td>MANT(1)
   </td><td>MANT(0)
-</td></tr></tbody></table>
+</td></tr></tbody></table></div>
 </figure>
 <p>指数部は数値が何ビットあるかを表します。数値が何ビットあるかは 0 が連続した数で決まります。この例では、 0 が 2 個続き、その次が 1 なので、 3 ビットの数値を表していることを表現しています。</p>
 <p>仮数部は、最上位ビット以外の値がそのまま出力されます。最上位ビットについては、何ビットあるかが指数部で示されているので、 1 であることが確定しています。</p>
 <p>ただし、数値の取りうる範囲によっては、一部ビットが省略されることがあります。ここでは最小値を任意の負値、最大値を 5 として、 5 を符号化した例を見てみましょう。</p>
 <figure id="tbl-nz52" class="fig-table" data-num="表">
 <figcaption>表 4: 「5」を最大値 5 の Near-zero Integer Coding で符号化</figcaption>
-<table>
+<div class="table-wrapper"><table>
 <tbody><tr>
   <th scope="row">ビット
   </th><td>0
@@ -240,7 +244,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
   </td><td>EXP(0, +)
   </td><td>EXP(1, +)
   </td><td>MANT(0)
-</td></tr></tbody></table>
+</td></tr></tbody></table></div>
 </figure>
 <p>まず、指数部の最後のビットが省略されました。なぜなら、最大値 5 は 3 ビットで表されるので 0 が 2 個続いた時点で、 3 ビットであることが確定するからです。次に仮数部の下位2ビット目が省略されました。なぜなら、 3 ビットで表す必要がある数値は 4 または 5 だけなので、下位 2 ビット目は必ず 0 になることが確定しているからです。このように実際に書き込まなくてもわかる場合は、ビットを省略する動作をします。</p>
 <p><a href="#tbl-nz51">表 3</a>、<a href="#tbl-nz52">表 4</a> には、ビット名という行を用意しました。これは <a href="#sec-context">Section 4.1.3</a> で説明したコンテキストが実際どのように使用されているのかを表しています。ビット名単位で適応が行われます。つまり予測器の出力が 0 になることが多ければ ZERO が 1 になる確率が適応によって段々と大きくなるし、正になることが多ければ SIGN が 1 になる確率が適応によって段々と大きくなるということです。</p>
@@ -340,4 +344,4 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 </ol>
 </li>
 </ol>
-<p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。</p></div></article><footer><hr><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>
+<p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。</p></div></article><footer><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>
