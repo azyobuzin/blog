@@ -15,11 +15,22 @@
   --ab-warning: rgb(207, 195, 17);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ab-background: #041c32;
+    --ab-text: #f5f2e7;
+    --ab-link: #a1e0e5;
+    --ab-note: #2c4153;
+    --ab-accent: #3d9098;
+    --ab-border: #72757e;
+  }
+}
+
 body {
   margin: 0;
   background-color: var(--ab-background);
   color: var(--ab-text);
-  line-height: 1.6;
+  line-height: 1.62;
 }
 
 .container {
@@ -88,7 +99,7 @@ footer nav ul :last-child {
 a {
   color: var(--ab-link);
   text-decoration: none;
-  font-weight: bolder;
+  font-weight: 500;
 }
 
 a:hover {
@@ -103,7 +114,7 @@ code,
 kbd,
 samp {
   font-family: "Consolas", monospace;
-  font-size: 0.92rem;
+  font-size: 0.92em;
   background-color: var(--ab-note);
   padding: 0.1em 0.25em;
   border-radius: 0.25rem;
@@ -115,6 +126,15 @@ samp {
 
 p {
   margin: 1em 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
 }
 
 h1 {
@@ -155,16 +175,10 @@ h6:not(figure *):not(.note *)::before {
 pre {
   margin: 1.5em 0;
   background-color: var(--ab-note);
-  border-top: 0.2em solid var(--ab-accent);
+  border-left: 0.3em solid var(--ab-accent);
   padding: 0.5em 1em;
   overflow-x: auto;
   line-height: 1.6;
-}
-
-blockquote pre {
-  /* blockquote の背景と被るので、範囲がわかるように左側に線を出す */
-  border-top: 0;
-  border-left: 0.3em solid var(--ab-accent);
 }
 
 /*
@@ -178,7 +192,7 @@ figure,
 
 figcaption {
   font-size: 0.95rem;
-  font-weight: bolder;
+  font-weight: 500;
 }
 
 figure.fig-code > figcaption,
@@ -204,12 +218,12 @@ figure.fig-quote {
   grid-template-columns: auto 1fr;
   padding-right: 1em;
   background-color: var(--ab-note);
+  border-left: 0.3em solid var(--ab-accent);
 }
 
 figure.fig-quote::before {
-  font: normal normal normal 14px/1 ForkAwesome;
+  font: normal normal normal 1.75rem/1 ForkAwesome;
   content: "\f10d";
-  font-size: 2rem;
   color: var(--ab-accent);
   padding: 0.5em;
   display: block;
@@ -220,6 +234,7 @@ figure.fig-quote > blockquote {
   grid-area: content;
   margin: 0;
   padding: 1.5em 0;
+  overflow-x: hidden;
 }
 
 figure.fig-quote > blockquote > *:first-child {
@@ -289,7 +304,7 @@ thead th {
   font-weight: bold;
   font-family: sans-serif;
   background-color: var(--ab-accent);
-  color: var(--ab-background);
+  color: #fffffe;
   margin: 0;
   padding: 0.25em 1em;
 }
@@ -348,6 +363,13 @@ thead th {
 
 /*! XCode style (c) Angel Garcia <angelgarcia.mail@gmail.com> */
 @import "../node_modules/highlight.js/styles/xcode.css";
+
+/*!
+ * Visual Studio 2015 dark style
+ * Author: Nicolas LLOBERA <nllobera@gmail.com>
+ */
+@import "../node_modules/highlight.js/styles/vs2015.css"
+  (prefers-color-scheme: dark);
 
 /*
  * KaTeX

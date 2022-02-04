@@ -17,12 +17,6 @@ const Layout: FC<{ head?: Node }> = (props) => {
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
           />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,700&amp;display=swap"
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-          />
           <link rel="stylesheet" href="/global.css" />
           <meta property="og:site_name" content={SITE_TITLE} />
           <meta name="twitter:card" content="summary" />
