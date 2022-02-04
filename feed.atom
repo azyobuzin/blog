@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2022-02-04T07:15:49+09:00</updated><entry><category term="tech" label="tech" /><category term="C++" label="C++" /><content type="html">&#x3C;p>あけましておめでとうございます。季節感もなにもないブログですが、修論締切間近の時期に研究で使った技術をまとめようという点は季節感かもしれません。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2022-02-05T01:27:03+09:00</updated><entry><category term="tech" label="tech" /><category term="C++" label="C++" /><content type="html">&#x3C;p>あけましておめでとうございます。季節感もなにもないブログですが、修論締切間近の時期に研究で使った技術をまとめようという点は季節感かもしれません。&#x3C;/p>
 &#x3C;p>今回のネタは、クラスタサイズに制約を設けてクラスタリングをしようという話です。&#x3C;/p>
 &#x3C;p>クラスタリングといったら、もっとも代表的な手法は k-means です。 k-means は&#x3C;b>クラスタ数&#x3C;/b>を事前に指定して、クラスタリングを行います。つまり、 k-means を使うときは、データを &#x3C;var>k&#x3C;/var> 個に分けたら何か傾向が見えるかもな～という気持ちで使うことになります。このとき、1クラスタに属するデータ数（&#x3C;b>クラスタサイズ&#x3C;/b>）は、クラスタごとに異なります。&#x3C;/p>
 &#x3C;p>では、クラスタサイズを事前に指定するような方法はないのでしょうか。データが大量にあるので、データを &#x3C;var>c&#x3C;/var> 個に均等に分割して処理したいな～というときに、どうしたらいいのでしょうか。というわけで今日の論文紹介です。&#x3C;/p>
@@ -74,7 +74,7 @@ glp_prob *lp = &#x3C;span class="hljs-built_in">glp_create_prob&#x3C;/span>();
 &#x3C;/code>&#x3C;/pre>
 &#x3C;p>次に、制約条件の行列を考えます。制約条件の行列とは、次の図の &#x3C;var>a&#x3C;/var> のことです。この行列を定義していくことで、 GLPK に問題を与えることができます。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/glpkmat.svg" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/glpkmat.svg" alt="" width="350" height="205">
 &#x3C;figcaption>制約条件の行列とは&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>まずは、目的関数を考えましょう。目的関数の項の数が行列の列数になります。目的関数は、式(4)から、 &#x3C;span class="math math-inline">&#x3C;span class="katex">&#x3C;span class="katex-mathml">&#x3C;math xmlns="http://www.w3.org/1998/Math/MathML">&#x3C;semantics>&#x3C;mrow>&#x3C;mi>n&#x3C;/mi>&#x3C;mi>c&#x3C;/mi>&#x3C;/mrow>&#x3C;annotation encoding="application/x-tex">nc&#x3C;/annotation>&#x3C;/semantics>&#x3C;/math>&#x3C;/span>&#x3C;span class="katex-html" aria-hidden="true">&#x3C;span class="base">&#x3C;span class="strut" style="height:0.4306em;">&#x3C;/span>&#x3C;span class="mord mathnormal">n&#x3C;/span>&#x3C;span class="mord mathnormal">c&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span> 個の項を持つことがわかります。というわけで、まずはこれを GLPK に設定していきます。&#x3C;/p>
@@ -177,20 +177,20 @@ glp_prob *lp = &#x3C;span class="hljs-built_in">glp_create_prob&#x3C;/span>();
 &#x3C;p>二次元平面に適当な30点を置いて、クラスタサイズ &#x3C;var>K&#x3C;/var> を変化させて実験を行いました。下限と上限はそれぞれ &#x3C;span class="math math-inline">&#x3C;span class="katex">&#x3C;span class="katex-mathml">&#x3C;math xmlns="http://www.w3.org/1998/Math/MathML">&#x3C;semantics>&#x3C;mrow>&#x3C;munder accentunder="true">&#x3C;mi>K&#x3C;/mi>&#x3C;mo stretchy="true">‾&#x3C;/mo>&#x3C;/munder>&#x3C;mo>=&#x3C;/mo>&#x3C;mi>K&#x3C;/mi>&#x3C;mo separator="true">,&#x3C;/mo>&#x3C;mover accent="true">&#x3C;mi>K&#x3C;/mi>&#x3C;mo stretchy="true">‾&#x3C;/mo>&#x3C;/mover>&#x3C;mo>=&#x3C;/mo>&#x3C;mi>K&#x3C;/mi>&#x3C;mo>+&#x3C;/mo>&#x3C;mn>1&#x3C;/mn>&#x3C;/mrow>&#x3C;annotation encoding="application/x-tex">\underline{K}=K, \overline{K}=K+1&#x3C;/annotation>&#x3C;/semantics>&#x3C;/math>&#x3C;/span>&#x3C;span class="katex-html" aria-hidden="true">&#x3C;span class="base">&#x3C;span class="strut" style="height:0.8833em;vertical-align:-0.2em;">&#x3C;/span>&#x3C;span class="mord underline">&#x3C;span class="vlist-t vlist-t2">&#x3C;span class="vlist-r">&#x3C;span class="vlist" style="height:0.6833em;">&#x3C;span style="top:-2.84em;">&#x3C;span class="pstrut" style="height:3em;">&#x3C;/span>&#x3C;span class="underline-line" style="border-bottom-width:0.04em;">&#x3C;/span>&#x3C;/span>&#x3C;span style="top:-3em;">&#x3C;span class="pstrut" style="height:3em;">&#x3C;/span>&#x3C;span class="mord">&#x3C;span class="mord mathnormal" style="margin-right:0.07153em;">K&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;span class="vlist-s">​&#x3C;/span>&#x3C;/span>&#x3C;span class="vlist-r">&#x3C;span class="vlist" style="height:0.2em;">&#x3C;span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.2778em;">&#x3C;/span>&#x3C;span class="mrel">=&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.2778em;">&#x3C;/span>&#x3C;/span>&#x3C;span class="base">&#x3C;span class="strut" style="height:1.0778em;vertical-align:-0.1944em;">&#x3C;/span>&#x3C;span class="mord mathnormal" style="margin-right:0.07153em;">K&#x3C;/span>&#x3C;span class="mpunct">,&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.1667em;">&#x3C;/span>&#x3C;span class="mord overline">&#x3C;span class="vlist-t">&#x3C;span class="vlist-r">&#x3C;span class="vlist" style="height:0.8833em;">&#x3C;span style="top:-3em;">&#x3C;span class="pstrut" style="height:3em;">&#x3C;/span>&#x3C;span class="mord">&#x3C;span class="mord mathnormal" style="margin-right:0.07153em;">K&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;span style="top:-3.8033em;">&#x3C;span class="pstrut" style="height:3em;">&#x3C;/span>&#x3C;span class="overline-line" style="border-bottom-width:0.04em;">&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.2778em;">&#x3C;/span>&#x3C;span class="mrel">=&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.2778em;">&#x3C;/span>&#x3C;/span>&#x3C;span class="base">&#x3C;span class="strut" style="height:0.7667em;vertical-align:-0.0833em;">&#x3C;/span>&#x3C;span class="mord mathnormal" style="margin-right:0.07153em;">K&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.2222em;">&#x3C;/span>&#x3C;span class="mbin">+&#x3C;/span>&#x3C;span class="mspace" style="margin-right:0.2222em;">&#x3C;/span>&#x3C;/span>&#x3C;span class="base">&#x3C;span class="strut" style="height:0.6444em;">&#x3C;/span>&#x3C;span class="mord">1&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span>&#x3C;/span> としました。&#x3C;/p>
 &#x3C;p>結果は以下の通りです。●がデータ、×が重心です。割り切れる数でやったので、ちょうど &#x3C;var>K&#x3C;/var> 個ずつのクラスタに分かれたことがわかります。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok5.svg" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok5.svg" alt="" loading="lazy" width="540" height="360">
 &#x3C;figcaption>K=5&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok10.svg" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok10.svg" alt="" loading="lazy" width="540" height="360">
 &#x3C;figcaption>K=10&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok15.svg" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok15.svg" alt="" loading="lazy" width="540" height="360">
 &#x3C;figcaption>K=15&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>GLPK を使って、クラスタサイズを指定できるクラスタリング手法を実装しました。類似データを何個かにグルーピングしたいみたいな用途で威力を発揮すると思います。&#x3C;/p>
-&#x3C;p>この記事を書いたおかげで、研究の実験コードのバグを見つけられました。やったね。さて、修論を倒さないと。&#x3C;/p></content><id>https://blog.azyobuzi.net/2022/01/11/01-cocbo/</id><link href="https://blog.azyobuzi.net/2022/01/11/01-cocbo/" rel="alternate" type="text/html" /><link href="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok5.svg" rel="enclosure" /><published>2022-01-11T18:06:00+09:00</published><title type="html">クラスタサイズを指定できるk-meansベースのクラスタリング手法を実装した話</title><updated>2022-01-12T04:48:42+09:00</updated></entry><entry><content type="html">&#x3C;p>こんにちは。 Xperia Ace II ユーザーです。どうもこのクソスマホ、もともとエントリークラスということもあり、あんまりレビューが荒れていない印象があります。しかし、使い込むほどにボロが出てくるので、もしも安さやサイズだけで買おうとしている皆様に警告をしようと思い、メモを残しておきます。&#x3C;/p>
+&#x3C;p>この記事を書いたおかげで、研究の実験コードのバグを見つけられました。やったね。さて、修論を倒さないと。&#x3C;/p></content><id>https://blog.azyobuzi.net/2022/01/11/01-cocbo/</id><link href="https://blog.azyobuzi.net/2022/01/11/01-cocbo/" rel="alternate" type="text/html" /><link href="https://blog.azyobuzi.net/2022/01/11/01-cocbo/cocbok5.svg" rel="enclosure" /><published>2022-01-11T18:06:00+09:00</published><title type="html">クラスタサイズを指定できるk-meansベースのクラスタリング手法を実装した話</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><content type="html">&#x3C;p>こんにちは。 Xperia Ace II ユーザーです。どうもこのクソスマホ、もともとエントリークラスということもあり、あんまりレビューが荒れていない印象があります。しかし、使い込むほどにボロが出てくるので、もしも安さやサイズだけで買おうとしている皆様に警告をしようと思い、メモを残しておきます。&#x3C;/p>
 &#x3C;h2>なぜ買った？&#x3C;/h2>
 &#x3C;figure class="fig-tweet">
 &#x3C;blockquote class="twitter-tweet" data-dnt="true">&#x3C;p lang="ja" dir="ltr">左から順に、最高、妥協、大妥協 &#x3C;a href="https://t.co/dR0hfGfqec">pic.twitter.com/dR0hfGfqec&#x3C;/a>&#x3C;/p>— あじょぶじん (@azyobuzin) &#x3C;a href="https://twitter.com/azyobuzin/status/1398260223115030530?ref_src=twsrc%5Etfw">May 28, 2021&#x3C;/a>&#x3C;/blockquote>
@@ -202,12 +202,12 @@ glp_prob *lp = &#x3C;span class="hljs-built_in">glp_create_prob&#x3C;/span>();
 &#x3C;p>残高を調べたい？ 余裕をもって行動しましょう。モバイル Suica アプリを起動したり、 Google Pay アプリで残高を更新すると、最低で 20 秒、最大で 2 分程度待つことになります。&#x3C;/p>
 &#x3C;p>チャージも同様です。私は Google Pay しか使ったことがないですが、チャージボタンを押してから通信が安定した場所で数分放置する必要があります。すぐに反映されることを期待してはいけません。また反映されないからといってやり直したら二重にチャージされます。必要なのは忍耐力です。&#x3C;/p>
 &#x3C;p>さて、最高に深刻なのが楽天ペイの Suica 連携機能です。これは運です。基本的にはこうなります。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210929/20210929143248.jpg" alt="エラーコード: AA_JRF3005">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210929/20210929143248.jpg" alt="エラーコード: AA_JRF3005" width="1000" height="551" loading="lazy">&#x3C;/figure>
 &#x3C;p>このエラーメッセージでググっても完全一致は見当たらなかったので、本当に機種依存バグ案件に思えます。「お問い合わせ先」は Suica になってるので、楽天ペイの案件をこの窓口に投げるのもなーという気持ちになって放置しています。&#x3C;/p>
 &#x3C;p>楽天ペイの Suica を使う方法は、スマホを再起動して、起動直後かつちょっと安定したくらいのタイミングで使うことです。運が良ければ楽天ペイ経由でチャージできるのではないでしょうか。&#x3C;/p>
 &#x3C;h3>指紋認証がリセットされる&#x3C;/h3>
 &#x3C;p>再起動すると、指紋認証の設定を変えていなくても、指を再登録したという扱いになります。例えば Bitwarden アプリだとこんな感じに。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20211015/20211015162228.jpg" alt="「生体認証の変更が検出されました。マスターパスワードを使用してログインすると再度有効化できます。」">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20211015/20211015162228.jpg" alt="「生体認証の変更が検出されました。マスターパスワードを使用してログインすると再度有効化できます。」" width="1000" height="667" loading="lazy">&#x3C;/figure>
 &#x3C;p>これが致命的なのが、住信SBIネット銀行のアプリで、指を再登録すると2要素認証の設定を最初からやり直すことになります。つまり再起動するたびに再設定する羽目に。&#x3C;/p>
 &#x3C;h3>Twitter がたびたび落ちる&#x3C;/h3>
 &#x3C;p>かわいい美少女イラストを見ていると落ちます。画像表示回りに機種依存バグがありそうです。しんどいね。&#x3C;/p>
@@ -235,16 +235,16 @@ glp_prob *lp = &#x3C;span class="hljs-built_in">glp_create_prob&#x3C;/span>();
 &#x3C;p>カメラもまあまあお察しな性能で、適当に触って映えるということはほぼないのですが、扱い方がわかってくると、得意な撮り方がわかってきました。&#x3C;/p>
 &#x3C;p>かなり寄って撮影してもピントが合います。これは XZ1 Compact はちょっと苦手な部類だったはずなので、びっくりしました。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210909/20210909180236.jpg" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210909/20210909180236.jpg" alt="" width="1000" height="750" loading="lazy">
 &#x3C;figcaption>丸亀製麵のトマたまカレーうどん&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>あとは、すべて自動で任せないで、明るさを調整したり HDR のオンオフを切り替えたり、余裕があるときはしっかりパラメータをいじると、たまに当たりが出ます。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210925/20210925154247.jpg" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210925/20210925154247.jpg" alt="" width="1000" height="750" loading="lazy">
 &#x3C;figcaption>何度か調整した玉ねぎ（泉の森 郷土民家園）&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>まとめ&#x3C;/h2>
-&#x3C;p>やめとけ&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/09/29/01-xperia/</id><link href="https://blog.azyobuzi.net/2021/09/29/01-xperia/" rel="alternate" type="text/html" /><link href="https://pbs.twimg.com/media/E2eeQl3VcAAByCy?format=jpg&#x26;name=large" rel="enclosure" /><published>2021-09-29T15:27:00+09:00</published><title type="html">Xperia Ace II (SO-41B) に関するメモ</title><updated>2021-10-15T16:31:38+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。&#x3C;/p>
+&#x3C;p>やめとけ&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/09/29/01-xperia/</id><link href="https://blog.azyobuzi.net/2021/09/29/01-xperia/" rel="alternate" type="text/html" /><link href="https://pbs.twimg.com/media/E2eeQl3VcAAByCy?format=jpg&#x26;name=large" rel="enclosure" /><published>2021-09-29T15:27:00+09:00</published><title type="html">Xperia Ace II (SO-41B) に関するメモ</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>blog.azyobuzi.net を開設して1年強、メンテナンスも AsciiDoc も面倒になってきて、はてなブログに戻るのもアリだなぁという気持ちが若干発生してきていました。そもそもブログ自体書いてないじゃん。はい。すいません。&#x3C;/p>
 &#x3C;p>AsciiDoc というか Asciidoctor を使うことに思うところがあり、 Gatsby + Asciidoctor.js という構成をやめ、 Markdown + お手製静的サイトジェネレータ という構成に変更したというお話です。&#x3C;/p>
 &#x3C;p>（AsciiDoc から Markdown への移行は9月の頭には完了していましたが、記事を書く余裕がなかったので、今書いています。）&#x3C;/p>
 &#x3C;h2>なぜ Markdown&#x3C;/h2>
@@ -473,12 +473,12 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>PropagatorBlock は Source と Target 両方の性質を持っており、 Target で受信したデータを加工して Source がデータを出力します。 Target 部は1件ずつ受信を行い、加工を行うタスクへ投げ、加工が終わったデータは Source 部のキューに積まれ、 Source 部は1件ずつ送信を行います。つまり PropagatorBlock においては Target と Source は並列に動いています。&#x3C;/p>
 &#x3C;p>TPL Dataflow のソースコードを読むと、 TargetBlock または PropagatorBlock の Target 部を直列化するために使用されるロックを &#x3C;code>IncomingLock&#x3C;/code>、 SourceBlock または PropagatorBlock の Source 部を直列化するために使用されるロックを &#x3C;code>OutgoingLock&#x3C;/code> と呼んでいるので、この名称を使っていきます。&#x3C;/p>
 &#x3C;p>では、このロックを考慮しながら、 Source から Target へデータを送信する各パターンをシーケンス図に表してみます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/basicoffer.svg" alt="Source から Target へデータを送信する様子" width="492" height="1144">&#x3C;/figure>
 &#x3C;p>もう複数のロックがあるという時点で嫌ですね。&#x3C;/p>
 &#x3C;p>ではここで、間にバッファのない PropagatorBlock が入ったらどうなるでしょう？ 変わりませんね。通信内容をそのまま素通しすればいいだけなので。しかし忘れてはいけないことがあります: 間に入るブロックもブロックなので、ファンインもファンアウトも複数持つことができます。したがって、今注目していた Source と Target 以外の要因によって通信が発生することがあります。例えば、別の Target にデータを送信できたので、次の1件の送信を開始しよう、とすると次の操作が開始します。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/offerbypropagator.svg" alt="Propagator が送信を開始する様子" width="774" height="532">&#x3C;/figure>
 &#x3C;p>そろそろ嫌な予感がしてきましたね。 Propagator は Source の OutgoingLock なんてお構いなしに Target にデータの送信を試みることができます。つまり、タイミングによっては……。実際に例を見てみましょう。 Source が Propagator に送信しようとしたら、 Propagator が Target に送信中だった場合、こうなります。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg" alt="デッドロックが発生する例">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2021/03/23/01-dataflowblock-without-buffer/deadlock1.svg" alt="デッドロックが発生する例" width="797" height="502">&#x3C;/figure>
 &#x3C;p>見事なデッドロックですね。並行にロックを取得する場合、取得順を同じにしないとデッドロックするという鉄則がありますが、完全に破る構図です。&#x3C;/p>
 &#x3C;p>ただ、このデッドロックは実は回避できます。「(1) OfferMessage」のところで Propagator が「(2) ConsumeMessage」を実行中でまだ返ってきてないぞと判断して、このメッセージを延期させてしまえば、 OutgoingLock が外れるので先に進むことができます。&#x3C;/p>
 &#x3C;p>今の例では、 Source, Propagator, Target が 1:1:1 だったので回避できました。が、1:N:1、つまりひとつの Source が複数の Propagator に接続されていて、さらにその Propagator たちがひとつの Target に接続されている場合はどうでしょう。先程の図の (1) が Propagator1 で、 (2) が Propagator2 で起こっていたら、 Propagator 同士はお互いを知らないので調停することができません。&#x3C;/p>
@@ -545,7 +545,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;p>実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-px-noninterlace">図 1&#x3C;/a> に示すように、予測する画素 X の左上、上、左です。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_noninterlace.svg" height="75" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_noninterlace.svg" height="75" alt="" width="73.6842105263158">
 &#x3C;figcaption>図 1: 非インターレース方式で参照する周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>予測値は、 L+T-TL, L, T の中央値です。 X-予測値 が実際に符号化される値になります。&#x3C;/p>
@@ -560,21 +560,21 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
   &#x3C;tr>&#x3C;th scope="col">ズームレベル&#x3C;/th>&#x3C;th scope="col">サイズ&#x3C;/th>&#x3C;th scope="col">画像
 &#x3C;/th>&#x3C;/tr>&#x3C;/thead>
 &#x3C;tbody>
-  &#x3C;tr>&#x3C;td>0&#x3C;/td>&#x3C;td>120×120 (原画像サイズ)&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>1&#x3C;/td>&#x3C;td>120×60&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>2&#x3C;/td>&#x3C;td>60×60&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>3&#x3C;/td>&#x3C;td>60×30&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>4&#x3C;/td>&#x3C;td>30×30&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>5&#x3C;/td>&#x3C;td>30×15&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>6&#x3C;/td>&#x3C;td>15×15&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>7&#x3C;/td>&#x3C;td>15×8&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>8&#x3C;/td>&#x3C;td>8×8&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>9&#x3C;/td>&#x3C;td>8×4&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>10&#x3C;/td>&#x3C;td>4×4&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>11&#x3C;/td>&#x3C;td>4×2&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>12&#x3C;/td>&#x3C;td>2×2&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>13&#x3C;/td>&#x3C;td>2×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13">
-  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>14&#x3C;/td>&#x3C;td>1×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14">
+  &#x3C;tr>&#x3C;td>0&#x3C;/td>&#x3C;td>120×120 (原画像サイズ)&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>1&#x3C;/td>&#x3C;td>120×60&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>2&#x3C;/td>&#x3C;td>60×60&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>3&#x3C;/td>&#x3C;td>60×30&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>4&#x3C;/td>&#x3C;td>30×30&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>5&#x3C;/td>&#x3C;td>30×15&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>6&#x3C;/td>&#x3C;td>15×15&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>7&#x3C;/td>&#x3C;td>15×8&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>8&#x3C;/td>&#x3C;td>8×8&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>9&#x3C;/td>&#x3C;td>8×4&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>10&#x3C;/td>&#x3C;td>4×4&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>11&#x3C;/td>&#x3C;td>4×2&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>12&#x3C;/td>&#x3C;td>2×2&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>13&#x3C;/td>&#x3C;td>2×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13" loading="lazy" width="120" height="120">
+  &#x3C;/td>&#x3C;/tr>&#x3C;tr>&#x3C;td>14&#x3C;/td>&#x3C;td>1×1&#x3C;/td>&#x3C;td>&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14" loading="lazy" width="120" height="120">
 &#x3C;/td>&#x3C;/tr>&#x3C;/tbody>
 &#x3C;/table>&#x3C;/div>
 &#x3C;/figure>
@@ -583,16 +583,16 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>予測器はズームレベルが偶数か奇数かで少し挙動が変わります。なぜなら周囲の画素の復号化状況が異なるからです。偶数では行を復号化するため、下側の画素を参照することができますが、右側を参照することはできません。奇数では列を復号化するため、逆に右側を参照することできますが、下側を参照することができません。&#x3C;/p>
 &#x3C;p>実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_interlace.svg" height="150" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_interlace.svg" height="150" alt="" width="148.66071428571428">
 &#x3C;figcaption>図 2: インターレース方式で参照する周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_horizontal.svg" height="150" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_horizontal.svg" height="150" alt="" width="148.66071428571428">
 &#x3C;figcaption>図 3: 偶数ズームレベルにおける周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_vertical.svg" height="150" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_vertical.svg" height="150" alt="" width="148.66071428571428">
 &#x3C;figcaption>図 4: 奇数ズームレベルにおける周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>また、画像の端っこの画素を処理するときには、参照できない周辺画素があります。その場合は、偶数ズームレベルでは必ず T があり、奇数ズームレベルでは L があるので、その値を代用します。&#x3C;/p>
@@ -661,12 +661,12 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h4>4.1.1. 実数による算術符号&#x3C;/h4>
 &#x3C;p>算術符号は、記号の出現確率分布（累積分布）を表す数直線上で、符号化したい記号列がどの位置にあるのか、を記録する符号化方式です。&#x3C;/p>
 &#x3C;p>まずは簡単な概念の説明のために、0～1の実数で考えてみます。 FLIF で使用される算術符号では「0」と「1」の2種類の記号だけが登場する（二値算術符号）記号列を扱うので、ここでも2種類の記号で考えます。例えば、「0」が 40% 、「1」が 60% の確率で出現することがわかっているとします。この確率によって、 0～1 の数直線を分割すると、このようになります。数直線上に点を置いたとき 0～0.4 の範囲にあるならば 0、 0.4～1 ならば 1 を表している、と解釈できます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig1.svg" alt="算術符号を説明する数直線1">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig1.svg" alt="算術符号を説明する数直線1" width="605" height="65">&#x3C;/figure>
 &#x3C;p>では、この分割を再帰的に用いて、記号列「101」を数直線上に表してみましょう。&#x3C;/p>
 &#x3C;p>最初の記号は 1 なので、 0.4～1 の範囲に注目します。この範囲をさらに 40:60 に分割するとこのようになります。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig2.svg" alt="算術符号を説明する数直線2">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig2.svg" alt="算術符号を説明する数直線2" width="605" height="65">&#x3C;/figure>
 &#x3C;p>2個目の記号は 0 なので、次は 0.4～0.64 の範囲に注目し、同じように分割します。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig3.svg" alt="算術符号を説明する数直線3">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ac_fig3.svg" alt="算術符号を説明する数直線3" width="605" height="65">&#x3C;/figure>
 &#x3C;p>この結果から、記号列「101」をこの数直線上に表すと 0.496～0.64 の範囲となることがわかりました！ 符号化結果としては、範囲の左端を使って「0.496」とすることにしましょう。このように、記号列を記号の出現確率を使って数直線上に表す方法が、算術符号になります。復号化するときは、「0.496」がどの記号の範囲に含まれているかを、同じように分割しながら探索していきます。&#x3C;/p>
 &#x3C;h4>4.1.2. Range Coder&#x3C;/h4>
 &#x3C;p>先ほどの例では実数を使って表しましたが、記号列が長くなると相当な精度の小数を使用しなければ正しく符号化結果を記録できないことがわかると思います。また小数を使用すると計算速度も遅くなります。そこで、現実的な実装方法として、整数を使用する Range Coder という手法が用いられます。 FLIF のリファレンス実装のソースコードでは「RAC」と略されています。&#x3C;/p>
@@ -748,29 +748,29 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>ここまでで、各画素値を周囲の画素値を使って予測し、その予測誤差を確率表を使って適応的算術符号化して記録するということがわかりました。しかしまだ終わりではありません。 FLIF では確率表を状況に応じて使い分けます。つまり&#x3C;strong>確率表のコンテキスト&#x3C;/strong>を考えます。これが FLIF 用語での「コンテキスト」になります。&#x3C;/p>
 &#x3C;p>コンテキストについてざっくりいうと、符号化しようとしている画素に関する情報を条件とする決定木によって、使用する確率表が決定します（&#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-ctx-summary">図 5&#x3C;/a>）。条件には他のチャンネルの画素値や、周辺画素同士の差といった情報が使えます。条件に使用できる情報をそれぞれプロパティと呼び、非インターレース方式で10種類、インターレース方式で17種類のプロパティがあります。プロパティ値がある値より大きい場合と、ある値以下の場合で分岐します。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_summary.svg" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_summary.svg" alt="" width="530" height="273">
 &#x3C;figcaption>図 5: 確率表のコンテキストを選択する決定木&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h4>4.4.2. カウンター&#x3C;/h4>
 &#x3C;p>さらに踏み込んで見てみます。もし最初から &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-ctx-summary">図 5&#x3C;/a> のように使用する確率表が決まるとすると、それぞれの確率表の初期値はどのように決まるのでしょうか？ 確率表それぞれが別々に適応を行っていくので、すべての確率表を仕様で定められた確率で初期化したら、適応によって確率表が温まるまでの間に全画素についての処理が終わってしまいます。そこで FLIF の決定木にはカウンターという機能が盛り込まれています。&#x3C;/p>
 &#x3C;p>カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_1.svg" height="200" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_1.svg" height="200" alt="" width="392.42424242424244">
 &#x3C;figcaption>図 6: 決定木の初期状態&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_2.svg" height="200" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_2.svg" height="200" alt="" width="392.42424242424244">
 &#x3C;figcaption>図 7: カウンターがデクリメントされる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_3.svg" height="200" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_3.svg" height="200" alt="" width="392.42424242424244">
 &#x3C;figcaption>図 8: カウンターが0になると子に確率表がコピーされる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>いま、確率表2と確率表3は、確率表1と同じ内容になっています。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_4.svg" height="200" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_4.svg" height="200" alt="" width="392.42424242424244">
 &#x3C;figcaption>図 9: カウンターが0になると条件分岐が行われる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次の画素を復号化します。まず決定木の根に注目します。するとカウンターの値は 0 です。注目したノードのカウンターが 0 のとき、そのノードの条件を評価します。ここではプロパティAの値はX以下だったとします。決定木にしたがって分岐を行い、左側の子ノードに注目します。このノードは葉ノードなので、この確率表を使って復号化します。このとき適応によって確率表2が更新されます。&#x3C;/p>
@@ -838,7 +838,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;/li>
 &#x3C;/ol>
-&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2022-02-04T07:15:49+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
 &#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
 &#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
 &#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>
@@ -848,10 +848,10 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>1. Visual Studio で連携を設定する&#x3C;/h3>
 &#x3C;p>ここで説明する手順を実行するには、 Visual Studio 2019 で「ASP.NET と Web 開発」または「.NET Core クロスプラットフォームの開発」ワークロードがインストールされている必要があります。&#x3C;/p>
 &#x3C;p>ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加" loading="lazy" width="726" height="625">&#x3C;/figure>
 &#x3C;p>いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。&#x3C;/p>
 &#x3C;p>完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション" loading="lazy" width="281" height="174">&#x3C;/figure>
 &#x3C;p>これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。&#x3C;/p>
 &#x3C;h3>2. Dockerfile を改変する&#x3C;/h3>
 &#x3C;p>生成された Dockerfile を確認すると、本番ビルド用のスクリプトが書かれています。今回はこれを完全に捨てることにします。ただ、プロジェクトディレクトリ下に Dockerfile がないと Visual Studio が認識してくれないので、ここに開発環境を作成するスクリプトを書きましょう。本番用 Dockerfile はどこか別のところに置いてください……。&#x3C;/p>
@@ -859,7 +859,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;h3>3. docker-compose.yml を改変する&#x3C;/h3>
 &#x3C;p>ここからの操作は Visual Studio を破壊するので、すべてが完了するまで Visual Studio は閉じておきましょう。&#x3C;/p>
 &#x3C;p>いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。&#x3C;/p>
-&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動">&#x3C;/figure>
+&#x3C;figure class="fig-img">&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動" loading="lazy" width="269" height="246">&#x3C;/figure>
 &#x3C;p>さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。&#x3C;/p>
 &#x3C;p>いま docker-compose.yml の中身はこのようになっていると思います。&#x3C;/p>
 &#x3C;figure class="fig-code">
@@ -981,7 +981,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;h2>まとめ&#x3C;/h2>
 &#x3C;p>頑張れば Visual Studio でも VSCode でも使える Docker Compose 環境がつくれることを示しました。これで開発が捗ればいいね。捗らんか……。&#x3C;/p>
 &#x3C;p>ここまでの内容を clone するだけでお試しできるものを GitHub に置いておきました。&#x3C;/p>
-&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2022-02-04T07:15:49+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
+&#x3C;p>&#x3C;a href="https://github.com/azyobuzin/vs-docker-compose-example">azyobuzin/vs-docker-compose-example&#x3C;/a>&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/</id><link href="https://blog.azyobuzi.net/2020/09/28/01-vs-docker-compose/" rel="alternate" type="text/html" /><published>2020-09-28T02:29:00+09:00</published><title type="html">Visual Studio と VSCode どちらでも使える Docker Compose 環境</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>&#x3C;a href="https://cilium.io/">Cilium&#x3C;/a> の Docker プラグインの導入を検討したものの、無理みがあった。ぱたり。&#x3C;/p>
 &#x3C;h2>イントロダクション&#x3C;/h2>
 &#x3C;p>ケチケチしたインターネットライフに Kubernetes は無縁です。&#x3C;/p>
 &#x3C;p>以前、 Docker のネットワークに細かい設定ができないという不満があって、 Kubernetes の調査をしていたこともありました（&#x3C;a href="https://azyobuzin.hatenablog.com/entry/2019/03/21/024504">「&#x3C;cite>Kubernetesで隔離Mastodonネットワークを作った&#x3C;/cite>」&#x3C;/a>）。しかしながら、趣味で動かしている web サーバに Kubernetes を導入するのは、ケチケチした人間には不可能です。メモリ 2GB (GMO の株主優待を受けて、スペックアップしました！) の VPS に詰め込めるだけのアプリを詰める、そういうことをしている人間にとっては、 Kubernetes の導入はデメリットの方が多くなります。&#x3C;/p>
@@ -991,7 +991,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;p>Docker 標準の bridge ネットワークの表現力を確認して、課題を確認します。&#x3C;/p>
 &#x3C;p>まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 &#x3C;code>docker network connect&#x3C;/code> コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="" width="609" height="271">
 &#x3C;figcaption>コンテナとネットワークの関係&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>基本的なネットワークの種類である bridge ネットワークでは、ネットワークごとに次のような設定ができます。&#x3C;/p>
@@ -1002,7 +1002,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;p>これの何が不満かというと、コンテナ間の通信の可否はネットワーク単位でしか設定できないということです。&#x3C;/p>
 &#x3C;p>例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="" width="306" height="238">
 &#x3C;figcaption>DBを参照するふたつのアプリ&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>このような想定をし始めると、 bridge ネットワークに不満を感じてくるでしょう。コンテナ間の通信を制御しているのは iptables なので、 iptables を直接いじってあげればどうにかできなくはないですが、自分でやりたくはないです。&#x3C;/p>
@@ -1057,7 +1057,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/blockquote>
 &#x3C;figcaption>&#x3C;a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">&#x3C;cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
-&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2021-09-27T19:22:31+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
+&#x3C;/figure></content><id>https://blog.azyobuzi.net/2020/09/14/01-cilium/</id><link href="https://blog.azyobuzi.net/2020/09/14/01-cilium/" rel="alternate" type="text/html" /><published>2020-09-14T22:13:00+09:00</published><title type="html">結局、理想のネットワークは Docker で実現できなかった</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><content type="html">&#x3C;p>複数のプロジェクトをひとつのリポジトリで管理するとき、プロジェクト間の参照関係は csproj に &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を書くわけですが、ここで、このプロジェクトを NuGet パッケージ化するときのことを考えます。例えば、 A と B というプロジェクトがあり、 B が A に依存しているとします。このとき B を &#x3C;code>dotnet pack&#x3C;/code> してできあがるパッケージの A への依存はどのようになるでしょうか？ 実際にやってみると、現在の A のバージョン&#x3C;strong>以上&#x3C;/strong>という依存関係になります。&#x3C;/p>
 &#x3C;p>ここで、 A の現在のバージョンを 1.0.0 とします。 Semantic Versioning に従っていると考えると、もし 2.0.0 がリリースされたら、破壊的な変更が入っているかもしれません。それでも B から A への依存は 1.0.0 &#x3C;strong>以上&#x3C;/strong>で良いのでしょうか？ と考えると、「以上」以外の柔軟な依存関係を指定したくなりませんか？ というわけで、 &#x3C;code>&#x26;#x3C;ProjectReference>&#x3C;/code> を使ったプロジェクト間参照で、柔軟なバージョン範囲指定をしたいというのが今回のお話です。&#x3C;/p>
 &#x3C;h2>サンプルプロジェクト&#x3C;/h2>
 &#x3C;p>文章でだらだらと説明されても読みたくないのはわかります。ので、実際の csproj を示しておきます。&#x3C;/p>
@@ -1170,12 +1170,12 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;p>Reactive Streams には、 Rx と同様に、 &#x3C;strong>Hot な Publisher と Cold な Publisher があります&#x3C;/strong>。 Hot と Cold の違いについては&#x3C;a href="https://blog.xin9le.net/entry/2012/01/18/105003">「&#x3C;cite>Rx入門 (13) - HotとCold - xin9le.net&#x3C;/cite>」&#x3C;/a>が参考になります。ただし、 Reactive Streams では、 Rx と異なり流量制限があります。したがって、 Hot な Publisher や、時系列データを扱う Publisher が Subscriber に対してデータを送信しようとしたとき、キャパシティが足りない Subscriber がいる可能性があります。そのときに、どのような動作をするかは、実装次第です。例えば RxJava において Observable から Publisher に変換するときは、あふれた値を破棄したり、例外を送出したり、などの選択肢が与えられています（参考: &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Observable.html#toFlowable-io.reactivex.rxjava3.core.BackpressureStrategy-">Observable#toFlowable&#x3C;/a>）。&#x3C;/p>
 &#x3C;p>最後に、シーケンス図で例を示しておきます。 2 件のデータを出力する Publisher と、データを 1 件ずつ処理することができる Subscriber を接続すると、次のように通信を行います。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429204015.png" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/reactivestreams.svg" alt="" width="440" height="411">
 &#x3C;figcaption>Reactive Streams のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>実際には、 Cold な Publisher を実装するときには、 &#x3C;code>IPublisher&#x3C;/code> は &#x3C;code>ISubscription&#x3C;/code> を作成するだけの存在となり、 &#x3C;code>ISubscription&#x3C;/code> が実際に Subscriber と通信するような実装になります。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429230100.png" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/reactivestreams-cold.svg" alt="" width="460" height="454">
 &#x3C;figcaption>Cold な Publisher のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>2. TPL Dataflow&#x3C;/h2>
@@ -1222,13 +1222,13 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;p>ここまでだらだらと文章で説明してきましたが、&#x3C;strong>アホほど面倒くさい&#x3C;/strong>インターフェイスだということがわかったと思います。&#x3C;/p>
 &#x3C;p>最後に、 Reactive Streams と同じように、 2 件のデータを出力する Source と、データを 1 件ずつ処理することができる Target のシーケンス図を示します。ここでは、 &#x3C;code>LinkTo&#x3C;/code> のオプションとして、完了を通知する &#x3C;code>&#x3C;a href="https://docs.microsoft.com/ja-jp/dotnet/api/system.threading.tasks.dataflow.dataflowlinkoptions.propagatecompletion?view=netcore-3.1">PropagateCompletion&#x3C;/a> = true&#x3C;/code> を指定したものとします。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429224922.png" alt="">
+&#x3C;img src="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/tpldataflow.svg" alt="" width="338" height="440">
 &#x3C;figcaption>TPL Dataflow のシーケンス図&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h2>3. 動作開始タイミングの違いについて&#x3C;/h2>
 &#x3C;p>TPL Dataflow では、データフローブロック間のリンクが作成された時点で、 Source の準備ができていれば、データが送信されます。次の図は、 Source が送信したデータが Propagator（Target と Source の両方の性質を持つブロック）を経由して Target に到達するフローに対して、前から順にリンクを行ったときの動作の様子です。&#x3C;/p>
 &#x3C;figure class="fig-img">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200429/20200429232247.gif" alt="TPL Dataflow が動作を開始する様子" loading="lazy" width="694" height="124">
 &#x3C;/figure>
 &#x3C;p>一方で、 Reactive Streams では、上の図のような使い方もできますが、通常はフローを作成し、それに対して Subscribe を呼び出すことで実際の処理を開始する、という使い方のほうが一般的かと思います。例えば、次の RxJava の例では、 &#x3C;a href="http://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/core/Flowable.html#range-int-int-">&#x3C;code>range&#x3C;/code>&#x3C;/a> という Publisher と、それを加工する &#x3C;code>map&#x3C;/code> を接続したストリーム &#x3C;code>flowable&#x3C;/code>（&#x3C;code>Publisher&#x26;#x3C;Integer>&#x3C;/code> を実装しています）を定義していますが、 &#x3C;code>subscribe&#x3C;/code> を呼び出すまでは、何も処理を行いません。また、 &#x3C;code>range&#x3C;/code> は Cold なストリームなので、複数回 &#x3C;code>subscribe&#x3C;/code> すると、そのたびに値が送信されます。&#x3C;/p>
 &#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">var&#x3C;/span> &#x3C;span class="hljs-variable">flowable&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> Flowable.range(&#x3C;span class="hljs-number">1&#x3C;/span>, &#x3C;span class="hljs-number">1&#x3C;/span>).map(x -> x + &#x3C;span class="hljs-number">1&#x3C;/span>);
@@ -1261,7 +1261,7 @@ flowable.blockingForEach(System.out::println); &#x3C;span class="hljs-comment">/
 &#x3C;p>一方で、並列処理という観点では TPL Dataflow は非常に良質なライブラリです。並列処理において困る部分が隠蔽されており、本質的な処理を書くことに集中できます。&#x3C;/p>
 &#x3C;p>現在の私の野心としては、 AsyncEnumerable のメソッドチェーンの中に、 TPL Dataflow を導入することと、 &#x3C;code>IAsyncEnumerable&#x3C;/code> と &#x3C;code>IPublisher&#x3C;/code> の相互変換です。前者によって、 AsyncEnumerable を並列に処理する表現力が向上します。後者は Akka.NET Streams のような Java 由来のライブラリで Reactive Streams の利用が考えられることから、相互変換が容易に行えると便利だという考えです。これらは現在開発中のライブラリ（&#x3C;a href="https://github.com/azyobuzin/BiDaFlow">BiDaFlow&#x3C;/a>）で実現できればなと考えています。&#x3C;/p>
 &#x3C;h2>7. おわりに&#x3C;/h2>
-&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2021-09-27T19:22:31+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
+&#x3C;p>（Reactive Streams と TPL Dataflow を比較しようと思って書き始めたはずだったのに、最終的に AsyncEnumerable 最強という結論になってしまって :thinking_face:）&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/</id><link href="https://blog.azyobuzi.net/2020/04/30/01-reactivestreams/" rel="alternate" type="text/html" /><published>2020-04-30T02:36:00+09:00</published><title type="html">プロトコルから比較する Reactive Streams と TPL Dataflow</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="JavaScript" label="JavaScript" /><content type="html">&#x3C;p>Qiita 騒動で脱 Qiita といって静的サイトジェネレータに向き合うみなさん、こんにちは。私はほとんど Qiita に書いていない、根っからのはてなブログユーザーだったのですが、以前からいくつかの理由で脱はてなブログしたいなぁ～と考えており、本日ついに、自前のブログ基盤ができたので、移行していきたいと思います！&#x3C;/p>
 &#x3C;p>一発目の記事ということで、ブログの要件と、それに合わせてどうツールを選んだのかについて、書き残しておきたいともいます。&#x3C;/p>
 &#x3C;ins class="note ins-block" datetime="2021-09-24" role="note">&#x3C;div class="note-heading">追記 &#x3C;time datetime="2021-09-24">2021/09/24&#x3C;/time>&#x3C;/div>&#x3C;div class="note-content">
 &#x3C;p>AsciiDoc をやめ Markdown に移行しました。&#x3C;/p>
@@ -1319,7 +1319,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 &#x3C;p>入力データを集めるだけでも、データソースからの取得と、データの解釈の 2 種類があります。前者は、ファイルシステムやインターネットからデータを取得してきます。後者は、例えば、データが Markdown なら、 Frontmatter を処理したり、 HTML に変換したりして、バイト列から View で使える意味のあるデータに変形します。&#x3C;/p>
 &#x3C;p>さて、この取得・解釈パイプラインにおいて、ひとつのデータについて、ひとつの解釈とは限りません。複数のプラグインが同じデータを異なる方法で解釈することもあります。つまり、まっすぐなパイプラインにはなりません。そこで Gatsby が採用した、共通の入力データ形式は「オブジェクトの森」でした。あるデータに対する解釈は、そのデータの子オブジェクトになる、と表現します（&#x3C;a href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/#image-forest-example">図 1&#x3C;/a>）。このような表現を用いることで、非常に柔軟に入力データを扱うことができるようになりました。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" width="500" alt="">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" alt="" loading="lazy" width="500" height="243.5">
 &#x3C;figcaption>図 1: データと、データの解釈結果オブジェクト&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>さて、ここで入力データを集めてできたオブジェクトの森をどのように扱うか、というのが鍵になります。静的サイトなので、 DB を使うことはできませんから、サイト生成時に集めてきた情報を、ページごとに、表示に必要なだけ抽出する必要があります。そこで、 JavaScript Way ということで、抽出してきたデータが JSON 形式なっていると考えましょう。すると、 JSON を入力とする React コンポーネントを作れば、レンダリングができそうですね。&#x3C;/p>
@@ -1382,4 +1382,4 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 &#x3C;p>追記: Netlify にデプロイしようとしたら &#x3C;samp>Deployed filenames cannot contain # or ? characters&#x3C;/samp> と怒られてしまいました。静的ファイルをホスティングするだけの分際で無駄な忖度をするんじゃないという気持ちになったので、 Vercel に移行しました。&#x3C;/p>
 &#x3C;h2>6. さいごに&#x3C;/h2>
 &#x3C;p>下手な既存ツールで満足できない人間が、自前でブログを構築しようとすると、要求が膨らんで大変だということがよくわかりました。そんな中で、妥協点として Gatsby を採用しました。いくらか不満はありますが、解決できるだけの柔軟性はあるので、これからも仲良くやっていきたいと思います。&#x3C;/p>
-&#x3C;p>ブログを構築しようとして、何日を無駄にしたのでしょう。この 4 月より大学院に進学し、これから 2 年間どんな研究をするのかを考える大事な時期に、研究（文献調査）の進捗が出ていません。そんな時期に現実逃避していたら、数年の悲願であった自作ブログ基盤ができてしまいました。せっかくブログを作ったので、いろいろアウトプットできたらいいなぁと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/</id><link href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/" rel="alternate" type="text/html" /><published>2020-04-04T02:29:00+09:00</published><title type="html">さよならはてなブログ、こんにちはGatsby</title><updated>2021-09-27T19:22:31+09:00</updated></entry></feed>
+&#x3C;p>ブログを構築しようとして、何日を無駄にしたのでしょう。この 4 月より大学院に進学し、これから 2 年間どんな研究をするのかを考える大事な時期に、研究（文献調査）の進捗が出ていません。そんな時期に現実逃避していたら、数年の悲願であった自作ブログ基盤ができてしまいました。せっかくブログを作ったので、いろいろアウトプットできたらいいなぁと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/</id><link href="https://blog.azyobuzi.net/2020/04/04/01-hello-gatsby/" rel="alternate" type="text/html" /><published>2020-04-04T02:29:00+09:00</published><title type="html">さよならはてなブログ、こんにちはGatsby</title><updated>2022-02-05T01:27:03+09:00</updated></entry></feed>
