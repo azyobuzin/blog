@@ -95,21 +95,21 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
   <tr><th scope="col">ズームレベル<th scope="col">サイズ<th scope="col">画像
 </thead>
 <tbody>
-  <tr><td>0<td>120×120 (原画像サイズ)<td><img src="interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0" />
-  <tr><td>1<td>120×60<td><img src="interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1" />
-  <tr><td>2<td>60×60<td><img src="interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2" />
-  <tr><td>3<td>60×30<td><img src="interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3" />
-  <tr><td>4<td>30×30<td><img src="interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4" />
-  <tr><td>5<td>30×15<td><img src="interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5" />
-  <tr><td>6<td>15×15<td><img src="interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6" />
-  <tr><td>7<td>15×8<td><img src="interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7" />
-  <tr><td>8<td>8×8<td><img src="interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8" />
-  <tr><td>9<td>8×4<td><img src="interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9" />
-  <tr><td>10<td>4×4<td><img src="interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10" />
-  <tr><td>11<td>4×2<td><img src="interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11" />
-  <tr><td>12<td>2×2<td><img src="interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12" />
-  <tr><td>13<td>2×1<td><img src="interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13" />
-  <tr><td>14<td>1×1<td><img src="interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14" />
+  <tr><td>0<td>120×120 (原画像サイズ)<td><img src="interlace/dec_i01_fr00_z00_p00.png" alt="ZL=0" loading="lazy" />
+  <tr><td>1<td>120×60<td><img src="interlace/dec_i00_fr00_z01_p00.png" alt="ZL=1" loading="lazy" />
+  <tr><td>2<td>60×60<td><img src="interlace/dec_rough_i30_fr00_z02_p00.png" alt="ZL=2" loading="lazy" />
+  <tr><td>3<td>60×30<td><img src="interlace/dec_rough_i27_fr00_z03_p00.png" alt="ZL=3" loading="lazy" />
+  <tr><td>4<td>30×30<td><img src="interlace/dec_rough_i24_fr00_z04_p00.png" alt="ZL=4" loading="lazy" />
+  <tr><td>5<td>30×15<td><img src="interlace/dec_rough_i21_fr00_z05_p00.png" alt="ZL=5" loading="lazy" />
+  <tr><td>6<td>15×15<td><img src="interlace/dec_rough_i18_fr00_z06_p00.png" alt="ZL=6" loading="lazy" />
+  <tr><td>7<td>15×8<td><img src="interlace/dec_rough_i15_fr00_z07_p00.png" alt="ZL=7" loading="lazy" />
+  <tr><td>8<td>8×8<td><img src="interlace/dec_rough_i12_fr00_z08_p00.png" alt="ZL=8" loading="lazy" />
+  <tr><td>9<td>8×4<td><img src="interlace/dec_rough_i09_fr00_z09_p00.png" alt="ZL=9" loading="lazy" />
+  <tr><td>10<td>4×4<td><img src="interlace/dec_rough_i06_fr00_z10_p00.png" alt="ZL=10" loading="lazy" />
+  <tr><td>11<td>4×2<td><img src="interlace/dec_rough_i04_fr00_z11_p00.png" alt="ZL=11" loading="lazy" />
+  <tr><td>12<td>2×2<td><img src="interlace/dec_rough_i02_fr00_z12_p00.png" alt="ZL=12" loading="lazy" />
+  <tr><td>13<td>2×1<td><img src="interlace/dec_rough_i01_fr00_z13_p00.png" alt="ZL=13" loading="lazy" />
+  <tr><td>14<td>1×1<td><img src="interlace/dec_rough_i00_fr00_z14_p00.png" alt="ZL=14" loading="lazy" />
 </tbody>
 </table>
 </figure>

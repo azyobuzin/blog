@@ -27,7 +27,7 @@ thumbnail: https://pbs.twimg.com/media/E2eeQl3VcAAByCy?format=jpg&name=large
 
 さて、最高に深刻なのが楽天ペイの Suica 連携機能です。これは運です。基本的にはこうなります。
 
-<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210929/20210929143248.jpg" alt="エラーコード: AA_JRF3005" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210929/20210929143248.jpg" alt="エラーコード: AA_JRF3005" width="1000" height="551" loading="lazy" /></figure>
 
 このエラーメッセージでググっても完全一致は見当たらなかったので、本当に機種依存バグ案件に思えます。「お問い合わせ先」は Suica になってるので、楽天ペイの案件をこの窓口に投げるのもなーという気持ちになって放置しています。
 
@@ -37,7 +37,7 @@ thumbnail: https://pbs.twimg.com/media/E2eeQl3VcAAByCy?format=jpg&name=large
 
 再起動すると、指紋認証の設定を変えていなくても、指を再登録したという扱いになります。例えば Bitwarden アプリだとこんな感じに。
 
-<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20211015/20211015162228.jpg" alt="「生体認証の変更が検出されました。マスターパスワードを使用してログインすると再度有効化できます。」" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20211015/20211015162228.jpg" alt="「生体認証の変更が検出されました。マスターパスワードを使用してログインすると再度有効化できます。」" width="1000" height="667" loading="lazy" /></figure>
 
 これが致命的なのが、住信SBIネット銀行のアプリで、指を再登録すると2要素認証の設定を最初からやり直すことになります。つまり再起動するたびに再設定する羽目に。
 
@@ -86,14 +86,14 @@ Xperia といえばウォークマン由来のエフェクト機能ですよね�
 かなり寄って撮影してもピントが合います。これは XZ1 Compact はちょっと苦手な部類だったはずなので、びっくりしました。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210909/20210909180236.jpg" alt="" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210909/20210909180236.jpg" alt="" width="1000" height="750" loading="lazy" />
 <figcaption>丸亀製麵のトマたまカレーうどん</figcaption>
 </figure>
 
 あとは、すべて自動で任せないで、明るさを調整したり HDR のオンオフを切り替えたり、余裕があるときはしっかりパラメータをいじると、たまに当たりが出ます。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210925/20210925154247.jpg" alt="" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20210925/20210925154247.jpg" alt="" width="1000" height="750" loading="lazy" />
 <figcaption>何度か調整した玉ねぎ（泉の森 郷土民家園）</figcaption>
 </figure>
 

@@ -13,7 +13,7 @@
     "serve": "^13.0.2"
   },
   "scripts": {
-    "build": "npm start -w generator; parcel build --dist-dir public --no-source-maps styles/global.css; html-validate public",
+    "build": "npm start -w generator && parcel build --dist-dir public --no-source-maps styles/global.css && html-validate public",
     "serve": "serve public",
     "fix": "npm run fix --workspaces; prettier --ignore-path .gitignore --write ."
   },

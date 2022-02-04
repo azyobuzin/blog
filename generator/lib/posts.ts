@@ -1,6 +1,7 @@
 import { execFile } from "child_process"
 import { stat } from "fs/promises"
 import * as path from "path"
+import canvas from "canvas"
 import chalk from "chalk"
 import glob from "glob"
 import type {
@@ -278,11 +279,74 @@ function assignTextToAnchor(
   }
 }
 
+/** `<img>` に width, height をセットする。 */
+const assignImgSize: Plugin<[], HastRoot> = () => {
+  return async (tree: HastRoot, file: VFile) => {
+    await Promise.all(
+      selectAll("img", tree).map(async (el) => {
+        const props = el.properties as
+          | {
+              src?: string
+              width?: number | string
+              height?: number | string
+            }
+          | undefined
+        if (props?.src == null) return
+
+        if (props.width == null || props.height == null) {
+          if (props.src.includes("//")) {
+            // 絶対パスなのでサイズの取得は諦め、警告する
+            file.message(
+              `width and height are not specfied. They are required for an external resource (${props.src}).`,
+              el.position
+            )
+            return
+          }
+
+          // canvas で読み込んでサイズを調べる
+          try {
+            const img = new canvas.Image()
+            const loadPromise = new Promise<void>((resolve, reject) => {
+              img.onload = () => {
+                resolve()
+              }
+              img.onerror = (err) => {
+                reject(err)
+              }
+            })
+            img.src = path.resolve(file.cwd, file.path, "..", props.src)
+            await loadPromise
+
+            if (props.width == null) {
+              if (props.height == null) {
+                props.width = img.naturalWidth
+                props.height = img.naturalHeight
+              } else {
+                props.width =
+                  img.naturalWidth * (Number(props.height) / img.naturalHeight)
+              }
+            } else {
+              props.height =
+                img.naturalHeight * (Number(props.width) / img.naturalWidth)
+            }
+          } catch (err) {
+            file.message(err as Error, el.position)
+          }
+        }
+      })
+    )
+  }
+}
+
 /** <table> → <div class="table-wrapper"><table> */
 const tableWrapper: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     visit(tree, (node, index, parent) => {
-      if (index == null || !isHastElement(node, "table") || !isHastElement(parent, "figure"))
+      if (
+        index == null ||
+        !isHastElement(node, "table") ||
+        !isHastElement(parent, "figure")
+      )
         return
 
       parent.children[index] = {
@@ -304,7 +368,7 @@ const flexEquation: Plugin<[], HastRoot> = () => {
       ".katex-display>.katex>.katex-html>.tag",
       parents(tree) as typeof tree
     )) {
-      classnames((el as any).parent  as Element, "ab-equation")
+      classnames((el as any).parent as Element, "ab-equation")
     }
   }
 }
@@ -387,6 +451,7 @@ const processor = unified()
   .use(rehypeHighlight)
   .use(removeHljsClass)
   .use(figureNumbering)
+  .use(assignImgSize)
   .use(tableWrapper)
   .use(rehypeCustomElements)
   .use(rehypeKatex)

@@ -191,7 +191,6 @@ figure,
 }
 
 figcaption {
-  font-size: 0.95rem;
   font-weight: 500;
 }
 
@@ -208,6 +207,7 @@ figure.fig-code > pre {
 
 figure.fig-img > img {
   max-width: 100%;
+  height: auto;
 }
 
 figure.fig-quote {

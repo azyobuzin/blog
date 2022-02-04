@@ -24,7 +24,7 @@ Docker 標準の bridge ネットワークの表現力を確認して、課題�
 まず、 Docker のネットワークとは何かですが、隔離されたサブネットです。コンテナはネットワークに接続することで、そのサブネットの IP アドレスが与えられます。 `docker network connect` コマンドで接続できるので「接続」と書きましたが、「参加」という表現のほうがわかりやすいかもしれません。コンテナは 0 個以上のネットワークに参加することができます。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913020748.png" alt="" width="609" height="271" />
 <figcaption>コンテナとネットワークの関係</figcaption>
 </figure>
 
@@ -38,7 +38,7 @@ Docker 標準の bridge ネットワークの表現力を確認して、課題�
 例えば、次の図のように、ふたつのアプリがひとつのデータベースを共有しているとします。前提がケチケチなので、アプリごとにデータベースのプロセスを分けたりしないという想定です。これを bridge ネットワークで実現しようとすると、DB、アプリ1、アプリ2が同一ネットワークに参加している必要があります。すると、アプリとデータベースの通信だけできればいいにも関わらず、アプリ同士の通信も可能になっています。これがまずい状況であるという例を示しましょう。アプリ1がクリティカルな情報を扱っているものの、認証は前段のリバースプロキシに任せている、とします。ここでアプリ2に脆弱性があったら、意図せずアプリ1のデータを認証なしで読み出してしまうかもしれません。
 
 <figure class="fig-img">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200913/20200913022141.png" alt="" width="306" height="238" />
 <figcaption>DBを参照するふたつのアプリ</figcaption>
 </figure>
 

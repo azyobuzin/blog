@@ -264,15 +264,15 @@ for (size_t k = 0; k < n; k++) {
 結果は以下の通りです。●がデータ、×が重心です。割り切れる数でやったので、ちょうど <var>K</var> 個ずつのクラスタに分かれたことがわかります。
 
 <figure class="fig-img">
-<img src="cocbok5.svg" alt="" />
+<img src="cocbok5.svg" alt="" loading="lazy" />
 <figcaption>K=5</figcaption>
 </figure>
 <figure class="fig-img">
-<img src="cocbok10.svg" alt="" />
+<img src="cocbok10.svg" alt="" loading="lazy" />
 <figcaption>K=10</figcaption>
 </figure>
 <figure class="fig-img">
-<img src="cocbok15.svg" alt="" />
+<img src="cocbok15.svg" alt="" loading="lazy" />
 <figcaption>K=15</figcaption>
 </figure>
 

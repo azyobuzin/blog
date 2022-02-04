@@ -25,13 +25,13 @@ VSCode Remote は、コンテナの中で VSCode が動きます。ホストの�
 
 ソリューションエクスプローラーで、 Docker で動かしたいプロジェクトを右クリックし、「コンテナー オーケストレーターのサポート」を追加します。
 
-<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004102.png" alt="「コンテナー オーケストレーターのサポート」を追加" loading="lazy" width="726" height="625" /></figure>
 
 いろいろ聞かれますが、 OS は Linux、ツールは Docker Compose としておけば OK です。
 
 完了すると、 Dockerfile と「docker-compose」というプロジェクトが生えます。
 
-<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928004106.png" alt="完了後のソリューション" loading="lazy" width="281" height="174" /></figure>
 
 これで、必要なファイルを Visual Studio に自動生成させることができました。ここから先は生成されたファイル書き換えたり移動させたりして VSCode にフィットさせていきましょう。
 
@@ -47,7 +47,7 @@ VSCode Remote は、コンテナの中で VSCode が動きます。ホストの�
 
 いま、ソリューションディレクトリ直下に「docker-compose.yml」と「docker-compose.override.yml」があります。直下にあってもわかりにくいので、後で devcontainer.json というファイルを入れることになる .devcontainer というディレクトリをつくっておき、そこに移動させます。
 
-<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動" /></figure>
+<figure class="fig-img"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200928/20200928010233.png" alt="docker-compose.yml を .devcontainer へ移動" loading="lazy" width="269" height="246" /></figure>
 
 さらに、 docker-compose.override.yml という名前だと Visual Studio 用なのか VSCode 用なのかわかりにくいので、 docker-compose.vs.yml に改名しておくといいでしょう。
 

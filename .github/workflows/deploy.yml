@@ -19,9 +19,7 @@ jobs:
           node-version: 16
           cache: npm
 
-      - name: npm install
-        run: npm install --production=false
-
+      - run: npm install --production=false
       - run: npm run build
 
       - name: Deploy
@@ -44,4 +42,5 @@ jobs:
         run: npm install --production=false
       - name: tsc
         run: npm run -w generator check
-      - run: npm test -w generator
+      - name: jest
+        run: npm test -w generator
