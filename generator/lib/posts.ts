@@ -282,7 +282,7 @@ function assignTextToAnchor(
 const tableWrapper: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     visit(tree, (node, index, parent) => {
-      if (!isHastElement(node, "table") || !isHastElement(parent, "figure"))
+      if (index == null || !isHastElement(node, "table") || !isHastElement(parent, "figure"))
         return
 
       parent.children[index] = {
@@ -302,9 +302,9 @@ const flexEquation: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     for (const el of selectAll(
       ".katex-display>.katex>.katex-html>.tag",
-      parents(tree)
+      parents(tree) as typeof tree
     )) {
-      classnames(el.parent, "ab-equation")
+      classnames((el as any).parent  as Element, "ab-equation")
     }
   }
 }

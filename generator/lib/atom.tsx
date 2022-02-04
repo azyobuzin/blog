@@ -14,6 +14,8 @@ export function createAtom(
     const url = `${SITE_URL}/${post.slug}/`
 
     return (
+      // FIXME: TS2322: Type '{ "__@children@21625": (XResult | XResult[] | null)[]; }' is not assignable to type 'XAttributes'.
+      // @ts-expect-error
       <entry>
         {post.tags.map((tag) => (
           <category term={tag} label={tag} />
@@ -37,6 +39,8 @@ export function createAtom(
   }) as Element[]
 
   const root = (
+    // FIXME: TS2322: Type '{ "__@children@21625": (XResult | Element[])[]; xmlns: string; "xml:lang": string; }' is not assignable to type 'XAttributes | { [children]?: XChild; }'.
+    // @ts-expect-error
     <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP">
       <author>
         <name>azyobuzin</name>
