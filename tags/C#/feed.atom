@@ -127,7 +127,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>このイベントにハンドラを設定しない場合、もしくはいずれのハンドラも &#x3C;code>e.Handled = true&#x3C;/code> をセットしない場合はデフォルトの挙動をします。デフォルトの挙動は、 .NET の例外を &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> でラップし、 Java を例外状態（JNI の &#x3C;code>Throw&#x3C;/code> 関数を呼び出す）にします。&#x3C;/p>
 &#x3C;p>使い道としては、 .NET で発生した例外を握りつぶして Java のプログラムを続行させたり（&#x3C;code>e.Handled = true&#x3C;/code> をセットして何もしない）、 &#x3C;code>Android.Runtime.JavaProxyThrowable&#x3C;/code> ではない独自の &#x3C;code>Throwable&#x3C;/code> に変換したり（&#x3C;code>JNIEnv.Throw&#x3C;/code> を呼び出す）、が考えられます。&#x3C;/p></content><id>https://blog.azyobuzi.net/2021/08/28/01-xaexception/</id><link href="https://blog.azyobuzi.net/2021/08/28/01-xaexception/" rel="alternate" type="text/html" /><published>2021-08-27T03:24:00+09:00</published><title type="html">Xamarin.Android アプリが例外で落ちるということ</title><updated>2021-09-24T23:30:48+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><content type="html">&#x3C;p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？&#x3C;/p>
 &#x3C;p>例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。&#x3C;/p>
-&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-function">ISourceBlock&#x26;#x3C;T> &#x3C;span class="hljs-title">CreateSource&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>
+&#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-function">ISourceBlock&#x26;#x3C;T> &#x3C;span class="hljs-title">CreateSource&#x3C;/span>()&#x3C;/span>
 {
     IEnumerable&#x26;#x3C;ISourceBlock&#x26;#x3C;T>> sources = &#x3C;span class="hljs-comment">/* ... */&#x3C;/span>;
 
@@ -393,7 +393,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
     &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnSubscribe&#x3C;/span>(&#x3C;span class="hljs-params">ISubscription subscription&#x3C;/span>)&#x3C;/span>;
     &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnNext&#x3C;/span>(&#x3C;span class="hljs-params">T element&#x3C;/span>)&#x3C;/span>;
     &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnError&#x3C;/span>(&#x3C;span class="hljs-params">Exception cause&#x3C;/span>)&#x3C;/span>;
-    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnComplete&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">OnComplete&#x3C;/span>()&#x3C;/span>;
 }
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
@@ -405,7 +405,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">ISubscription&#x3C;/span>
 {
     &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Request&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;span class="hljs-built_in">long&#x3C;/span> n&#x3C;/span>)&#x3C;/span>;
-    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Cancel&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Cancel&#x3C;/span>()&#x3C;/span>;
 }
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
@@ -430,7 +430,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;pre>&#x3C;code class="language-cs">&#x3C;span class="hljs-keyword">public&#x3C;/span> &#x3C;span class="hljs-keyword">interface&#x3C;/span> &#x3C;span class="hljs-title">IDataflowBlock&#x3C;/span>
 {
     Task Completion { &#x3C;span class="hljs-keyword">get&#x3C;/span>; }
-    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Complete&#x3C;/span>(&#x3C;span class="hljs-params">&#x3C;/span>)&#x3C;/span>;
+    &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Complete&#x3C;/span>()&#x3C;/span>;
     &#x3C;span class="hljs-function">&#x3C;span class="hljs-keyword">void&#x3C;/span> &#x3C;span class="hljs-title">Fault&#x3C;/span>(&#x3C;span class="hljs-params">Exception exception&#x3C;/span>)&#x3C;/span>;
 }
 &#x3C;/code>&#x3C;/pre>

@@ -53,7 +53,7 @@ J = \sum_{k=1}^n \sum_{i=1}^c u_{ki} \| x_k - v_i \| ^2
 <p>まず、作成する関数のシグネチャです。</p>
 <pre><code class="language-cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&#x3C;mlpack/core.hpp></span></span>
 
-<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ClusterWithCocbo</span><span class="hljs-params">(<span class="hljs-keyword">const</span> arma::mat &#x26;data, <span class="hljs-type">size_t</span> K, <span class="hljs-type">size_t</span> lower_bound,
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ClusterWithCocbo</span><span class="hljs-params">(<span class="hljs-type">const</span> arma::mat &#x26;data, <span class="hljs-type">size_t</span> K, <span class="hljs-type">size_t</span> lower_bound,
                       <span class="hljs-type">size_t</span> upper_bound, arma::Row&#x3C;<span class="hljs-type">size_t</span>> &#x26;assignments,
                       arma::mat &#x26;centroids, <span class="hljs-type">size_t</span> max_iterations = <span class="hljs-number">1000</span>)</span></span>;
 </code></pre>

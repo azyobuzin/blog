@@ -28,7 +28,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
     <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OnSubscribe</span>(<span class="hljs-params">ISubscription subscription</span>)</span>;
     <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OnNext</span>(<span class="hljs-params">T element</span>)</span>;
     <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OnError</span>(<span class="hljs-params">Exception cause</span>)</span>;
-    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OnComplete</span>(<span class="hljs-params"></span>)</span>;
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">OnComplete</span>()</span>;
 }
 </code></pre>
 </figure>
@@ -40,7 +40,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">ISubscription</span>
 {
     <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Request</span>(<span class="hljs-params"><span class="hljs-built_in">long</span> n</span>)</span>;
-    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Cancel</span>(<span class="hljs-params"></span>)</span>;
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Cancel</span>()</span>;
 }
 </code></pre>
 </figure>
@@ -65,7 +65,7 @@ C# においても Reactive Streams は他人事ではなく、 java.util.concur
 <pre><code class="language-cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IDataflowBlock</span>
 {
     Task Completion { <span class="hljs-keyword">get</span>; }
-    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Complete</span>(<span class="hljs-params"></span>)</span>;
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Complete</span>()</span>;
     <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Fault</span>(<span class="hljs-params">Exception exception</span>)</span>;
 }
 </code></pre>

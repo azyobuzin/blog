@@ -42,7 +42,7 @@ J = \sum_{k=1}^n \sum_{i=1}^c u_{ki} \| x_k - v_i \| ^2
 &#x3C;p>まず、作成する関数のシグネチャです。&#x3C;/p>
 &#x3C;pre>&#x3C;code class="language-cpp">&#x3C;span class="hljs-meta">#&#x3C;span class="hljs-keyword">include&#x3C;/span> &#x3C;span class="hljs-string">&#x26;#x3C;mlpack/core.hpp>&#x3C;/span>&#x3C;/span>
 
-&#x3C;span class="hljs-function">&#x3C;span class="hljs-type">void&#x3C;/span> &#x3C;span class="hljs-title">ClusterWithCocbo&#x3C;/span>&#x3C;span class="hljs-params">(&#x3C;span class="hljs-keyword">const&#x3C;/span> arma::mat &#x26;#x26;data, &#x3C;span class="hljs-type">size_t&#x3C;/span> K, &#x3C;span class="hljs-type">size_t&#x3C;/span> lower_bound,
+&#x3C;span class="hljs-function">&#x3C;span class="hljs-type">void&#x3C;/span> &#x3C;span class="hljs-title">ClusterWithCocbo&#x3C;/span>&#x3C;span class="hljs-params">(&#x3C;span class="hljs-type">const&#x3C;/span> arma::mat &#x26;#x26;data, &#x3C;span class="hljs-type">size_t&#x3C;/span> K, &#x3C;span class="hljs-type">size_t&#x3C;/span> lower_bound,
                       &#x3C;span class="hljs-type">size_t&#x3C;/span> upper_bound, arma::Row&#x26;#x3C;&#x3C;span class="hljs-type">size_t&#x3C;/span>> &#x26;#x26;assignments,
                       arma::mat &#x26;#x26;centroids, &#x3C;span class="hljs-type">size_t&#x3C;/span> max_iterations = &#x3C;span class="hljs-number">1000&#x3C;/span>)&#x3C;/span>&#x3C;/span>;
 &#x3C;/code>&#x3C;/pre>

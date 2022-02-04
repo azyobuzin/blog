@@ -21,7 +21,7 @@
 <p><a href="/2021/08/28/01-xaexception/">続きを読む</a></p></div></div></article><article class="article-list-item"><div class="article-list-item-content"><header><h1><a href="/2021/03/23/01-dataflowblock-without-buffer/">バッファのない PropagatorBlock はつくれないという話</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" aria-hidden="true" title="公開日"></i><span class="sr-only">公開日</span> <time datetime="2021-03-23T03:44+09:00" title="公開: 2021/03/23 03:44
 最終更新: 2021/09/27 19:22">2021/03/23</time></div><div class="article-meta"><i class="fa fa-tags" aria-hidden="true" title="タグ"></i><span class="sr-only">タグ</span><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li><li><a rel="tag" class="article-tag" href="/tags/C%23/">C#</a></li></ul></div></header><div class="article-content"><p>また TPL Dataflow の話です。突然ですが、バッファのない PropagatorBlock って欲しくないですか？</p>
 <p>例えば、複数の SourceBlock があって、それをひとつの SourceBlock として返したいとき。</p>
-<pre><code class="language-cs"><span class="hljs-function">ISourceBlock&#x3C;T> <span class="hljs-title">CreateSource</span>(<span class="hljs-params"></span>)</span>
+<pre><code class="language-cs"><span class="hljs-function">ISourceBlock&#x3C;T> <span class="hljs-title">CreateSource</span>()</span>
 {
     IEnumerable&#x3C;ISourceBlock&#x3C;T>> sources = <span class="hljs-comment">/* ... */</span>;
 
