@@ -30,10 +30,7 @@ const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
         )}
       </h1>
       <div className="article-meta">
-        <i
-          className="fa fa-pencil-square-o"
-          title="公開日"
-        />{" "}
+        <i className="fa fa-pencil-square-o" title="公開日" />{" "}
         <time dateTime={post.pubdate} title={dateDetails}>
           {formatDate(post.pubdate, false)}
         </time>

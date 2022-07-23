@@ -122,6 +122,10 @@ a:hover {
   text-decoration: underline;
 }
 
+.article-content a {
+  text-decoration: underline;
+}
+
 cite {
   font-style: normal;
 }
