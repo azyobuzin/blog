@@ -1,6 +1,7 @@
 ---
 pubdate: 2022-07-23T23:41+09:00
 tags: [tech, Web]
+thumbnail: akasaka.png
 ---
 
 # 一発屋サービス「東京極座標」をリリースしました
