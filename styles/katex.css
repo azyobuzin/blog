@@ -1,0 +1,24 @@
+@import "../node_modules/katex/dist/contrib/copy-tex.css";
+
+/* 改行を許可 */
+/* https://katex.org/docs/issues.html */
+.katex-display > .katex {
+  white-space: normal !important;
+}
+
+/* equation のレスポンシブ化 */
+.ab-equation {
+  display: flex !important;
+  width: 100%;
+}
+
+.ab-equation > .base {
+  display: block !important;
+  flex: 1;
+  overflow: auto hidden;
+}
+
+.ab-equation > .tag {
+  position: static !important;
+  margin-left: 1.5rem;
+}

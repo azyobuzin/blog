@@ -515,9 +515,8 @@ export function removeRelativeLink<T extends HastNode>(
       // id 属性を削除する
       delete newProps.id
 
-      const newEl: Element = { ...node, properties: newProps }
-      return newEl
+      return { ...node, properties: newProps }
     }
     return { ...node }
-  }) as T
+  })
 }
