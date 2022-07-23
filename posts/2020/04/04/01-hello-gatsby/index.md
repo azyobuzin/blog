@@ -1,6 +1,6 @@
 ---
 pubdate: 2020-04-04T02:29+09:00
-tags: [tech, JavaScript]
+tags: [tech, Web]
 sectnums: true
 ---
 

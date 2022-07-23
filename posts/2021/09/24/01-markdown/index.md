@@ -1,6 +1,6 @@
 ---
 pubdate: 2021-09-24T23:30+09:00
-tags: [tech, JavaScript]
+tags: [tech, Web]
 ---
 
 # 結局ブログをMarkdownで書くことにした話
