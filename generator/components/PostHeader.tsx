@@ -32,10 +32,8 @@ const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
       <div className="article-meta">
         <i
           className="fa fa-pencil-square-o"
-          aria-hidden="true"
           title="公開日"
-        />
-        <span className="sr-only">公開日</span>{" "}
+        />{" "}
         <time dateTime={post.pubdate} title={dateDetails}>
           {formatDate(post.pubdate, false)}
         </time>
@@ -50,8 +48,7 @@ const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
       </div>
       {post.tags.length > 0 && (
         <div className="article-meta">
-          <i className="fa fa-tags" aria-hidden="true" title="タグ" />
-          <span className="sr-only">タグ</span>
+          <i className="fa fa-tags" title="タグ" />
           <ul className="article-tags">
             {post.tags.map((x) => (
               <li>

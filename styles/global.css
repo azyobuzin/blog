@@ -353,22 +353,3 @@ thead th {
   display: block;
   text-decoration: none;
 }
-
-/*!
- * https://github.com/twbs/bootstrap/blob/v5.1.1/scss/mixins/_visually-hidden.scss
- * Bootstrap v5.1.1 (https://getbootstrap.com/)
- * Copyright 2011-2021 The Bootstrap Authors
- * Copyright 2011-2021 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
- */
-.sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
