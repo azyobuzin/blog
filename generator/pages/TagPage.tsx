@@ -31,9 +31,9 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
         <header>
           <h1>{tag}</h1>
           <p className="breadcrumb" role="list">
-            <a href="/" role="listitem">
-              ホーム
-            </a>
+            <span role="listitem">
+              <a href="/">ホーム</a>
+            </span>
             {" > "}
             <span role="listitem" aria-current="page">
               <i className="fa fa-tag" aria-hidden="true" title="タグ" />
@@ -43,7 +43,9 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
           </p>
         </header>
 
-        <PostList posts={posts} />
+        <main>
+          <PostList posts={posts} />
+        </main>
 
         <footer>
           <nav>

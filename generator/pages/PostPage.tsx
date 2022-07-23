@@ -43,10 +43,12 @@ const PostPage: VFC<{ post: Post }> = ({ post }) => {
       }
     >
       <div className="container">
-        <article className="article-page">
-          <PostHeader post={post} showHistory />
-          <div className="article-content">{post.content}</div>
-        </article>
+        <main>
+          <article>
+            <PostHeader post={post} showHistory />
+            <div className="article-content">{post.content}</div>
+          </article>
+        </main>
 
         <footer>
           <nav>
