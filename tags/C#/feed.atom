@@ -27,9 +27,9 @@ E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.j
 &#x3C;p>さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる &#x3C;code>RuntimeInit.commonInit&#x3C;/code> に次のようなプログラムが入っています。&#x3C;/p>
 &#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">RuntimeInit.commonInit の一部&#x3C;/a>&#x3C;/figcaption>
-&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">LoggingHandler&#x3C;/span> &#x3C;span class="hljs-variable">loggingHandler&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">LoggingHandler&#x3C;/span>();
+&#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-type">LoggingHandler&#x3C;/span> &#x3C;span class="hljs-variable">loggingHandler&#x3C;/span> &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title class_">LoggingHandler&#x3C;/span>();
 RuntimeHooks.setUncaughtExceptionPreHandler(loggingHandler);
-Thread.setDefaultUncaughtExceptionHandler(&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">KillApplicationHandler&#x3C;/span>(loggingHandler));
+Thread.setDefaultUncaughtExceptionHandler(&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title class_">KillApplicationHandler&#x3C;/span>(loggingHandler));
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>
 &#x3C;p>Java が管理するスレッドで発生した例外は、スレッド自体に例外ハンドラを設定していなければ &#x3C;code>Thread.setDefaultUncaughtExceptionHandler&#x3C;/code> で設定したハンドラで処理されます。 Android では &#x3C;code>RuntimeInit$KillApplicationHandler&#x3C;/code> が設定されており、これが最後の砦をやっています。また、 Android には Java 標準の &#x3C;code>Thread&#x3C;/code> クラスにはない &#x3C;code>setUncaughtExceptionPreHandler&#x3C;/code> があり、もしデフォルトのハンドラがアプリのコードによって書き換えられたとしても、 &#x3C;code>RuntimeInit$LoggingHandler&#x3C;/code> だけは呼び出されて、 logcat に例外ログが吐きだされるようになっています。&#x3C;/p>
@@ -98,7 +98,7 @@ I MonoDroid:
 &#x3C;figure class="fig-code">
 &#x3C;figcaption>&#x3C;a href="https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15">Runtime.java の一部&#x3C;/a>&#x3C;/figcaption>
 &#x3C;pre>&#x3C;code class="language-java">&#x3C;span class="hljs-keyword">static&#x3C;/span> {
-    Thread.setDefaultUncaughtExceptionHandler (&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title hljs-class">XamarinUncaughtExceptionHandler&#x3C;/span> (Thread.getDefaultUncaughtExceptionHandler ()));
+    Thread.setDefaultUncaughtExceptionHandler (&#x3C;span class="hljs-keyword">new&#x3C;/span> &#x3C;span class="hljs-title class_">XamarinUncaughtExceptionHandler&#x3C;/span> (Thread.getDefaultUncaughtExceptionHandler ()));
 }
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/figure>

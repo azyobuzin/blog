@@ -75,7 +75,7 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 <p>まず、 Gatsby をまだ触っていない方のために、クエリの書き方を紹介します。あるページ <code>/hoge</code> に対応する <code>pages/hoge.js</code> があったとして、次のように、 <code>query</code> または <code>pageQuery</code> を <code>export</code> することでクエリを指定すると、 <code>export default</code> している関数の引数に <code>data</code> として、そのクエリの結果が代入されます。</p>
 <figure class="fig-code">
 <figcaption>pages/hoge.js</figcaption>
-<pre><code class="language-js"><span class="hljs-keyword">import</span> <span class="hljs-title hljs-class">React</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"react"</span>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> <span class="hljs-title class_">React</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"react"</span>
 <span class="hljs-keyword">import</span> { graphql } <span class="hljs-keyword">from</span> <span class="hljs-string">"gatsby"</span>
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-keyword">function</span> (<span class="hljs-params">{ data }</span>) {
@@ -106,11 +106,11 @@ Qiita なんて承認欲求が通常のブログより満たせる以外のメ�
 <p>あと、 SPA という前提に立っているので、デフォルトでは CSS が HTML の <code>style</code> タグに全部入っています。外部リソースのダウンロードを減らす目的でしょうけれど、スクリプトを無効化すると、サイト内リンクは React 内でのルーティングではなく普通のリンクになるので、各ページに CSS が埋め込まれていると逆効果になりそうです。そこで <code>style</code> タグではなく <code>link</code> タグにしておきたいです。 <code>link</code> タグへの変換は、ビルド中のフックで、簡単にできます（<a href="https://github.com/gatsbyjs/gatsby/issues/1526#issuecomment-583740341">元ネタ</a>）。</p>
 <figure class="fig-code">
 <figcaption>gatsby-ssr.js</figcaption>
-<pre><code class="language-js"><span class="hljs-keyword">const</span> <span class="hljs-title hljs-class">React</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"react"</span>)
+<pre><code class="language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">React</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"react"</span>)
 
 <span class="hljs-built_in">exports</span>.<span class="hljs-property">onPreRenderHTML</span> = <span class="hljs-function">(<span class="hljs-params">{ getHeadComponents, replaceHeadComponents }</span>) =></span> {
-  <span class="hljs-title hljs-function">replaceHeadComponents</span>(
-    <span class="hljs-title hljs-function">getHeadComponents</span>().<span class="hljs-title hljs-function">map</span>(<span class="hljs-function">(<span class="hljs-params">el</span>) =></span> {
+  <span class="hljs-title function_">replaceHeadComponents</span>(
+    <span class="hljs-title function_">getHeadComponents</span>().<span class="hljs-title function_">map</span>(<span class="hljs-function">(<span class="hljs-params">el</span>) =></span> {
       <span class="hljs-keyword">if</span> (el.<span class="hljs-property">type</span> !== <span class="hljs-string">"style"</span>) <span class="hljs-keyword">return</span> el
       <span class="hljs-keyword">const</span> href = el.<span class="hljs-property">props</span>[<span class="hljs-string">"data-href"</span>]
       <span class="hljs-keyword">return</span> href ? <span class="xml"><span class="hljs-tag">&#x3C;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">{href}</span> /></span></span> : el

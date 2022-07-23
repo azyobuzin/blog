@@ -28,9 +28,9 @@ E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.j
 <p>さらに呼び出し元を調べることで仕組みがわかります。プロセス起動時（Zygote からフォークした直後）に呼びされる <code>RuntimeInit.commonInit</code> に次のようなプログラムが入っています。</p>
 <figure class="fig-code">
 <figcaption><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/os/RuntimeInit.java;l=225-231;drc=56ab231a8fa86f4aa5107d9248d2cf6285469edb">RuntimeInit.commonInit の一部</a></figcaption>
-<pre><code class="language-java"><span class="hljs-type">LoggingHandler</span> <span class="hljs-variable">loggingHandler</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title hljs-class">LoggingHandler</span>();
+<pre><code class="language-java"><span class="hljs-type">LoggingHandler</span> <span class="hljs-variable">loggingHandler</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">LoggingHandler</span>();
 RuntimeHooks.setUncaughtExceptionPreHandler(loggingHandler);
-Thread.setDefaultUncaughtExceptionHandler(<span class="hljs-keyword">new</span> <span class="hljs-title hljs-class">KillApplicationHandler</span>(loggingHandler));
+Thread.setDefaultUncaughtExceptionHandler(<span class="hljs-keyword">new</span> <span class="hljs-title class_">KillApplicationHandler</span>(loggingHandler));
 </code></pre>
 </figure>
 <p>Java が管理するスレッドで発生した例外は、スレッド自体に例外ハンドラを設定していなければ <code>Thread.setDefaultUncaughtExceptionHandler</code> で設定したハンドラで処理されます。 Android では <code>RuntimeInit$KillApplicationHandler</code> が設定されており、これが最後の砦をやっています。また、 Android には Java 標準の <code>Thread</code> クラスにはない <code>setUncaughtExceptionPreHandler</code> があり、もしデフォルトのハンドラがアプリのコードによって書き換えられたとしても、 <code>RuntimeInit$LoggingHandler</code> だけは呼び出されて、 logcat に例外ログが吐きだされるようになっています。</p>
@@ -99,7 +99,7 @@ I MonoDroid:
 <figure class="fig-code">
 <figcaption><a href="https://github.com/xamarin/xamarin-android/blob/681887ebdbd192ce7ce1cd02221d4939599ba762/src/java-runtime/java/mono/android/Runtime.java#L13-L15">Runtime.java の一部</a></figcaption>
 <pre><code class="language-java"><span class="hljs-keyword">static</span> {
-    Thread.setDefaultUncaughtExceptionHandler (<span class="hljs-keyword">new</span> <span class="hljs-title hljs-class">XamarinUncaughtExceptionHandler</span> (Thread.getDefaultUncaughtExceptionHandler ()));
+    Thread.setDefaultUncaughtExceptionHandler (<span class="hljs-keyword">new</span> <span class="hljs-title class_">XamarinUncaughtExceptionHandler</span> (Thread.getDefaultUncaughtExceptionHandler ()));
 }
 </code></pre>
 </figure>

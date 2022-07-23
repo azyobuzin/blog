@@ -35,32 +35,32 @@ AsciiDoc というか Asciidoctor を使うことに思うところがあり、 
 <p>今見ているこのページの Markdown は、こんな感じのパイプラインで HTML 化されています。</p>
 <figure class="fig-code">
 <figcaption>Markdown 処理パイプライン (<a href="https://github.com/azyobuzin/blog/blob/7913138eff88596512ec8403c17005bba57beb31/generator/lib/posts.ts#L361-L385" rel="external">posts.ts</a>)</figcaption>
-<pre><code class="language-js"><span class="hljs-keyword">const</span> processor = <span class="hljs-title hljs-function">unified</span>()
-  .<span class="hljs-title hljs-function">use</span>(remarkParse) <span class="hljs-comment">// remark-parse (Parser): Markdown → mdast （この後の「拡張のロード」はここで使われる）</span>
-  .<span class="hljs-title hljs-function">use</span>(remarkGfm) <span class="hljs-comment">// remark-gfm: GFM 拡張のロード</span>
-  .<span class="hljs-title hljs-function">use</span>(remarkFrontmatter) <span class="hljs-comment">// remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード</span>
-  .<span class="hljs-title hljs-function">use</span>(remarkExtractFrontmatter, {
+<pre><code class="language-js"><span class="hljs-keyword">const</span> processor = <span class="hljs-title function_">unified</span>()
+  .<span class="hljs-title function_">use</span>(remarkParse) <span class="hljs-comment">// remark-parse (Parser): Markdown → mdast （この後の「拡張のロード」はここで使われる）</span>
+  .<span class="hljs-title function_">use</span>(remarkGfm) <span class="hljs-comment">// remark-gfm: GFM 拡張のロード</span>
+  .<span class="hljs-title function_">use</span>(remarkFrontmatter) <span class="hljs-comment">// remark-frontmatter: --- で囲まれた frontmatter を mdast のノードとして出力させる拡張のロード</span>
+  .<span class="hljs-title function_">use</span>(remarkExtractFrontmatter, {
     <span class="hljs-attr">yaml</span>: yaml.<span class="hljs-property">parse</span>,
     <span class="hljs-attr">name</span>: <span class="hljs-string">"frontmatter"</span>,
     <span class="hljs-attr">throws</span>: <span class="hljs-literal">true</span>,
   }) <span class="hljs-comment">// remark-extract-frontmatter: ↑ を AST からメタデータ領域にコピーしてくる</span>
-  .<span class="hljs-title hljs-function">use</span>(extractTitle) <span class="hljs-comment">// 独自: # (h1) をタイトルとして扱う</span>
-  .<span class="hljs-title hljs-function">use</span>(remarkMath) <span class="hljs-comment">// remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード</span>
+  .<span class="hljs-title function_">use</span>(extractTitle) <span class="hljs-comment">// 独自: # (h1) をタイトルとして扱う</span>
+  .<span class="hljs-title function_">use</span>(remarkMath) <span class="hljs-comment">// remark-math: $ で囲まれた部分を math ノードとして扱う拡張のロード</span>
   <span class="hljs-comment">// Markdown ここまで</span>
-  .<span class="hljs-title hljs-function">use</span>(remarkRehype, { <span class="hljs-attr">allowDangerousHtml</span>: <span class="hljs-literal">true</span> }) <span class="hljs-comment">// remark-rehype: mdast → hast</span>
+  .<span class="hljs-title function_">use</span>(remarkRehype, { <span class="hljs-attr">allowDangerousHtml</span>: <span class="hljs-literal">true</span> }) <span class="hljs-comment">// remark-rehype: mdast → hast</span>
   <span class="hljs-comment">// HTML ここから</span>
-  .<span class="hljs-title hljs-function">use</span>(rehypeRaw) <span class="hljs-comment">// remark-raw: Markdown に手書きした HTML を有効な hast ノードに変換する</span>
-  .<span class="hljs-title hljs-function">use</span>(sectionNumbering) <span class="hljs-comment">// 独自: 見出しにセクション番号を付与する（記事ごとに有効か無効かを設定できる）</span>
-  .<span class="hljs-title hljs-function">use</span>(sampElement) <span class="hljs-comment">// 独自: &#x3C;code class="language-samp"> を &#x3C;samp> タグにすげ替える</span>
-  .<span class="hljs-title hljs-function">use</span>(assignNoHighlight) <span class="hljs-comment">// 独自: ↓ で勝手にシンタックスハイライトされないように class="no-highlight" を設定する</span>
-  .<span class="hljs-title hljs-function">use</span>(rehypeHighlight) <span class="hljs-comment">// rehype-highlight: &#x3C;pre>&#x3C;code> をシンタックスハイライト</span>
-  .<span class="hljs-title hljs-function">use</span>(removeHljsClass) <span class="hljs-comment">// 独自: ↑ で無駄な class が設定されるので削除</span>
-  .<span class="hljs-title hljs-function">use</span>(figureNumbering) <span class="hljs-comment">// 独自: 図表番号を付与する</span>
-  .<span class="hljs-title hljs-function">use</span>(rehypeCustomElements) <span class="hljs-comment">// 独自: カスタム属性を処理する</span>
-  .<span class="hljs-title hljs-function">use</span>(rehypeKatex) <span class="hljs-comment">// rehype-katex: remark-math で抽出した数式を KaTeX で処理する</span>
-  .<span class="hljs-title hljs-function">use</span>(lintFigureClass) <span class="hljs-comment">// 独自: &#x3C;figure> に class 属性を付け忘れていたら警告する</span>
-  .<span class="hljs-title hljs-function">use</span>(toPost) <span class="hljs-comment">// 独自 (Compiler): 出力オブジェクトを生成する</span>
-  .<span class="hljs-title hljs-function">freeze</span>()
+  .<span class="hljs-title function_">use</span>(rehypeRaw) <span class="hljs-comment">// remark-raw: Markdown に手書きした HTML を有効な hast ノードに変換する</span>
+  .<span class="hljs-title function_">use</span>(sectionNumbering) <span class="hljs-comment">// 独自: 見出しにセクション番号を付与する（記事ごとに有効か無効かを設定できる）</span>
+  .<span class="hljs-title function_">use</span>(sampElement) <span class="hljs-comment">// 独自: &#x3C;code class="language-samp"> を &#x3C;samp> タグにすげ替える</span>
+  .<span class="hljs-title function_">use</span>(assignNoHighlight) <span class="hljs-comment">// 独自: ↓ で勝手にシンタックスハイライトされないように class="no-highlight" を設定する</span>
+  .<span class="hljs-title function_">use</span>(rehypeHighlight) <span class="hljs-comment">// rehype-highlight: &#x3C;pre>&#x3C;code> をシンタックスハイライト</span>
+  .<span class="hljs-title function_">use</span>(removeHljsClass) <span class="hljs-comment">// 独自: ↑ で無駄な class が設定されるので削除</span>
+  .<span class="hljs-title function_">use</span>(figureNumbering) <span class="hljs-comment">// 独自: 図表番号を付与する</span>
+  .<span class="hljs-title function_">use</span>(rehypeCustomElements) <span class="hljs-comment">// 独自: カスタム属性を処理する</span>
+  .<span class="hljs-title function_">use</span>(rehypeKatex) <span class="hljs-comment">// rehype-katex: remark-math で抽出した数式を KaTeX で処理する</span>
+  .<span class="hljs-title function_">use</span>(lintFigureClass) <span class="hljs-comment">// 独自: &#x3C;figure> に class 属性を付け忘れていたら警告する</span>
+  .<span class="hljs-title function_">use</span>(toPost) <span class="hljs-comment">// 独自 (Compiler): 出力オブジェクトを生成する</span>
+  .<span class="hljs-title function_">freeze</span>()
 </code></pre>
 </figure>
 <p>できるだけシンプルにするぞと思っていたのですが、なかなか処理が多いですね。しかし Markdown 言語自体を拡張することはほとんどしておらず、処理のほとんどは HTML の AST を変形しています。このように HTML の世界に閉じ込めることで、言語を拡張するとかいう不毛なことを考えなくて済みます。</p>
@@ -70,14 +70,14 @@ AsciiDoc というか Asciidoctor を使うことに思うところがあり、 
 <figcaption>React の書き味に似せるためのラッパー (<a href="https://github.com/azyobuzin/blog/blob/7913138eff88596512ec8403c17005bba57beb31/generator/lib/jsx.ts" rel="external">jsx.ts</a>)</figcaption>
 <pre><code class="language-js"><span class="hljs-keyword">import</span> { h <span class="hljs-keyword">as</span> hastscript } <span class="hljs-keyword">from</span> <span class="hljs-string">"hastscript"</span>
 
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title hljs-function">h</span>(<span class="hljs-params">selector, properties, ...children</span>) {
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">h</span>(<span class="hljs-params">selector, properties, ...children</span>) {
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">typeof</span> selector === <span class="hljs-string">"function"</span>
-    ? <span class="hljs-title hljs-function">selector</span>({ children, ...properties }) <span class="hljs-comment">// 関数コンポーネント</span>
-    : <span class="hljs-title hljs-function">hastscript</span>(
+    ? <span class="hljs-title function_">selector</span>({ children, ...properties }) <span class="hljs-comment">// 関数コンポーネント</span>
+    : <span class="hljs-title function_">hastscript</span>(
         selector,
         properties,
         <span class="hljs-comment">// hastscript は boolean を入力すると例外をスローするのでフィルター</span>
-        children.<span class="hljs-title hljs-function">filter</span>(<span class="hljs-function">(<span class="hljs-params">x</span>) =></span> x != <span class="hljs-literal">null</span> &#x26;&#x26; x !== <span class="hljs-literal">true</span> &#x26;&#x26; x !== <span class="hljs-literal">false</span>)
+        children.<span class="hljs-title function_">filter</span>(<span class="hljs-function">(<span class="hljs-params">x</span>) =></span> x != <span class="hljs-literal">null</span> &#x26;&#x26; x !== <span class="hljs-literal">true</span> &#x26;&#x26; x !== <span class="hljs-literal">false</span>)
       )
 }
 </code></pre>
