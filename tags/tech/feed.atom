@@ -1,4 +1,165 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/tech/feed.atom</id><link href="https://blog.azyobuzi.net/tags/tech/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/tech/" rel="alternate" type="text/html" /><title>tech | あじょろぐ</title><updated>2022-07-23T23:49:47+09:00</updated><entry><category term="tech" label="tech" /><category term="Web" label="Web" /><content type="html">&#x3C;p>みなさんは東京の土地勘ありますか？ 私は東京で生まれ育ちましたが、未だに赤坂がどこにあるのかいまいちピンと来ません。ただ都心であることは間違いないでしょう。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/tech/feed.atom</id><link href="https://blog.azyobuzi.net/tags/tech/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/tech/" rel="alternate" type="text/html" /><title>tech | あじょろぐ</title><updated>2022-12-31T23:26:23+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>データベースの運用は難しい。私の運用している Pleroma (Mastodon 互換といえば世間的に通じそう) サーバー (&#x3C;a href="https://xxx.azyobuzi.net/">ご隠居&#x3C;/a>) は、今まで EC2 + RDS の構成でしたが、さすがに高かった ($50 が円安で厳しくなっていく)。そこで 10 月に KAGOYA CLOUD VPS に移行を行いました。で、登録したら「嘘の住所で登録してない？」とサポートに疑われて、メールチェックしてない間にアカウントが停止されていたのは別の話……。&#x3C;/p>
+&#x3C;p>VPS に移行すると、データベースの管理も当然自分でやることになります。今まで RDS が自動でやっていたことを自分で組み直すのは大変だったので、今年最後の技術ブログをやっておきます。&#x3C;/p>
+&#x3C;h2>日次バックアップか、もっと頻度を高めるか&#x3C;/h2>
+&#x3C;p>もっとも簡単なバックアップは、 pg_dump を使ってデータを SQL ファイルまたは pg_dump 独自形式として出力させてしまう方法でしょうか。 RDS を使う前は1日1回 pg_dump したものを xz で圧縮して Backblaze B2 へアップロードするスクリプトを組んでいました。&#x3C;/p>
+&#x3C;p>しかし、 RDS を経験してしまうと、もっとリッチなバックアップができてしまいます。ワンクリックでスナップショットを取れるし、 PITR とかいうのも使えるらしい。&#x3C;/p>
+&#x3C;p>そもそも、日次バックアップだと障害時に失うデータが多すぎるので若干不安がありました。というわけで、再現してみましょう。&#x3C;/p>
+&#x3C;h2>PostgreSQL のバックアップとは&#x3C;/h2>
+&#x3C;p>PostgreSQL のバックアップ方法は大きく次の 3 種類があると、&#x3C;a href="https://www.postgresql.jp/document/14/html/backup.html">公式ドキュメント&#x3C;/a>に書いてあります。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>SQLによるダンプ&#x3C;/li>
+&#x3C;li>ファイルシステムレベルのバックアップ&#x3C;/li>
+&#x3C;li>継続的アーカイブ&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>このうち pg_dump は 1 に相当します。 pg_dump は通常の PostgreSQL クライアントとしてサーバーに接続し、すべてのレコードを SELECT します。メリットは、 SELECT を投げればいいだけなので、何の準備も要らず PostgreSQL が動いてさえいればバックアップができることです。デメリットは、差分バックアップを取るのが難しいことです。もちろん ID が単調増加するテーブルならば、前回取得した ID 以降をバックアップするという手もありますが、アプリケーションに依存します。&#x3C;/p>
+&#x3C;p>ではデメリットを解消し、いつでもサクサクバックアップ取るにはどうしたらいいでしょうか。そこで 2 と 3 の組み合わせです。&#x3C;/p>
+&#x3C;p>2 は PostgreSQL のデータディレクトリをまるっとコピーする方法です。&#x3C;/p>
+&#x3C;p>3 はデータベースへの変更を確実にディスクに記録するために使われる WAL を、バックアップの目的にも転用するものです。通常はデータベースへの変更の書き込みが終わったら用済みな WAL ですが、これ (ログ) をバックアップしておくことで、任意のコミットのタイミングのデータに復元 (ログを再生) することができます。&#x3C;/p>
+&#x3C;p>つまり、2でまるっとデータをコピーし、そこからの差分を3で行えば、それなりに低コストで高頻度かつどのタイミングにも復元できるバックアップができます！ しかし PostgreSQL の標準機能だけでこの方法をやるには、やることが多いので、いくつかのツールが開発されています。比較は「[&#x3C;cite>PostgreSQLバックアップ実践とバックアップ管理ツールの紹介&#x3C;/cite>]」(https://www.postgresql.jp/sites/default/files/2021-11/jpug-pgcon2021-backup_20211112_.pdf)がわかりやすいです。&#x3C;/p>
+&#x3C;p>今回は PostgreSQL 14 に対応しており、アクティブにメンテナンスされている &#x3C;a href="https://github.com/ossc-db/pg_rman">pg_rman&#x3C;/a> を使っていきます。&#x3C;/p>
+&#x3C;h2>pg_rman を使ってみる&#x3C;/h2>
+&#x3C;p>pg_rman は PostgreSQL のデータディレクトリと WAL をコピーして世代管理をしてくれるツールです。バックアップ形式は full, incremental, archive の 3 種類があります。 full と incremental はデータディレクトリと WAL を、 archive は WAL アーカイブファイルだけをコピーします。 incremental は前回のデータディレクトリのバックアップから変更があったファイルをコピーします (PostgreSQL のテーブルファイルは最大 1GB なので、多くの場合 incremental バックアップは最低でも 1GB になります)。&#x3C;/p>
+&#x3C;p>バックアップからの復元は、 full, incremental からデータディレクトリを復元し、最後のデータディレクトリのバックアップ以降の WAL アーカイブファイルを読み込むよう PostgreSQL に設定することで実現されます。&#x3C;/p>
+&#x3C;p>では、 pg_rman を使ってみましょう。ここでは Ubuntu 22.04, PostgreSQL 14 を前提とします。 Ubuntu でのインストールは、&#x3C;a href="https://watchcontents.com/pg_rman-postgresql-backup/">こちらの記事&#x3C;/a>に書いてあるパッケージを事前にインストールすれば良さそうでした。必要なライブラリをインストールしたら &#x3C;code>sudo make install&#x3C;/code> でシステムの PostgreSQL の拡張ディレクトリにビルドした成果物がコピーされます。&#x3C;/p>
+&#x3C;p>次に /etc/postgresql/14/main/postgresql.conf に次の設定を追加します。&#x3C;/p>
+&#x3C;pre>&#x3C;code class=""># バックアップから復元できるように詳細に WAL を出力する
+wal_level = replica
+
+# WAL が 16MB 溜まったらファイルに出力する
+archive_mode = on
+
+# 出力したファイルのコピー方法を指定
+# 「/home/postgres/arclog」は postgres ユーザーがアクセスできるお好きなディレクトリにしてください
+archive_command = 'cp %p /home/postgres/arclog/%f'
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>これで PostgreSQL を再起動すれば、 WAL アーカイブファイルが出力されるようになります。&#x3C;/p>
+&#x3C;div role="note" class="note note-caution">
+  &#x3C;h4 class="note-heading">archive_mode = on の注意&#x3C;/h4>
+  &#x3C;div class="note-content">
+    &#x3C;p>データベースへの変更がすべてファイルに出力されることになるので、ディスクの容量はよく監視するようにしましょう。特にデータベースに大きな変更を加えたり VACUUM をしたりすると様々なページを操作するため大量の WAL アーカイブファイルが出力されます。必要に応じて無効化してください。&#x3C;/p>
+  &#x3C;/div>
+&#x3C;/div>
+&#x3C;p>次に pg_rman を設定します。 Ubuntu 22.04 ならば pg_rman は &#x3C;code>/usr/lib/postgresql/14/bin/pg_rman&#x3C;/code> にインストールされているはずです。バックアップファイルを置きたい場所と、 WAL アーカイブの保存先 (archive_command で設定したディレクトリ) を、それぞれ環境変数 &#x3C;var>BACKUP_PATH&#x3C;/var>, &#x3C;var>ARCLOG_PATH&#x3C;/var> に代入したうえで、 &#x3C;code>pg_rman init&#x3C;/code> コマンドを実行します。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="">sudo -u postgres BACKUP_PATH=/home/postgres/backup ARCLOG_PATH=/home/postgres/arclog /usr/lib/postgresql/14/bin/pg_rman init
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>すると BACKUP_PATH で指定したディレクトリに pg_rman.ini が作成されます。設定項目はこのファイルに書いておくと、毎回コマンドラインオプションで設定する必要がなくて便利です。私のサーバーでは次のような設定になっています。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>pg_rman.ini&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class=""># メモ: mkdir /home/postgres; chown postgres:postgres /home/postgres した
+ARCLOG_PATH='/home/postgres/arclog'
+SRVLOG_PATH='/var/lib/postgresql/14/main/log'
+PGDATA=/var/lib/postgresql/14/main
+PGCONF_PATH=/etc/postgresql/14/main
+COMPRESS_DATA=YES
+KEEP_DATA_DAYS=5
+KEEP_SRVLOG_DAYS=5
+KEEP_ARCLOG_DAYS=1
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>これでバックアップの準備は整いました！&#x3C;/p>
+&#x3C;p>このままフルバックアップを行うには次のコマンドを実行します。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="">sudo -u postgres BACKUP_PATH=/home/postgres/backup /usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=full --progress
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>これで PostgreSQL のデータディレクトリと WAL アーカイブファイルがバックアップディレクトリへコピーされます。&#x3C;/p>
+&#x3C;h2>定期的にバックアップする&#x3C;/h2>
+&#x3C;p>実運用に耐えるように、バックアップ作業を自動化しておきます。バックアップは次の構成にします。&#x3C;/p>
+&#x3C;ul>
+&#x3C;li>1日1回 full バックアップ&#x3C;/li>
+&#x3C;li>1時間に1回 archive バックアップ&#x3C;/li>
+&#x3C;/ul>
+&#x3C;p>このようにすることで、データの損失は最大でも1時間にすることができます。なお、 incremental バックアップは名前に反してかなり容量を必要とするので、使用していません (full バックアップをしたほうが多少容量が大きくても運用が楽と判断)。&#x3C;/p>
+&#x3C;p>まず、バックアップスクリプトを作成します。&#x3C;/p>
+&#x3C;p>はじめに、バックアップディレクトリを Backblaze B2 にコピーするスクリプトを用意します。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>backup_sync.sh&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-sh">&#x3C;span class="hljs-meta">#!/bin/bash&#x3C;/span>
+&#x3C;span class="hljs-built_in">set&#x3C;/span> -eu
+
+&#x3C;span class="hljs-comment"># [B2 CLI](https://github.com/Backblaze/B2_Command_Line_Tool) がインストールされている前提&#x3C;/span>
+&#x3C;span class="hljs-comment"># ログイン&#x3C;/span>
+b2 authorize-account [applicationKeyId] [applicationKey]
+
+&#x3C;span class="hljs-comment"># バックアップディレクトリを B2 にコピー&#x3C;/span>
+&#x3C;span class="hljs-comment"># --delete を指定することで、 KEEP_DATA_DAYS 経過したファイルを削除する&#x3C;/span>
+b2 &#x3C;span class="hljs-built_in">sync&#x3C;/span> --delete /home/postgres/backup b2://azyobuzinbackup/backup-postgres/xxxdb
+
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>次に、バックアップを行い、その後 backup_sync.sh を呼び出すスクリプトを用意します。このスクリプトによって、バックアップの定型作業を網羅します。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>backup_daily.sh&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-sh">&#x3C;span class="hljs-meta">#!/bin/sh&#x3C;/span>
+&#x3C;span class="hljs-comment"># Usage: backup_daily.sh --progress&#x3C;/span>
+&#x3C;span class="hljs-built_in">set&#x3C;/span> -eu
+
+&#x3C;span class="hljs-built_in">export&#x3C;/span> BACKUP_PATH=/home/postgres/backup
+
+/usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=full &#x3C;span class="hljs-variable">$@&#x3C;/span>
+/usr/lib/postgresql/14/bin/pg_rman validate &#x3C;span class="hljs-variable">$@&#x3C;/span>
+
+&#x3C;span class="hljs-comment"># KEEP_DATA_DAYS 経過し削除されたバックアップの管理情報を削除する&#x3C;/span>
+/usr/lib/postgresql/14/bin/pg_rman purge
+
+backup_sync.sh
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>backup_hourly.sh&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-sh">&#x3C;span class="hljs-meta">#!/bin/sh&#x3C;/span>
+&#x3C;span class="hljs-comment"># Usage: backup_hourly.sh --progress&#x3C;/span>
+&#x3C;span class="hljs-built_in">set&#x3C;/span> -eu
+&#x3C;span class="hljs-built_in">export&#x3C;/span> BACKUP_PATH=/home/postgres/backup
+
+/usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=archive &#x3C;span class="hljs-variable">$@&#x3C;/span>
+/usr/lib/postgresql/14/bin/pg_rman validate &#x3C;span class="hljs-variable">$@&#x3C;/span>
+
+backup_sync.sh
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>これのスクリプトを postgres ユーザーの cron または systemd の timer で &#x3C;code>User=postgres&#x3C;/code> で実行すれば、定期バックアップの完成です。&#x3C;/p>
+&#x3C;h2>バックアップから復元する&#x3C;/h2>
+&#x3C;p>バックアップをしても復元できることを確認しなければ、いざというときに使えません。とにかく、同じ構成のサーバーを用意できるよう、 cloud-init や Ansible などを使って構成管理をしましょう。&#x3C;/p>
+&#x3C;p>バックアップからの復元には &#x3C;code>pg_rman restore&#x3C;/code> コマンドで一発です。 Backblaze B2 からのダウンロードを含めるとこんな感じになります。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;figcaption>restore.sh&#x3C;/figcaption>
+&#x3C;pre>&#x3C;code class="language-sh">&#x3C;span class="hljs-meta">#!/bin/bash&#x3C;/span>
+&#x3C;span class="hljs-comment"># Usage: restore.sh --progress --recovery-target-time '2022-10-24 22:15:00'&#x3C;/span>
+
+&#x3C;span class="hljs-built_in">set&#x3C;/span> -eu
+
+&#x3C;span class="hljs-built_in">export&#x3C;/span> BACKUP_PATH=/home/postgres/backup
+&#x3C;span class="hljs-built_in">export&#x3C;/span> PGDATA=/var/lib/postgresql/14/main
+
+&#x3C;span class="hljs-comment"># PostgreSQL を停止&#x3C;/span>
+/usr/lib/postgresql/14/bin/pg_ctl stop -m immediate
+
+&#x3C;span class="hljs-comment"># Backblaze B2 へログイン&#x3C;/span>
+b2 authorize-account [applicationKeyId] [applicationKey]
+
+&#x3C;span class="hljs-comment"># ダウンロード&#x3C;/span>
+b2 &#x3C;span class="hljs-built_in">sync&#x3C;/span> --replaceNewer b2://azyobuzinbackup/backup-postgres/xxxdb /home/postgres/backup
+
+&#x3C;span class="hljs-comment"># ダウンロードしたファイルに実行権限を付与する&#x3C;/span>
+find &#x3C;span class="hljs-variable">${BACKUP_PATH}&#x3C;/span> -&#x3C;span class="hljs-built_in">type&#x3C;/span> f -name &#x3C;span class="hljs-string">'*.sh'&#x3C;/span> -&#x3C;span class="hljs-built_in">exec&#x3C;/span> &#x3C;span class="hljs-built_in">chmod&#x3C;/span> +x \{\} \;
+
+&#x3C;span class="hljs-comment"># pg_rman を実行&#x3C;/span>
+/usr/lib/postgresql/14/bin/pg_rman restore &#x3C;span class="hljs-variable">$@&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;/figure>
+&#x3C;p>このスクリプトを実行した後、 PostgreSQL を普通に使えるようにするには、リカバリーモードを無効化する必要があります。次の手順で WAL のリカバリーとリカバリーモードの終了を行います。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>PostgreSQL を起動し、 WAL リカバリーの完了を待つ&#x3C;/li>
+&#x3C;li>PostgreSQL を終了する&#x3C;/li>
+&#x3C;li>/etc/postgresql/14/main/postgresql.conf の最後の行 (pg_rman が勝手に書き加えています) を削除する&#x3C;/li>
+&#x3C;li>/etc/postgresql/14/main/pg_rman_recovery.conf を削除する&#x3C;/li>
+&#x3C;li>/var/lib/postgresql/14/main/recovery.signal を削除する&#x3C;/li>
+&#x3C;li>PostgreSQL を起動する&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>これで復元完了です！ ちょっと手間はありますが、スクリプト化しておくことでなんとかなるレベルです。&#x3C;/p>
+&#x3C;h2>まとめ&#x3C;/h2>
+&#x3C;p>pg_rman を定期実行し Backblaze B2 へバックアップをアップロードするスクリプトを組むことで、単純な pg_dump によるバックアップよりも柔軟に復元できるバックアップ環境を整えることができました。また、復元もスクリプト化することで、いつでもデータベースのクローンを作成することができるようになりました。&#x3C;/p>
+&#x3C;p>これで Pleroma サーバーが突然死しても、みんなの投稿は守られます。黒歴史は消えねえからよ、覚悟しとけよ。&#x3C;/p>
+&#x3C;p>というわけでよいお年を！&#x3C;/p></content><id>https://blog.azyobuzi.net/2022/12/31/01-pgrman/</id><link href="https://blog.azyobuzi.net/2022/12/31/01-pgrman/" rel="alternate" type="text/html" /><published>2022-12-31T23:26:00+09:00</published><title type="html">PostgreSQLをpg_rmanでちゃんとバックアップしている話</title><updated>2022-12-31T23:26:23+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="Web" label="Web" /><content type="html">&#x3C;p>みなさんは東京の土地勘ありますか？ 私は東京で生まれ育ちましたが、未だに赤坂がどこにあるのかいまいちピンと来ません。ただ都心であることは間違いないでしょう。&#x3C;/p>
 &#x3C;p>東京の中心は、言わずもがな、かつての江戸城、現在の皇居です。道路や鉄道は皇居を中心とした同心円状に整備されています。例えば、道路では、環状1～8号線、首都高都心・中央線環状線があります。東京メトロの主要な路線は、東京23区の端から、皇居を半周して、山手線の駅に繋がるような構成になっています。&#x3C;/p>
 &#x3C;p>逆に言えば、皇居は不可侵の場所です。皇居の上を越えていくことはできません。したがって、東京を攻略するには皇居をどっちまわりで抜けていくかを知ることが重要であり、そのためには目的地が皇居からみてどの方角にあるかを知る必要があります。&#x3C;/p>
 &#x3C;p>そこで私はかねてからアイデアがありました。東京はもう住所を廃止して極座標（皇居から見た方角と、皇居からの距離）で表すべきだと。&#x3C;/p>
