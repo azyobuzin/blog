@@ -205,27 +205,12 @@ const sampElement: Plugin<[], HastRoot> = () => {
   }
 }
 
-/** rehype-hightlight は `<pre><code>` すべてをハイライトしようとするので、抑制する */
-const assignNoHighlight: Plugin<[], HastRoot> = () => {
-  return (tree: HastRoot) => {
-    visit(tree, (node, _index, parent): void => {
-      if (!isHastElement(node, "code") || !isHastElement(parent, "pre")) return
-
-      const hasLangClass = (
-        classnames(node.properties?.className as any) as string[]
-      ).some((x) => x.includes("lang"))
-
-      if (!hasLangClass) classnames(node, "no-highlight")
-    })
-  }
-}
-
 /** コードブロックのスタイルは milligram に任せるので、 hljs のスタイルを消す */
 const removeHljsClass: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     visit(tree, (node) => {
       if (isHastElement(node, "code") && node.properties?.className != null)
-        classnames(node, { hljs: false, "no-highlight": false })
+        classnames(node, { hljs: false })
     })
   }
 }
@@ -447,7 +432,6 @@ const processor = unified()
   .use(rehypeRaw)
   .use(sectionNumbering)
   .use(sampElement)
-  .use(assignNoHighlight)
   .use(rehypeHighlight)
   .use(removeHljsClass)
   .use(figureNumbering)
