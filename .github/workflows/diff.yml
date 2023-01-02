@@ -1,0 +1,40 @@
+name: gh-pages diff
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          path: src
+          fetch-depth: 0
+      - name: Checkout gh-pages
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+      - run: npm install --production=false
+        working-directory: src
+      - run: npm run build
+        working-directory: src
+      - name: Diff
+        id: diff
+        run: |
+          rm -rf gh-pages/.git gh-pages/.nojekyll gh-pages/CNAME
+          echo '### gh-pages diff' >> $GITHUB_STEP_SUMMARY
+          echo '```patch' >> $GITHUB_STEP_SUMMARY
+          diff -ru gh-pages src/public | tee -a $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
