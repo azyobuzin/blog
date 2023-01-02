@@ -1,4 +1,4 @@
-name: Show gh-pages diff on PR
+name: gh-pages diff
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
           fetch-depth: 1
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: npm
