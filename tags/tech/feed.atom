@@ -22,7 +22,7 @@
 &#x3C;p>バックアップからの復元は、 full, incremental からデータディレクトリを復元し、最後のデータディレクトリのバックアップ以降の WAL アーカイブファイルを読み込むよう PostgreSQL に設定することで実現されます。&#x3C;/p>
 &#x3C;p>では、 pg_rman を使ってみましょう。ここでは Ubuntu 22.04, PostgreSQL 14 を前提とします。 Ubuntu でのインストールは、&#x3C;a href="https://watchcontents.com/pg_rman-postgresql-backup/">こちらの記事&#x3C;/a>に書いてあるパッケージを事前にインストールすれば良さそうでした。必要なライブラリをインストールしたら &#x3C;code>sudo make install&#x3C;/code> でシステムの PostgreSQL の拡張ディレクトリにビルドした成果物がコピーされます。&#x3C;/p>
 &#x3C;p>次に /etc/postgresql/14/main/postgresql.conf に次の設定を追加します。&#x3C;/p>
-&#x3C;pre>&#x3C;code class=""># バックアップから復元できるように詳細に WAL を出力する
+&#x3C;pre>&#x3C;code># バックアップから復元できるように詳細に WAL を出力する
 wal_level = replica
 
 # WAL が 16MB 溜まったらファイルに出力する
@@ -40,12 +40,12 @@ archive_command = 'cp %p /home/postgres/arclog/%f'
   &#x3C;/div>
 &#x3C;/div>
 &#x3C;p>次に pg_rman を設定します。 Ubuntu 22.04 ならば pg_rman は &#x3C;code>/usr/lib/postgresql/14/bin/pg_rman&#x3C;/code> にインストールされているはずです。バックアップファイルを置きたい場所と、 WAL アーカイブの保存先 (archive_command で設定したディレクトリ) を、それぞれ環境変数 &#x3C;var>BACKUP_PATH&#x3C;/var>, &#x3C;var>ARCLOG_PATH&#x3C;/var> に代入したうえで、 &#x3C;code>pg_rman init&#x3C;/code> コマンドを実行します。&#x3C;/p>
-&#x3C;pre>&#x3C;code class="">sudo -u postgres BACKUP_PATH=/home/postgres/backup ARCLOG_PATH=/home/postgres/arclog /usr/lib/postgresql/14/bin/pg_rman init
+&#x3C;pre>&#x3C;code>sudo -u postgres BACKUP_PATH=/home/postgres/backup ARCLOG_PATH=/home/postgres/arclog /usr/lib/postgresql/14/bin/pg_rman init
 &#x3C;/code>&#x3C;/pre>
 &#x3C;p>すると BACKUP_PATH で指定したディレクトリに pg_rman.ini が作成されます。設定項目はこのファイルに書いておくと、毎回コマンドラインオプションで設定する必要がなくて便利です。私のサーバーでは次のような設定になっています。&#x3C;/p>
 &#x3C;figure class="fig-code">
 &#x3C;figcaption>pg_rman.ini&#x3C;/figcaption>
-&#x3C;pre>&#x3C;code class=""># メモ: mkdir /home/postgres; chown postgres:postgres /home/postgres した
+&#x3C;pre>&#x3C;code># メモ: mkdir /home/postgres; chown postgres:postgres /home/postgres した
 ARCLOG_PATH='/home/postgres/arclog'
 SRVLOG_PATH='/var/lib/postgresql/14/main/log'
 PGDATA=/var/lib/postgresql/14/main
@@ -58,7 +58,7 @@ KEEP_ARCLOG_DAYS=1
 &#x3C;/figure>
 &#x3C;p>これでバックアップの準備は整いました！&#x3C;/p>
 &#x3C;p>このままフルバックアップを行うには次のコマンドを実行します。&#x3C;/p>
-&#x3C;pre>&#x3C;code class="">sudo -u postgres BACKUP_PATH=/home/postgres/backup /usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=full --progress
+&#x3C;pre>&#x3C;code>sudo -u postgres BACKUP_PATH=/home/postgres/backup /usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=full --progress
 &#x3C;/code>&#x3C;/pre>
 &#x3C;p>これで PostgreSQL のデータディレクトリと WAL アーカイブファイルがバックアップディレクトリへコピーされます。&#x3C;/p>
 &#x3C;h2>定期的にバックアップする&#x3C;/h2>
@@ -1145,7 +1145,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;/li>
 &#x3C;li>
 &#x3C;p>&#x3C;code>cilium-net&#x3C;/code> を作成するコマンドで &#x3C;code>--ipv6&#x3C;/code> を指定する&#x3C;/p>
-&#x3C;pre>&#x3C;code class="">docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
+&#x3C;pre>&#x3C;code>docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/li>
 &#x3C;/ol>
@@ -1153,7 +1153,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;figure class="fig-quote">
 &#x3C;blockquote>
 &#x3C;p>Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.&#x3C;/p>
-&#x3C;pre>&#x3C;code class="">ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
+&#x3C;pre>&#x3C;code>ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/blockquote>
 &#x3C;figcaption>&#x3C;a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">&#x3C;cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>

@@ -63,7 +63,7 @@
 </li>
 <li>
 <p><code>cilium-net</code> を作成するコマンドで <code>--ipv6</code> を指定する</p>
-<pre><code class="">docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
+<pre><code>docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
 </code></pre>
 </li>
 </ol>
@@ -71,7 +71,7 @@
 <figure class="fig-quote">
 <blockquote>
 <p>Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.</p>
-<pre><code class="">ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
+<pre><code>ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
 </code></pre>
 </blockquote>
 <figcaption><a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329"><cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium</cite></a></figcaption>

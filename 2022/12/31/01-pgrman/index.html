@@ -25,7 +25,7 @@ VPS に移行すると、データベースの管理も当然自分でやるこ�
 <p>バックアップからの復元は、 full, incremental からデータディレクトリを復元し、最後のデータディレクトリのバックアップ以降の WAL アーカイブファイルを読み込むよう PostgreSQL に設定することで実現されます。</p>
 <p>では、 pg_rman を使ってみましょう。ここでは Ubuntu 22.04, PostgreSQL 14 を前提とします。 Ubuntu でのインストールは、<a href="https://watchcontents.com/pg_rman-postgresql-backup/">こちらの記事</a>に書いてあるパッケージを事前にインストールすれば良さそうでした。必要なライブラリをインストールしたら <code>sudo make install</code> でシステムの PostgreSQL の拡張ディレクトリにビルドした成果物がコピーされます。</p>
 <p>次に /etc/postgresql/14/main/postgresql.conf に次の設定を追加します。</p>
-<pre><code class=""># バックアップから復元できるように詳細に WAL を出力する
+<pre><code># バックアップから復元できるように詳細に WAL を出力する
 wal_level = replica
 
 # WAL が 16MB 溜まったらファイルに出力する
@@ -43,12 +43,12 @@ archive_command = 'cp %p /home/postgres/arclog/%f'
   </div>
 </div>
 <p>次に pg_rman を設定します。 Ubuntu 22.04 ならば pg_rman は <code>/usr/lib/postgresql/14/bin/pg_rman</code> にインストールされているはずです。バックアップファイルを置きたい場所と、 WAL アーカイブの保存先 (archive_command で設定したディレクトリ) を、それぞれ環境変数 <var>BACKUP_PATH</var>, <var>ARCLOG_PATH</var> に代入したうえで、 <code>pg_rman init</code> コマンドを実行します。</p>
-<pre><code class="">sudo -u postgres BACKUP_PATH=/home/postgres/backup ARCLOG_PATH=/home/postgres/arclog /usr/lib/postgresql/14/bin/pg_rman init
+<pre><code>sudo -u postgres BACKUP_PATH=/home/postgres/backup ARCLOG_PATH=/home/postgres/arclog /usr/lib/postgresql/14/bin/pg_rman init
 </code></pre>
 <p>すると BACKUP_PATH で指定したディレクトリに pg_rman.ini が作成されます。設定項目はこのファイルに書いておくと、毎回コマンドラインオプションで設定する必要がなくて便利です。私のサーバーでは次のような設定になっています。</p>
 <figure class="fig-code">
 <figcaption>pg_rman.ini</figcaption>
-<pre><code class=""># メモ: mkdir /home/postgres; chown postgres:postgres /home/postgres した
+<pre><code># メモ: mkdir /home/postgres; chown postgres:postgres /home/postgres した
 ARCLOG_PATH='/home/postgres/arclog'
 SRVLOG_PATH='/var/lib/postgresql/14/main/log'
 PGDATA=/var/lib/postgresql/14/main
@@ -61,7 +61,7 @@ KEEP_ARCLOG_DAYS=1
 </figure>
 <p>これでバックアップの準備は整いました！</p>
 <p>このままフルバックアップを行うには次のコマンドを実行します。</p>
-<pre><code class="">sudo -u postgres BACKUP_PATH=/home/postgres/backup /usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=full --progress
+<pre><code>sudo -u postgres BACKUP_PATH=/home/postgres/backup /usr/lib/postgresql/14/bin/pg_rman backup --backup-mode=full --progress
 </code></pre>
 <p>これで PostgreSQL のデータディレクトリと WAL アーカイブファイルがバックアップディレクトリへコピーされます。</p>
 <h2>定期的にバックアップする</h2>

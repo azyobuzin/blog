@@ -205,7 +205,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;/li>
 &#x3C;li>
 &#x3C;p>&#x3C;code>cilium-net&#x3C;/code> を作成するコマンドで &#x3C;code>--ipv6&#x3C;/code> を指定する&#x3C;/p>
-&#x3C;pre>&#x3C;code class="">docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
+&#x3C;pre>&#x3C;code>docker network create --driver cilium --ipam-driver cilium --ipv6 cilium-net
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/li>
 &#x3C;/ol>
@@ -213,7 +213,7 @@ Visual Studio と VSCode の同時実行は危険です。同じマウント先�
 &#x3C;figure class="fig-quote">
 &#x3C;blockquote>
 &#x3C;p>Install an ip6tables MASQUERADE rule for IPv6 traffic leaving the node.&#x3C;/p>
-&#x3C;pre>&#x3C;code class="">ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
+&#x3C;pre>&#x3C;code>ip6tables -t nat -A POSTROUTING ! -o cilium_+ -s f00d::/16 -j MASQUERADE
 &#x3C;/code>&#x3C;/pre>
 &#x3C;/blockquote>
 &#x3C;figcaption>&#x3C;a href="https://github.com/cilium/cilium/issues/6320#issuecomment-442722329">&#x3C;cite>Cilium needs ip6tables rules to route IPv6 packets · Issue #6320 · cilium/cilium&#x3C;/cite>&#x3C;/a>&#x3C;/figcaption>
