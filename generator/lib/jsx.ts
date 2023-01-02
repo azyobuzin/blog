@@ -55,8 +55,6 @@ declare global {
       children: any
     }
 
-    interface IntrinsicElements {
-      [name: string]: any
-    }
+    type IntrinsicElements = Record<string, any>
   }
 }
