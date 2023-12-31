@@ -1,4 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/%E6%97%A5%E8%A8%98/feed.atom</id><link href="https://blog.azyobuzi.net/tags/%E6%97%A5%E8%A8%98/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/%E6%97%A5%E8%A8%98/" rel="alternate" type="text/html" /><title>日記 | あじょろぐ</title><updated>2021-09-01T03:14:31+09:00</updated><entry><category term="unlisted" label="unlisted" /><category term="日記" label="日記" /><content type="html">&#x3C;p>せっかくブログをリニューアルしたので、日記をちゃんとつけようと思う。まぁ手書き日記も続かなかったので、たぶん続かないと思うけど。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/%E6%97%A5%E8%A8%98/feed.atom</id><link href="https://blog.azyobuzi.net/tags/%E6%97%A5%E8%A8%98/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/%E6%97%A5%E8%A8%98/" rel="alternate" type="text/html" /><title>日記 | あじょろぐ</title><updated>2024-01-01T04:59:21+09:00</updated><entry><category term="日記" label="日記" /><content type="html">&#x3C;p>あけましておめでとうございます。ついぞ2023年はブログを一件も投稿しませんでしたが、生きてます。&#x3C;/p>
+&#x3C;p>1月1日午前4時、犬吠埼にいて、初日の出を待ちながらブログを書いています。PCを車で運びながら充電してたら、若干バックライトがいかれて悲しい。&#x3C;/p>
+&#x3C;h2>2023年、何してたんや&#x3C;/h2>
+&#x3C;p>年を振り返るなら2023年中にしとけや。わかる。ただそんなやる気も出なかったので許して。なんなら最近PC触るのもやる気が出てない。&#x3C;/p>
+&#x3C;h3>労働&#x3C;/h3>
+&#x3C;p>社会人になって1年半が経ちました。仕事ではもっぱら Ruby on Rails を触っています。e-Taxの仕様書と向き合う仕事とかしてます。フルタイムで開発してると、趣味でもコード書こうという気がだんだん起きなくなってきて、無事つまらない社会人になってしまいました。中途採用の面接官もやってるのですが、自分のことは棚に上げてプライベートでの技術興味とか聞いてます、許して。&#x3C;/p>
+&#x3C;p>仕事では、プロダクト自体は面白くて、改善していくのはやりがいがあるのですが、技術的にあんまりチャレンジングではないです。だからこそ、チャレンジングなネタを自分で生み出して、コスパを示してリードしていくのが今後の課題です。&#x3C;/p>
+&#x3C;h3>埼玉県民になりました&#x3C;/h3>
+&#x3C;p>翔んで埼玉は未履修です。&#x3C;/p>
+&#x3C;p>東京で生まれ育ってきましたが、ついに実家を出ました。今は1km以内に田畑が広がる地に住んでいます。たまにでかい虫が家の中に入ってきてビビり散らかしてますが、安くて広い家を借りられて快適です。&#x3C;/p>
+&#x3C;p>そういえば、ゴールデンウィークに引っ越した関係で、マイナンバーカードの署名用電子証明書が無効になったままだった。そのうち更新します。&#x3C;/p>
+&#x3C;h3>登山を趣味にしようとしている&#x3C;/h3>
+&#x3C;p>私の体は、走る体力はなくても、歩くのだけは無限にできるみたいです。昔から歩くのは好きだったのですが、その延長として山に登るようになりました。&#x3C;/p>
+&#x3C;p>YAMAPを見ると、2023年は8回の登頂記録があります。初心者なので3～5時間くらいで完走できるようなコースにちょくちょく出かけています。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2024/01/01/01-akeome/yamap.png" alt="YAMAPのスクリーンショット" width="743" height="919">
+&#x3C;/figure>
+&#x3C;p>夏と冬は過酷なので、また春になったらやっていきます。&#x3C;/p>
+&#x3C;h3>教習所に通っている&#x3C;/h3>
+&#x3C;p>12月から中型自動車免許を取るために教習所に通っています。理由は、ただの趣味です。でかい車を運転する経験したくない？&#x3C;/p>
+&#x3C;p>軽い気持ちで始めたものの、スケジュールがかなりハードで、第1段階5時間、第2段階6時間で終わりです。教習車のトラックの挙動は、やはり普通車とは全然違くて、慣れる前に終わってしまいそう。普通車の免許を取ったときくらいの手厚さを想像してたので、びびっています。&#x3C;/p>
+&#x3C;p>12月中に仮免許の取得まで終わったので、今年は路上教習からスタートです。&#x3C;/p>
+&#x3C;h2>2024年は&#x3C;/h2>
+&#x3C;p>なによりも体力。体力がないと無をして終わってしまうので、体力を増やすぞ！って10月くらいにも言ってたのですが、寒さにやられました。冬は無理。春になったら頑張ります。&#x3C;/p>
+&#x3C;p>あとは、ブログを書けるように、もうちょい技術で遊ぶなり、ネタになるように写真撮ったりするべきですね。&#x3C;/p>
+&#x3C;p>2023年も皆様のお付き合いありがとうございました。今年もよろしくお願いします。&#x3C;/p></content><id>https://blog.azyobuzi.net/2024/01/01/01-akeome/</id><link href="https://blog.azyobuzi.net/2024/01/01/01-akeome/" rel="alternate" type="text/html" /><published>2024-01-01T05:00:00+09:00</published><title type="html">新年のご挨拶と近況報告2024</title><updated>2024-01-01T04:59:21+09:00</updated></entry><entry><category term="unlisted" label="unlisted" /><category term="日記" label="日記" /><content type="html">&#x3C;p>せっかくブログをリニューアルしたので、日記をちゃんとつけようと思う。まぁ手書き日記も続かなかったので、たぶん続かないと思うけど。&#x3C;/p>
 &#x3C;ul>
 &#x3C;li>10時に起床したのに、着替えて抱き枕を抱えていたら14時まで寝てしまい、早起きした意味がなかった。&#x3C;/li>
 &#x3C;li>研究室の同期と進捗報告会をした。進捗がないつらいと嘆くだけ。生産性はどこに。でも人と話すのは本当に精神衛生に良い。&#x3C;/li>
