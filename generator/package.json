@@ -13,7 +13,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "canvas": "^2.9.0",
+    "canvas": "^2.11.2",
     "chalk": ">=4.1.2 <5.1",
     "glob": "^10.3.10",
     "hast-util-classnames": "^2.0.0",
@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",
-    "@types/katex": "^0.14.0",
+    "@types/katex": "^0.16.7",
     "@typescript-eslint/eslint-plugin": "^5.47.1",
     "@typescript-eslint/parser": "^5.47.1",
     "eslint": "^8.56.0",

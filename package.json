@@ -6,8 +6,8 @@
     "highlight.js": "^11.6.0"
   },
   "devDependencies": {
-    "html-validate": "^7.1.2",
-    "parcel": "^2.6.2",
+    "html-validate": "^8.10.0",
+    "parcel": "^2.11.0",
     "prettier": "^3.2.5",
     "serve": "^14.2.1"
   },
