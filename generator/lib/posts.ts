@@ -3,7 +3,7 @@ import { stat } from "fs/promises"
 import * as path from "path"
 import canvas from "canvas"
 import chalk from "chalk"
-import glob from "glob"
+import { glob } from "glob"
 import type {
   Element,
   Node as HastNode,
@@ -67,23 +67,16 @@ interface Frontmatter {
 }
 
 export async function readPosts(postsDir: string): Promise<Post[]> {
-  const dirs = await new Promise<string[]>((resolve, reject) => {
-    glob(
-      "????/??/??/*",
-      {
-        cwd: postsDir,
-        nosort: true,
-        absolute: true,
-      },
-      (err, matches) => (err == null ? resolve(matches) : reject(err))
-    )
+  const dirs = await glob("????/??/??/*", {
+    cwd: postsDir,
+    absolute: true,
   })
 
   let posts = await Promise.all(
     dirs.map(async (dir) => {
       if (!(await stat(path.join(dir, CONTENT_FILE_NAME))).isFile()) return null
       return await readPost(dir)
-    })
+    }),
   )
 
   posts = posts.filter((x) => x != null)
@@ -253,7 +246,7 @@ const figureNumbering: Plugin<[], HastRoot> = () => {
 
 function assignTextToAnchor(
   tree: HastRoot,
-  nameById: Map<string, string>
+  nameById: Map<string, string>,
 ): void {
   for (const el of selectAll("a[href^=#]:empty", tree)) {
     const figNumStr = nameById.get((el.properties!.href as string).slice(1))
@@ -283,7 +276,7 @@ const assignImgSize: Plugin<[], HastRoot> = () => {
             // 絶対パスなのでサイズの取得は諦め、警告する
             file.message(
               `width and height are not specfied. They are required for an external resource (${props.src}).`,
-              el.position
+              el.position,
             )
             return
           }
@@ -318,7 +311,7 @@ const assignImgSize: Plugin<[], HastRoot> = () => {
             file.message(err as Error, el.position)
           }
         }
-      })
+      }),
     )
   }
 }
@@ -351,7 +344,7 @@ const flexEquation: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     for (const el of selectAll(
       ".katex-display>.katex>.katex-html>.tag",
-      parents(tree) as typeof tree
+      parents(tree) as typeof tree,
     )) {
       classnames((el as any).parent as Element, "ab-equation")
     }
@@ -445,7 +438,7 @@ const processor = unified()
   .freeze() as FrozenProcessor<MdastRoot, HastRoot, HastRoot, Post>
 
 async function getGitCommit(
-  path: string
+  path: string,
 ): Promise<{ commitHash?: string; revdate?: string }> {
   return await new Promise((resolve, reject) => {
     execFile(
@@ -472,14 +465,14 @@ async function getGitCommit(
         }
 
         resolve({ commitHash, revdate })
-      }
+      },
     )
   })
 }
 
 export function removeRelativeLink<T extends HastNode>(
   node: T,
-  baseUrl: URL | string
+  baseUrl: URL | string,
 ): T {
   return map(node, (node) => {
     if (

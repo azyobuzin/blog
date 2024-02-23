@@ -44,7 +44,7 @@ export function h(
     : hastscript(
         selector as any,
         properties,
-        children.filter((x) => x != null && x !== true && x !== false)
+        children.filter((x) => x != null && x !== true && x !== false),
       )
 }
 

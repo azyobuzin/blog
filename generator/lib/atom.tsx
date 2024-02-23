@@ -8,7 +8,7 @@ export function createAtom(
   title: string,
   url: string,
   feedUrl: string,
-  posts: Post[]
+  posts: Post[],
 ): Root {
   const entries = posts.map((post) => {
     const url = `${SITE_URL}/${post.slug}/`
