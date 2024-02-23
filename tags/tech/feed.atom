@@ -1,4 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/tech/feed.atom</id><link href="https://blog.azyobuzi.net/tags/tech/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/tech/" rel="alternate" type="text/html" /><title>tech | あじょろぐ</title><updated>2022-12-31T23:37:31+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>データベースの運用は難しい。私の運用している Pleroma (Mastodon 互換といえば世間的に通じそう) サーバー (&#x3C;a href="https://xxx.azyobuzi.net/">ご隠居&#x3C;/a>) は、今まで EC2 + RDS の構成でしたが、さすがに高かった ($50 が円安で厳しくなっていく)。そこで 10 月に KAGOYA CLOUD VPS に移行を行いました。で、登録したら「嘘の住所で登録してない？」とサポートに疑われて、メールチェックしてない間にアカウントが停止されていたのは別の話……。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/tech/feed.atom</id><link href="https://blog.azyobuzi.net/tags/tech/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/tech/" rel="alternate" type="text/html" /><title>tech | あじょろぐ</title><updated>2024-02-23T19:52:02+09:00</updated><entry><category term="日記" label="日記" /><category term="tech" label="tech" /><content type="html">&#x3C;p>Forza Motorsport 新作が出てたことを思い出した（今更）ので、 Xbox Game Pass で遊ぶことにしました。前作からすでにそうですが、このゲームは容量が 100GB 以上あります。&#x3C;/p>
+&#x3C;p>私の PC には 1TB の SATA 接続 SSD と、 2TB の HDD が接続されていました。すでに SSD のほうは残り容量がカツカツなので HDD のほうに入れることに。予想はしていたのですが、 HDD は時代遅れなほど遅いので、コースのロードに1分くらい待つことになるのでストレスフルでした。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/hdd.png" alt="エクスプローラのスクリーンショット。「2TBあればなんでもできる (F:)」ドライブがある。" width="256" height="85">
+&#x3C;figcaption>2TBあればなんでもできるはずだったHDD&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>そこでついに重い腰を上げて、新しい SSD を購入しました。買ったのは CFD のミドルくらいの 4TB モデル (&#x3C;a href="https://amzn.to/3wsydBk" target="_blank" rel="external">CSSD-M2L4KSFT6KE&#x3C;/a>)。 Amazon で3万を切ってたので買いだと思って購入しました。&#x3C;/p>
+&#x3C;p>で、ここからが本題。 Windows をクリーンインストールする元気はないので、&#x3C;strong>どうにかして前の SSD から新しい SSD にデータを移行したい&#x3C;/strong>です。数年前にも同じことやってるのですが、やり方をメモしてなかったので、備忘録としてメモしておきます。&#x3C;/p>
+&#x3C;h2>前提&#x3C;/h2>
+&#x3C;ul>
+&#x3C;li>Windows が入ったディスクを別のディスクに移行したい&#x3C;/li>
+&#x3C;li>移行元のディスクと移行先のディスクは両方ともPCに接続されている
+&#x3C;ul>
+&#x3C;li>今回は SATA SSD → M.2 SSD なので両方同時に接続可能でした&#x3C;/li>
+&#x3C;/ul>
+&#x3C;/li>
+&#x3C;li>BitLocker を使っていない （たぶん使ってたら面倒なことになる）&#x3C;/li>
+&#x3C;/ul>
+&#x3C;p>必要なもの&#x3C;/p>
+&#x3C;ul>
+&#x3C;li>USBメモリ (16GBあれば安心)&#x3C;/li>
+&#x3C;li>BIOS / UEFI の設定を躊躇なく触れるリテラシー&#x3C;/li>
+&#x3C;li>バックアップなしで実行するので、ミスってもくじけない強い心&#x3C;/li>
+&#x3C;/ul>
+&#x3C;h2>1. 高速スタートアップを無効化する&#x3C;/h2>
+&#x3C;p>こういう作業をするとき事故の原因になるのが Windows の高速スタートアップ機能です。シャットダウン時の状態を特別な領域に保存しているので、このまま別の OS を起動すると何らかおかしいことが起こります（移行完了後に起動したらブルースクリーンになったことがある。1敗）。まずは高速スタートアップを無効化しましょう。&#x3C;/p>
+&#x3C;p>高速スタートアップの設定は、 [コントロール パネル] → [ハードウェアとサウンド] → [電源ボタンの動作の変更] にあります。 [現在利用可能ではない設定を変更します] をクリックして管理者権限に昇格したあと、 [高速スタートアップを有効にする] のチェックを外して [変更の保存] をクリックしてください。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/startup.png" alt="高速スタートアップの設定変更方法" width="804" height="630">
+&#x3C;/figure>
+&#x3C;h2>2. Ubuntu のライブ USB をつくって起動&#x3C;/h2>
+&#x3C;p>何の Linux ディストリビューションでも良いですが、個人的な趣味で Ubuntu を前提に進めていきます。&#x3C;/p>
+&#x3C;p>まず USB メモリに Ubuntu を入れていきます。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>&#x3C;a href="https://ubuntu.com/download/desktop" target="_blank" rel="external">https://ubuntu.com/download/desktop&#x3C;/a> から ISO ファイルをダウンロード&#x3C;/li>
+&#x3C;li>&#x3C;a href="https://etcher.balena.io/" target="_blank" rel="external">Etcher&#x3C;/a> で ISO ファイルを USB メモリに焼く&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>（ただ ISO ファイルを焼くだけにも、最近は Etcher なんてリッチな UI のアプリがあるんだなぁ）&#x3C;/p>
+&#x3C;p>あとは作った USB メモリからブートして、 Try Ubuntu を選択してください。私の環境だと「Try or Install Ubuntu」がうまく動かなかったので safe graphics モードを使用しました。&#x3C;/p>
+&#x3C;h2>3. 移行元ディスクと移行先ディスクを確認する&#x3C;/h2>
+&#x3C;p>Ubuntu が起動したら Disks アプリを起動します。起動したら、容量やパーティション構成を頼りに移行元ディスクと移行先ディスクを特定します。特定したらデバイスのパスをメモしておきます。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/disks.png" alt="Disksアプリのスクリーンショット" width="795" height="582">
+&#x3C;figcaption>ヘッダーのところに書いてあるのをメモする&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>私の環境では、移行元ディスクが /dev/sdb 、移行先ディスクが /dev/nvme0n1 でした。&#x3C;/p>
+&#x3C;h2>4. ddコマンドで中身をコピーする&#x3C;/h2>
+&#x3C;p>デバイスを特定したら、ディスクの中身を丸ごとコピーします。1バイト足りとも違わない完璧なコピーを作ります。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>ターミナルを起動&#x3C;/li>
+&#x3C;li>&#x3C;code>sudo dd if=移行元 of=移行先 bs=適当な値&#x3C;/code> を実行
+&#x3C;ul>
+&#x3C;li>移行元・移行先は Disks で確認したパスを入力 (例: &#x3C;code>if=/dev/sdb if=/dev/nvme0n1&#x3C;/code>)&#x3C;/li>
+&#x3C;li>bs は小さすぎるとコピーが遅くなるので、メモリが許す限り適度に大きくします。私の場合は &#x3C;code>bs=256M&#x3C;/code> を指定しましたが、これが最速かはわかりません。&#x3C;/li>
+&#x3C;/ul>
+&#x3C;/li>
+&#x3C;/ol>
+&#x3C;p>あとは1時間くらい放置です。ここで if と of を間違えてたら事故なので泣いてください。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/dd.jpg" alt="" width="1000" height="222">
+&#x3C;figcaption>実行中の様子&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;h2>5. 後は流れで&#x3C;/h2>
+&#x3C;p>コピーが完了すると、完全に同じパーティションテーブルを持った、ふたつのディスクが存在することになります。この状態で PC を起動すると UEFI は接続順でどちらか片方しか認識しなくなります（マザーボード次第かも）。心配な場合は PC の電源を切ったあと、移行元のディスクを外してから Windows を起動しましょう。私の環境では運よく移行先が優先されてたので、そのまま使っています。&#x3C;/p>
+&#x3C;p>移行元ディスクを別の用途に使うならば、 Ubuntu 上の Disks や Gparted でパーティションテーブルを作り直すなり、 Windows で diskpart を使って空にするなりすれば、新たに使えるようになるはずです。&#x3C;/p></content><id>https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/</id><link href="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/" rel="alternate" type="text/html" /><link href="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/hdd.png" rel="enclosure" /><published>2024-02-23T19:51:00+09:00</published><title type="html">やっとNVMe時代のSSDを買ったのでddコマンドでデータ移行した話</title><updated>2024-02-23T19:52:02+09:00</updated></entry><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>データベースの運用は難しい。私の運用している Pleroma (Mastodon 互換といえば世間的に通じそう) サーバー (&#x3C;a href="https://xxx.azyobuzi.net/">ご隠居&#x3C;/a>) は、今まで EC2 + RDS の構成でしたが、さすがに高かった ($50 が円安で厳しくなっていく)。そこで 10 月に KAGOYA CLOUD VPS に移行を行いました。で、登録したら「嘘の住所で登録してない？」とサポートに疑われて、メールチェックしてない間にアカウントが停止されていたのは別の話……。&#x3C;/p>
 &#x3C;p>VPS に移行すると、データベースの管理も当然自分でやることになります。今まで RDS が自動でやっていたことを自分で組み直すのは大変だったので、今年最後の技術ブログをやっておきます。&#x3C;/p>
 &#x3C;h2>日次バックアップか、もっと頻度を高めるか&#x3C;/h2>
 &#x3C;p>もっとも簡単なバックアップは、 pg_dump を使ってデータを SQL ファイルまたは pg_dump 独自形式として出力させてしまう方法でしょうか。 RDS を使う前は1日1回 pg_dump したものを xz で圧縮して Backblaze B2 へアップロードするスクリプトを組んでいました。&#x3C;/p>
