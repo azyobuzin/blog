@@ -58,7 +58,7 @@ function postPages(posts: Post[]): Record<string, Renderer> {
     posts.map((post) => [
       `${post.slug}/index.html`,
       htmlFile(<PostPage post={post} />),
-    ])
+    ]),
   )
 }
 
@@ -74,7 +74,7 @@ function tagPages(posts: Post[]): Record<string, Renderer> {
         ],
         [`tags/${tag}/feed.atom`, xmlFile(tagFeed(tag, postsByTag))],
       ]
-    })
+    }),
   )
 }
 

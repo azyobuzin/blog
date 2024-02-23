@@ -159,7 +159,7 @@ exports.onPreRenderHTML = ({ getHeadComponents, replaceHeadComponents }) => {
       if (el.type !== "style") return el
       const href = el.props["data-href"]
       return href ? <link rel="stylesheet" href={href} /> : el
-    })
+    }),
   )
 }
 ```

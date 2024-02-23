@@ -10,7 +10,7 @@ describe("formatDate", () => {
 
   test("date and time", () => {
     expect(formatDate("2021-09-30T01:47:01+09:00", true)).toBe(
-      "2021/09/30 01:47"
+      "2021/09/30 01:47",
     )
   })
 

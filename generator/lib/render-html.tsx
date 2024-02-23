@@ -11,7 +11,7 @@ import { Element, h } from "./jsx"
 
 export async function renderHtml(
   tree: Element,
-  outPath: string
+  outPath: string,
 ): Promise<void> {
   let htmlFile = new VFile({ path: outPath, result: tree })
   htmlFile = await processor.process(htmlFile)
@@ -47,7 +47,7 @@ const mathStyle: Plugin<[], HastRoot> = () => {
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
         async
-      />
+      />,
     )
   }
 }

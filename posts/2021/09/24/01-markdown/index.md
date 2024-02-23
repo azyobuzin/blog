@@ -112,7 +112,7 @@ export function h(selector, properties, ...children) {
         selector,
         properties,
         // hastscript は boolean を入力すると例外をスローするのでフィルター
-        children.filter((x) => x != null && x !== true && x !== false)
+        children.filter((x) => x != null && x !== true && x !== false),
       )
 }
 ```

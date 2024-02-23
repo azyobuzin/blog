@@ -13,6 +13,6 @@ export function tagFeed(tag: string, posts: Post[]): Root {
     `${tag} | ${SITE_TITLE}`,
     SITE_URL + tagUrl(tag),
     SITE_URL + tagUrl(tag) + "feed.atom",
-    posts
+    posts,
   )
 }

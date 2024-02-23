@@ -4,7 +4,7 @@ import { toXml } from "xast-util-to-xml"
 
 export async function renderXml(
   tree: Element | Root,
-  outPath: string
+  outPath: string,
 ): Promise<void> {
   if (tree.type !== "root") {
     tree = {
@@ -22,6 +22,6 @@ export async function renderXml(
 
   await writeFile(
     outPath,
-    toXml(tree, { closeEmptyElements: true, allowDangerousXml: true })
+    toXml(tree, { closeEmptyElements: true, allowDangerousXml: true }),
   )
 }

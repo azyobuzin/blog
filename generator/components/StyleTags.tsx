@@ -8,7 +8,7 @@ const StyleTags: VFC<{ styles: ReadonlyArray<string | null | undefined> }> = ({
       {styles.map((x) =>
         x != null && x !== "" ? (
           <style>{{ type: "raw", value: x }}</style>
-        ) : null
+        ) : null,
       )}
     </>
   )
