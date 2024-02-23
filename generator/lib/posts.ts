@@ -3,7 +3,7 @@ import { stat } from "fs/promises"
 import * as path from "path"
 import canvas from "canvas"
 import chalk from "chalk"
-import glob from "glob"
+import { glob } from "glob"
 import type {
   Element,
   Node as HastNode,
@@ -67,16 +67,9 @@ interface Frontmatter {
 }
 
 export async function readPosts(postsDir: string): Promise<Post[]> {
-  const dirs = await new Promise<string[]>((resolve, reject) => {
-    glob(
-      "????/??/??/*",
-      {
-        cwd: postsDir,
-        nosort: true,
-        absolute: true,
-      },
-      (err, matches) => (err == null ? resolve(matches) : reject(err)),
-    )
+  const dirs = await glob("????/??/??/*", {
+    cwd: postsDir,
+    absolute: true,
   })
 
   let posts = await Promise.all(
