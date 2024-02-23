@@ -6,7 +6,7 @@ on:
 
 jobs:
   diff:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
     steps:
@@ -21,11 +21,13 @@ jobs:
           ref: gh-pages
           path: gh-pages
           fetch-depth: 1
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
           cache: npm
           cache-dependency-path: src/package-lock.json
+      - name: apt-get install
+        run: sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - run: npm install --production=false
         working-directory: src
       - run: npm run build
