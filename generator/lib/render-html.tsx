@@ -1,6 +1,6 @@
 import { mkdir } from "fs/promises"
 import { resolve } from "path"
-import type { Element as HastElement, Root as HastRoot } from "hast"
+import type { Root as HastRoot } from "hast"
 import { select } from "hast-util-select"
 import katex from "katex"
 import rehypeStringify from "rehype-stringify"
@@ -31,7 +31,7 @@ const mathStyle: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
     if (select(".math", tree) == null) return
 
-    const head = select("head", tree) as HastElement
+    const head = select("head", tree)!
     const katexVersion: string = (katex as any).version
     const katexDist = `https://unpkg.com/katex@${katexVersion}/dist/`
 
