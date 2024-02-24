@@ -3,8 +3,8 @@ import { Child, Properties, h as hastscript } from "hastscript"
 
 export type Node = Child
 export type Element = HastElement | HastRoot
-export type VFC<P = {}, R extends Element = Element> = (props: P) => R
-export type FC<P = {}, R extends Element = Element> = VFC<
+export type VFC<P = object, R extends Element = Element> = (props: P) => R
+export type FC<P = object, R extends Element = Element> = VFC<
   P & { children: Node },
   R
 >
@@ -19,7 +19,7 @@ export function h<P, R extends Element>(
     : []
 ): R
 
-export function h<R extends Element>(component: VFC<{}, R>): R
+export function h<R extends Element>(component: VFC<object, R>): R
 
 export function h(
   selector: null | undefined,
@@ -34,7 +34,7 @@ export function h(
 ): HastElement
 
 export function h(
-  selector: Function | string | null | undefined,
+  selector: VFC | string | null | undefined,
   // @eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   properties?: any,
   ...children: any[]
