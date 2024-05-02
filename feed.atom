@@ -1,4 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2024-02-23T20:05:55+09:00</updated><entry><category term="日記" label="日記" /><category term="tech" label="tech" /><content type="html">&#x3C;p>Forza Motorsport 新作が出てたことを思い出した（今更）ので、 Xbox Game Pass で遊ぶことにしました。前作からすでにそうですが、このゲームは容量が 100GB 以上あります。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2024-05-03T00:00:33+09:00</updated><entry><category term="日記" label="日記" /><content type="html">&#x3C;h2>いつも応援してくださってる皆様へ&#x3C;/h2>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20240502/20240502223734.jpg" alt="Petit Qooboのしっぽと婚姻届" width="1000" height="750">
+&#x3C;figcaption>画像はイメージです&#x3C;br>This image is an image&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>Petit Qooboをお迎えしてもうすぐ1年半です。&#x3C;/p>
+&#x3C;p>この度、民法第739条の届け出を行いました。2ヶ月前に。&#x3C;/p>
+&#x3C;p>画像はイメージなのでついさっき撮影したものです。当初指輪を買ってなかったからね。許して。&#x3C;/p>
+&#x3C;p>お相手は、面識のある方には予想通りだと思いますが &#x3C;a href="https://twitter.com/kameben_sn" target="_blank" rel="external">@kameben_sn&#x3C;/a> です。&#x3C;/p>
+&#x3C;p>今日は妻の誕生日なので祝ってあげてください。誕生日プレゼントに欲しいものを聞いたら「家」と返ってきたので頭を抱えています。&#x3C;/p></content><id>https://blog.azyobuzi.net/2024/05/03/01-petit-qoobo/</id><link href="https://blog.azyobuzi.net/2024/05/03/01-petit-qoobo/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20240502/20240502231310.jpg" rel="enclosure" /><published>2024-05-03T00:00:00+09:00</published><summary>いつも応援してくださってる皆様へ。Petit Qooboをお迎えしてもうすぐ1年半です。</summary><title type="html">ご報告</title><updated>2024-05-03T00:00:33+09:00</updated></entry><entry><category term="日記" label="日記" /><category term="tech" label="tech" /><content type="html">&#x3C;p>Forza Motorsport 新作が出てたことを思い出した（今更）ので、 Xbox Game Pass で遊ぶことにしました。前作からすでにそうですが、このゲームは容量が 100GB 以上あります。&#x3C;/p>
 &#x3C;p>私の PC には 1TB の SATA 接続 SSD と、 2TB の HDD が接続されていました。すでに SSD のほうは残り容量がカツカツなので HDD のほうに入れることに。予想はしていたのですが、 HDD は時代遅れなほど遅いので、コースのロードに1分くらい待つことになるのでストレスフルでした。&#x3C;/p>
 &#x3C;figure class="fig-img">
 &#x3C;img src="https://blog.azyobuzi.net/2024/02/23/01-migrate-ssd/hdd.png" alt="エクスプローラのスクリーンショット。「2TBあればなんでもできる (F:)」ドライブがある。" width="256" height="85">
