@@ -15,7 +15,7 @@
   "dependencies": {
     "canvas": "^2.11.2",
     "chalk": ">=4.1.2 <5.1",
-    "glob": "^10.3.10",
+    "glob": "^10.3.12",
     "hast-util-classnames": "^2.0.0",
     "hast-util-has-property": "^2.0.0",
     "hast-util-heading": "^2.0.0",
