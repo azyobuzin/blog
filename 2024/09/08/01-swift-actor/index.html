@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="https://github.com/azyobuzin/blog"><link rel="stylesheet" href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>SwiftのActorについての備忘録 | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/2024/09/08/01-swift-actor/"><meta property="og:title" content="SwiftのActorについての備忘録"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/2024/09/08/01-swift-actor/"><meta property="og:description" content="最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。
+
+SwiftでiOSアプリを書いているとよく @MainActor というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。"><meta property="og:article:published_time" content="2024-09-08T00:45+09:00"><meta property="og:article:modified_time" content="2024-09-08T00:45:09+09:00"><meta property="og:article:tag" content="tech"></head><body><div class="container"><main><article><header><h1>SwiftのActorについての備忘録</h1><div class="article-meta"><i class="fa fa-pencil-square-o" title="公開日"></i> <time datetime="2024-09-08T00:45+09:00" title="公開: 2024/09/08 00:45
+最終更新: 2024/09/08 00:45">2024/09/08</time> ― <a href="https://github.com/azyobuzin/blog/commits/953bcda709d4224385447aa1a963d027bfd87c0a/posts/2024/09/08/01-swift-actor" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" title="タグ"></i><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li></ul></div></header><div class="article-content"><p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。</p>
+<p>SwiftでiOSアプリを書いているとよく <code>@MainActor</code> というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。</p>
+<h2>Actorとは何か</h2>
+<p><code>@MainActor</code>アノテーションの説明の前に、actorというもの自体の説明をしましょう。</p>
+<h3>操作の直列化</h3>
+<p>actorはほぼclassのようなものですが、必ず処理が直列化されるという特徴があります。</p>
+<p>例えば、次のMyActorはfooというメソッドを持っています。</p>
+<pre><code class="language-swift"><span class="hljs-keyword">actor</span> <span class="hljs-title class_">MyActor</span> {
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">foo</span>() {
+    <span class="hljs-comment">// do something</span>
+  }
+}
+</code></pre>
+<p>同一のMyActorインスタンスに対して、複数スレッドから同時にfooメソッドを呼び出すとどうなるでしょうか？</p>
+<p>通常のクラスであれば、何も排他制御が行われず、呼び出し元スレッドで普通にfooメソッドが呼び出されます。</p>
+<p>一方、actorの場合は、呼び出しがキューに積まれて、順番に処理されます。これがひとつのactorインスタンスに対する操作は直列化されるという意味です。</p>
+<h3>awaitの強制</h3>
+<p>キューに積まれて順番に処理されるということは、完了を待機する必要があるということです。しかし、完了を待機する間に呼び出し元スレッドをブロックすることはありません。代わりにawaitを使用することが強制されます。</p>
+<p>次の例では、トップレベルからMyActorのメソッドを呼び出すときにawaitを指定しています。awaitを外すとコンパイルエラーになります。</p>
+<pre><code class="language-swift"><span class="hljs-keyword">actor</span> <span class="hljs-title class_">MyActor</span> {
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">foo</span>() {
+    <span class="hljs-comment">// do something</span>
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">bar</span>() {
+    <span class="hljs-comment">// 同一actor内なのでawaitが不要</span>
+    foo()
+  }
+}
+
+<span class="hljs-keyword">let</span> myActor <span class="hljs-operator">=</span> <span class="hljs-type">MyActor</span>()
+
+<span class="hljs-comment">// actorの外なのでawaitが必要</span>
+<span class="hljs-keyword">await</span> myActor.foo()
+</code></pre>
+<p>このように、actorのメソッドをactor外から呼び出すにはawaitが必要になります。</p>
+<p>また、actorのメソッドが別のactorの処理を待機している間は、別の処理を進めることができます。例えば、Actor1がActor2のメソッドを呼び出している間に、Actor1の別のメソッドが呼ばれたならば、待機中にそのメソッドの処理を進めることができます。</p>
+<pre><code class="language-swift"><span class="hljs-keyword">import</span> Foundation
+
+<span class="hljs-keyword">actor</span> <span class="hljs-title class_">Actor1</span> {
+  <span class="hljs-keyword">let</span> actor2 <span class="hljs-operator">=</span> <span class="hljs-type">Actor2</span>()
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">work1</span>() <span class="hljs-keyword">async</span> {
+    <span class="hljs-comment">// actor2を呼び出して待機。ここで1秒かかる。</span>
+    <span class="hljs-keyword">await</span> actor2.work()
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"work1"</span>)
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">work2</span>() {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"work2"</span>)
+  }
+}
+
+<span class="hljs-keyword">actor</span> <span class="hljs-title class_">Actor2</span> {
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">work</span>() {
+    <span class="hljs-type">Thread</span>.sleep(forTimeInterval: <span class="hljs-number">1</span>)
+  }
+}
+
+<span class="hljs-keyword">let</span> actor1 <span class="hljs-operator">=</span> <span class="hljs-type">Actor1</span>()
+<span class="hljs-comment">// work1とwork2を同時に呼び出し</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> task1: () <span class="hljs-operator">=</span> actor1.work1()
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> task2: () <span class="hljs-operator">=</span> actor1.work2()
+<span class="hljs-keyword">_</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> (task1, task2)
+</code></pre>
+<pre><samp class="language-samp">work2
+work1
+</samp></pre>
+<h3>actorの処理はどのスレッドで動いている？</h3>
+<p>デフォルトでは、標準のスレッドプール上で処理が実行されます。actorインスタンスそれぞれにスレッドが割り当てられているわけではありません。標準のスレッドプール上で、それぞれのactorが直列になるようにスケジュールされて実行されています。</p>
+<p>詳しくは、こちらの記事が参考になります: <a href="https://alejandromp.com/development/blog/limit-swift-concurrency-cooperative-pool/">Limit Swift Concurrency's cooperative pool | Alejandro M. P.</a></p>
+<p>標準のスレッドプール以外を使うようにカスタマイズすることもできます。<a href="https://developer.apple.com/documentation/swift/actor/unownedexecutor/">unownedExecutorプロパティ</a>をオーバーライドすることで、自由に実行方法を指定することができます。</p>
+<p>次の例では、独自のスレッドを起動して、そのスレッド上で処理を実行するactorを実装しています。<a href="https://developer.apple.com/documentation/swift/serialexecutor">SerialExecutorプロトコル</a>を実装したオブジェクトを作成し、unownedExecutorプロパティでその参照を返しています。</p>
+<pre><code class="language-swift"><span class="hljs-keyword">import</span> Foundation
+
+<span class="hljs-comment">// ジョブとロックを管理するオブジェクト。ThreadとExecutorで共有する。</span>
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutorQueue</span>: @<span class="hljs-title class_">unchecked</span> <span class="hljs-title class_">Sendable</span> {
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">var</span> queue: [<span class="hljs-type">UnownedJob</span>] <span class="hljs-operator">=</span> []
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> cond <span class="hljs-operator">=</span> <span class="hljs-type">NSCondition</span>()
+  <span class="hljs-keyword">private(set)</span> <span class="hljs-keyword">var</span> isQuitted <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">enqueue</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">job</span>: <span class="hljs-type">UnownedJob</span>) {
+    cond.lock()
+    queue.append(job)
+    cond.signal()
+    cond.unlock()
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">dequeueAll</span>() -> [<span class="hljs-type">UnownedJob</span>] {
+    cond.lock()
+    <span class="hljs-keyword">if</span> queue.isEmpty { cond.wait() }
+    <span class="hljs-keyword">let</span> jobs <span class="hljs-operator">=</span> queue <span class="hljs-comment">// copy</span>
+    queue.removeAll(keepingCapacity: <span class="hljs-literal">true</span>)
+    cond.unlock()
+    <span class="hljs-keyword">return</span> jobs
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">quit</span>() {
+    cond.lock()
+    isQuitted <span class="hljs-operator">=</span> <span class="hljs-literal">true</span>
+    cond.signal()
+    cond.unlock()
+  }
+}
+
+<span class="hljs-comment">// ワーカースレッド</span>
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutorThread</span>: <span class="hljs-title class_">Thread</span> {
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> queue: <span class="hljs-type">MyExecutorQueue</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> executor: <span class="hljs-type">UnownedSerialExecutor</span>
+
+  <span class="hljs-keyword">init</span>(<span class="hljs-params">queue</span>: <span class="hljs-type">MyExecutorQueue</span>, <span class="hljs-params">executor</span>: <span class="hljs-type">UnownedSerialExecutor</span>) {
+    <span class="hljs-keyword">self</span>.queue <span class="hljs-operator">=</span> queue
+    <span class="hljs-keyword">self</span>.executor <span class="hljs-operator">=</span> executor
+  }
+
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">func</span> <span class="hljs-title function_">main</span>() {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"MyExecutorThread started"</span>)
+
+    <span class="hljs-keyword">while</span> <span class="hljs-operator">!</span>queue.isQuitted {
+      <span class="hljs-keyword">for</span> job <span class="hljs-keyword">in</span> queue.dequeueAll() {
+        job.runSynchronously(on: executor)
+      }
+    }
+
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"MyExecutorThread finished"</span>)
+  }
+}
+
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutor</span> {
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> queue <span class="hljs-operator">=</span> <span class="hljs-type">MyExecutorQueue</span>()
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">startThread</span>() {
+    <span class="hljs-keyword">let</span> thread <span class="hljs-operator">=</span> <span class="hljs-type">MyExecutorThread</span>(queue: queue, executor: asUnownedSerialExecutor())
+    thread.name <span class="hljs-operator">=</span> <span class="hljs-string">"MyExecutorThread"</span>
+    thread.start()
+  }
+
+  <span class="hljs-keyword">deinit</span> {
+    queue.quit()
+  }
+}
+
+<span class="hljs-comment">// SerialExecutorプロトコルの実装</span>
+<span class="hljs-keyword">extension</span> <span class="hljs-title class_">MyExecutor</span>: <span class="hljs-title class_">SerialExecutor</span> {
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">asUnownedSerialExecutor</span>() -> <span class="hljs-type">UnownedSerialExecutor</span> {
+    <span class="hljs-type">UnownedSerialExecutor</span>(ordinary: <span class="hljs-keyword">self</span>)
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">enqueue</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">job</span>: <span class="hljs-type">UnownedJob</span>) {
+    queue.enqueue(job)
+  }
+}
+
+<span class="hljs-keyword">actor</span> <span class="hljs-title class_">MyActor</span> {
+  <span class="hljs-keyword">let</span> executor: <span class="hljs-type">MyExecutor</span>
+
+  <span class="hljs-keyword">init</span>(<span class="hljs-params">executor</span>: <span class="hljs-type">MyExecutor</span>) {
+    <span class="hljs-keyword">self</span>.executor <span class="hljs-operator">=</span> executor
+  }
+
+  <span class="hljs-comment">// このプロパティをデフォルト実装からオーバーライドすることで、独自の方法で処理を実行できる</span>
+  <span class="hljs-keyword">nonisolated</span> <span class="hljs-keyword">var</span> unownedExecutor: <span class="hljs-type">UnownedSerialExecutor</span> {
+    executor.asUnownedSerialExecutor()
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">work</span>() {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"MyActor is working!"</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-type">Thread</span>.current)
+  }
+}
+
+<span class="hljs-keyword">let</span> executor <span class="hljs-operator">=</span> <span class="hljs-type">MyExecutor</span>()
+<span class="hljs-keyword">let</span> myActor <span class="hljs-operator">=</span> <span class="hljs-type">MyActor</span>(executor: executor)
+executor.startThread()
+<span class="hljs-keyword">await</span> myActor.work()
+</code></pre>
+<pre><samp class="language-samp">MyExecutorThread started
+MyActor is working!
+&#x3C;customthread.MyExecutorThread: 0x7f9af1804230>{number = 2, name = MyExecutorThread}
+</samp></pre>
+<h2>MainActorとはGlobalActorのひとつである</h2>
+<p>actorの挙動が理解できたところで、<code>@MainActor</code>の謎に迫っていきましょう。</p>
+<p><code>@MainActor</code>という構文があるのではなく、実際には<a href="https://developer.apple.com/documentation/swift/mainactor">MainActorというactor</a>が標準ライブラリに存在しています。ドキュメントには次のように定義されています。</p>
+<pre><code class="language-swift"><span class="hljs-meta">@globalActor</span>
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">actor</span> <span class="hljs-title class_">MainActor</span>
+</code></pre>
+<p>この<code>@globalActor</code>が肝です。<code>@globalActor</code>は<a href="https://developer.apple.com/documentation/swift/globalactor">GlobalActorプロトコル</a>に準拠した型（actorである必要はありません）に付与することができるアノテーションです。</p>
+<p>GlobalActorプロトコルは、次の定義を要求します。</p>
+<pre><code class="language-swift"><span class="hljs-keyword">protocol</span> <span class="hljs-title class_">GlobalActor</span> {
+  <span class="hljs-keyword">associatedtype</span> <span class="hljs-type">ActorType</span>: <span class="hljs-type">Actor</span>
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">var</span> shared: <span class="hljs-keyword">Self</span>.<span class="hljs-type">ActorType</span>
+}
+</code></pre>
+<p>この定義から、シングルトンのactorを提供するのがGlobalActorだといえます。</p>
+<p>そして、<code>@globalActor</code>を付与された型は、<code>@MainActor</code>のように<code>@</code>をつけることでアノテーションとして使用することができます。</p>
+<h3>GlobalActorの効果</h3>
+<p>まずは適当なGlobalActor <code>@MyActor</code>を定義します。</p>
+<pre><code class="language-swift"><span class="hljs-meta">@globalActor</span>
+<span class="hljs-keyword">actor</span> <span class="hljs-title class_">MyActor</span> {
+  <span class="hljs-comment">// ActorTypeは型推論されるので明示的に書かなくてもOK</span>
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">let</span> shared <span class="hljs-operator">=</span> <span class="hljs-type">MyActor</span>()
+}
+</code></pre>
+<p><code>@MyActor</code>を付与した関数を定義すると、actorと同じようなawaitの強制ルールが適用されるようになります。</p>
+<pre><code class="language-swift"><span class="hljs-meta">@MyActor</span>
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">work1</span>() {
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">"work1"</span>)
+}
+
+<span class="hljs-meta">@MyActor</span>
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">work2</span>() {
+  <span class="hljs-comment">// 同じ@MyActorの中なので、awaitなしで呼び出せる</span>
+  work1()
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">"work2"</span>)
+}
+
+<span class="hljs-comment">// @MyActorの外なのでawaitが必要</span>
+<span class="hljs-keyword">await</span> work1()
+</code></pre>
+<p>また、actorと同じように<code>@MyActor</code>を指定した処理同士で直列化されます。</p>
+<p>次の例ではちょっと意地悪なことをしてみます。<code>@MyActor</code>を指定した関数同士（work1, work3）が直列に実行されるのは簡単に予想できます。では<code>MyActor.shared</code>のメソッドを呼び出した場合はどうなるでしょうか？</p>
+<pre><code class="language-swift"><span class="hljs-keyword">import</span> Foundation
+
+<span class="hljs-meta">@globalActor</span>
+<span class="hljs-keyword">actor</span> <span class="hljs-title class_">MyActor</span> {
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">let</span> shared <span class="hljs-operator">=</span> <span class="hljs-type">MyActor</span>()
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">work2</span>() {
+    <span class="hljs-type">Thread</span>.sleep(forTimeInterval: <span class="hljs-number">2</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"MyActor.shared.work2"</span>)
+  }
+}
+
+<span class="hljs-meta">@MyActor</span>
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">work1</span>() {
+  <span class="hljs-type">Thread</span>.sleep(forTimeInterval: <span class="hljs-number">3</span>)
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">"work1"</span>)
+}
+
+<span class="hljs-meta">@MyActor</span>
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">work3</span>() {
+  <span class="hljs-type">Thread</span>.sleep(forTimeInterval: <span class="hljs-number">1</span>)
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">"work3"</span>)
+}
+
+<span class="hljs-comment">// 順番に同時に呼び出し。work2は@MyActorではなくMyActor.sharedのメソッド。</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> task1: () <span class="hljs-operator">=</span> work1()
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> task2: () <span class="hljs-operator">=</span> <span class="hljs-type">MyActor</span>.shared.work2()
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> task3: () <span class="hljs-operator">=</span> work3()
+<span class="hljs-keyword">_</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> (task1, task2, task3)
+</code></pre>
+<pre><samp class="language-samp">work1
+MyActor.shared.work2
+work3
+</samp></pre>
+<p>結果は、<code>@MyActor</code>を指定した関数と<code>MyActor.shared</code>のメソッドは全部混ぜて直列化されました。このことから、<code>@MyActor</code>を指定すると、<code>MyActor.shared</code>と同じコンテキストで実行される（<code>MyActor.shared.unownedExecutor</code>を使って実行される）といえます。</p>
+<h3>つまり<code>@MainActor</code>とは何であったか</h3>
+<p>ここまでの内容から<code>@MainActor</code>は次のような動作をするものだといえそうです。</p>
+<ul>
+<li><code>@MainActor</code>を付与した型や関数は、<code>MainActor.shared.unownedExecutor</code>を使って実行される → このExecutorの実装がDispatchQueueを使うものになっている（ExecutorはコンパイラのBuiltinで実装されている）</li>
+<li>actorのルールに従って、awaitを強制されたりされなかったりする</li>
+</ul></div></article></main><footer><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>
