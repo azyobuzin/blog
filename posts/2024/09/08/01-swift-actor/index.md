@@ -324,3 +324,43 @@ work3
 
 - `@MainActor`を付与した型や関数は、`MainActor.shared.unownedExecutor`を使って実行される → このExecutorの実装がDispatchQueueを使うものになっている（ExecutorはコンパイラのBuiltinで実装されている）
 - actorのルールに従って、awaitを強制されたりされなかったりする
+
+## おまけ: GlobalActorの指定はObjective-Cからの呼び出しには効果がない
+
+Objective-Cから呼び出される関数にGlobalActorアノテーションをつけたらどうなるでしょうか？ 当然、指定したGlobalActorのコンテキストで呼び出されると思いきや、完全に無視されます。
+
+次の例を見てください。`ObjcClass.foo`は`@MainActor`が指定されているので、必ずメインスレッドで実行されるはずです。しかし、`callObjC`の実行結果を見ると、ワーカースレッドがprintされています。このようにObjective-Cから呼び出されるときは、GlobalActorは効かないです。Swiftコンパイラにも守ってもらえなくなるので注意しましょう。
+
+```swift
+import Foundation
+
+class ObjcClass: NSObject {
+  @objc @MainActor
+  func foo() {
+      print("foo")
+      print(Thread.current)
+  }
+}
+
+func callNormally() async {
+  await Task.yield() // スレッドプールで実行する
+  let obj = ObjcClass()
+  await obj.foo() // 通常の呼び出し
+}
+
+func callObjC() async {
+  await Task.yield() // スレッドプールで実行する
+  let obj = ObjcClass()
+  obj.perform(#selector(ObjcClass.foo)) // Objective-Cのメッセージで呼び出し
+}
+
+await callNormally()
+await callObjC()
+```
+
+```samp
+foo
+<_NSMainThread: 0x7fe28b7085d0>{number = 1, name = main}
+foo
+<NSThread: 0x7fe28c005910>{number = 2, name = (null)}
+```
