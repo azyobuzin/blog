@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="https://github.com/azyobuzin/blog"><link rel="stylesheet" href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><title>SwiftのActorについての備忘録 | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/2024/09/08/01-swift-actor/"><meta property="og:title" content="SwiftのActorについての備忘録"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/2024/09/08/01-swift-actor/"><meta property="og:description" content="最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。
 
-SwiftでiOSアプリを書いているとよく @MainActor というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。"><meta property="og:article:published_time" content="2024-09-08T00:45+09:00"><meta property="og:article:modified_time" content="2024-09-08T00:45:09+09:00"><meta property="og:article:tag" content="tech"></head><body><div class="container"><main><article><header><h1>SwiftのActorについての備忘録</h1><div class="article-meta"><i class="fa fa-pencil-square-o" title="公開日"></i> <time datetime="2024-09-08T00:45+09:00" title="公開: 2024/09/08 00:45
-最終更新: 2024/09/08 00:45">2024/09/08</time> ― <a href="https://github.com/azyobuzin/blog/commits/953bcda709d4224385447aa1a963d027bfd87c0a/posts/2024/09/08/01-swift-actor" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" title="タグ"></i><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li></ul></div></header><div class="article-content"><p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。</p>
+SwiftでiOSアプリを書いているとよく @MainActor というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。"><meta property="og:article:published_time" content="2024-09-08T00:45+09:00"><meta property="og:article:modified_time" content="2024-09-08T02:18:47+09:00"><meta property="og:article:tag" content="tech"></head><body><div class="container"><main><article><header><h1>SwiftのActorについての備忘録</h1><div class="article-meta"><i class="fa fa-pencil-square-o" title="公開日"></i> <time datetime="2024-09-08T00:45+09:00" title="公開: 2024/09/08 00:45
+最終更新: 2024/09/08 02:18">2024/09/08</time> ― <a href="https://github.com/azyobuzin/blog/commits/8a3ab61d32e6bd97458d7b2b42ac59cc98502b52/posts/2024/09/08/01-swift-actor" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" title="タグ"></i><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li></ul></div></header><div class="article-content"><p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。</p>
 <p>SwiftでiOSアプリを書いているとよく <code>@MainActor</code> というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。</p>
 <h2>Actorとは何か</h2>
 <p><code>@MainActor</code>アノテーションの説明の前に、actorというもの自体の説明をしましょう。</p>
@@ -262,4 +262,37 @@ work3
 <ul>
 <li><code>@MainActor</code>を付与した型や関数は、<code>MainActor.shared.unownedExecutor</code>を使って実行される → このExecutorの実装がDispatchQueueを使うものになっている（ExecutorはコンパイラのBuiltinで実装されている）</li>
 <li>actorのルールに従って、awaitを強制されたりされなかったりする</li>
-</ul></div></article></main><footer><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>
+</ul>
+<h2>おまけ: GlobalActorの指定はObjective-Cからの呼び出しには効果がない</h2>
+<p>Objective-Cから呼び出される関数にGlobalActorアノテーションをつけたらどうなるでしょうか？ 当然、指定したGlobalActorのコンテキストで呼び出されると思いきや、完全に無視されます。</p>
+<p>次の例を見てください。<code>ObjcClass.foo</code>は<code>@MainActor</code>が指定されているので、必ずメインスレッドで実行されるはずです。しかし、<code>callObjC</code>の実行結果を見ると、ワーカースレッドがprintされています。このようにObjective-Cから呼び出されるときは、GlobalActorは効かないです。Swiftコンパイラにも守ってもらえなくなるので注意しましょう。</p>
+<pre><code class="language-swift"><span class="hljs-keyword">import</span> Foundation
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ObjcClass</span>: <span class="hljs-title class_">NSObject</span> {
+  <span class="hljs-keyword">@objc</span> <span class="hljs-meta">@MainActor</span>
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">foo</span>() {
+      <span class="hljs-built_in">print</span>(<span class="hljs-string">"foo"</span>)
+      <span class="hljs-built_in">print</span>(<span class="hljs-type">Thread</span>.current)
+  }
+}
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">callNormally</span>() <span class="hljs-keyword">async</span> {
+  <span class="hljs-keyword">await</span> <span class="hljs-type">Task</span>.yield() <span class="hljs-comment">// スレッドプールで実行する</span>
+  <span class="hljs-keyword">let</span> obj <span class="hljs-operator">=</span> <span class="hljs-type">ObjcClass</span>()
+  <span class="hljs-keyword">await</span> obj.foo() <span class="hljs-comment">// 通常の呼び出し</span>
+}
+
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">callObjC</span>() <span class="hljs-keyword">async</span> {
+  <span class="hljs-keyword">await</span> <span class="hljs-type">Task</span>.yield() <span class="hljs-comment">// スレッドプールで実行する</span>
+  <span class="hljs-keyword">let</span> obj <span class="hljs-operator">=</span> <span class="hljs-type">ObjcClass</span>()
+  obj.perform(<span class="hljs-keyword">#selector</span>(<span class="hljs-type">ObjcClass</span>.foo)) <span class="hljs-comment">// Objective-Cのメッセージで呼び出し</span>
+}
+
+<span class="hljs-keyword">await</span> callNormally()
+<span class="hljs-keyword">await</span> callObjC()
+</code></pre>
+<pre><samp class="language-samp">foo
+&#x3C;_NSMainThread: 0x7fe28b7085d0>{number = 1, name = main}
+foo
+&#x3C;NSThread: 0x7fe28c005910>{number = 2, name = (null)}
+</samp></pre></div></article></main><footer><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>

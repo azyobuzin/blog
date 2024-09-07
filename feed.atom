@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2024-09-08T00:45:09+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2024-09-08T02:18:47+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。&#x3C;/p>
 &#x3C;p>SwiftでiOSアプリを書いているとよく &#x3C;code>@MainActor&#x3C;/code> というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。&#x3C;/p>
 &#x3C;h2>Actorとは何か&#x3C;/h2>
 &#x3C;p>&#x3C;code>@MainActor&#x3C;/code>アノテーションの説明の前に、actorというもの自体の説明をしましょう。&#x3C;/p>
@@ -259,7 +259,40 @@ work3
 &#x3C;ul>
 &#x3C;li>&#x3C;code>@MainActor&#x3C;/code>を付与した型や関数は、&#x3C;code>MainActor.shared.unownedExecutor&#x3C;/code>を使って実行される → このExecutorの実装がDispatchQueueを使うものになっている（ExecutorはコンパイラのBuiltinで実装されている）&#x3C;/li>
 &#x3C;li>actorのルールに従って、awaitを強制されたりされなかったりする&#x3C;/li>
-&#x3C;/ul></content><id>https://blog.azyobuzi.net/2024/09/08/01-swift-actor/</id><link href="https://blog.azyobuzi.net/2024/09/08/01-swift-actor/" rel="alternate" type="text/html" /><published>2024-09-08T00:45:00+09:00</published><title type="html">SwiftのActorについての備忘録</title><updated>2024-09-08T00:45:09+09:00</updated></entry><entry><category term="日記" label="日記" /><content type="html">&#x3C;h2>いつも応援してくださってる皆様へ&#x3C;/h2>
+&#x3C;/ul>
+&#x3C;h2>おまけ: GlobalActorの指定はObjective-Cからの呼び出しには効果がない&#x3C;/h2>
+&#x3C;p>Objective-Cから呼び出される関数にGlobalActorアノテーションをつけたらどうなるでしょうか？ 当然、指定したGlobalActorのコンテキストで呼び出されると思いきや、完全に無視されます。&#x3C;/p>
+&#x3C;p>次の例を見てください。&#x3C;code>ObjcClass.foo&#x3C;/code>は&#x3C;code>@MainActor&#x3C;/code>が指定されているので、必ずメインスレッドで実行されるはずです。しかし、&#x3C;code>callObjC&#x3C;/code>の実行結果を見ると、ワーカースレッドがprintされています。このようにObjective-Cから呼び出されるときは、GlobalActorは効かないです。Swiftコンパイラにも守ってもらえなくなるので注意しましょう。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-swift">&#x3C;span class="hljs-keyword">import&#x3C;/span> Foundation
+
+&#x3C;span class="hljs-keyword">class&#x3C;/span> &#x3C;span class="hljs-title class_">ObjcClass&#x3C;/span>: &#x3C;span class="hljs-title class_">NSObject&#x3C;/span> {
+  &#x3C;span class="hljs-keyword">@objc&#x3C;/span> &#x3C;span class="hljs-meta">@MainActor&#x3C;/span>
+  &#x3C;span class="hljs-keyword">func&#x3C;/span> &#x3C;span class="hljs-title function_">foo&#x3C;/span>() {
+      &#x3C;span class="hljs-built_in">print&#x3C;/span>(&#x3C;span class="hljs-string">"foo"&#x3C;/span>)
+      &#x3C;span class="hljs-built_in">print&#x3C;/span>(&#x3C;span class="hljs-type">Thread&#x3C;/span>.current)
+  }
+}
+
+&#x3C;span class="hljs-keyword">func&#x3C;/span> &#x3C;span class="hljs-title function_">callNormally&#x3C;/span>() &#x3C;span class="hljs-keyword">async&#x3C;/span> {
+  &#x3C;span class="hljs-keyword">await&#x3C;/span> &#x3C;span class="hljs-type">Task&#x3C;/span>.yield() &#x3C;span class="hljs-comment">// スレッドプールで実行する&#x3C;/span>
+  &#x3C;span class="hljs-keyword">let&#x3C;/span> obj &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-type">ObjcClass&#x3C;/span>()
+  &#x3C;span class="hljs-keyword">await&#x3C;/span> obj.foo() &#x3C;span class="hljs-comment">// 通常の呼び出し&#x3C;/span>
+}
+
+&#x3C;span class="hljs-keyword">func&#x3C;/span> &#x3C;span class="hljs-title function_">callObjC&#x3C;/span>() &#x3C;span class="hljs-keyword">async&#x3C;/span> {
+  &#x3C;span class="hljs-keyword">await&#x3C;/span> &#x3C;span class="hljs-type">Task&#x3C;/span>.yield() &#x3C;span class="hljs-comment">// スレッドプールで実行する&#x3C;/span>
+  &#x3C;span class="hljs-keyword">let&#x3C;/span> obj &#x3C;span class="hljs-operator">=&#x3C;/span> &#x3C;span class="hljs-type">ObjcClass&#x3C;/span>()
+  obj.perform(&#x3C;span class="hljs-keyword">#selector&#x3C;/span>(&#x3C;span class="hljs-type">ObjcClass&#x3C;/span>.foo)) &#x3C;span class="hljs-comment">// Objective-Cのメッセージで呼び出し&#x3C;/span>
+}
+
+&#x3C;span class="hljs-keyword">await&#x3C;/span> callNormally()
+&#x3C;span class="hljs-keyword">await&#x3C;/span> callObjC()
+&#x3C;/code>&#x3C;/pre>
+&#x3C;pre>&#x3C;samp class="language-samp">foo
+&#x26;#x3C;_NSMainThread: 0x7fe28b7085d0>{number = 1, name = main}
+foo
+&#x26;#x3C;NSThread: 0x7fe28c005910>{number = 2, name = (null)}
+&#x3C;/samp>&#x3C;/pre></content><id>https://blog.azyobuzi.net/2024/09/08/01-swift-actor/</id><link href="https://blog.azyobuzi.net/2024/09/08/01-swift-actor/" rel="alternate" type="text/html" /><published>2024-09-08T00:45:00+09:00</published><title type="html">SwiftのActorについての備忘録</title><updated>2024-09-08T02:18:47+09:00</updated></entry><entry><category term="日記" label="日記" /><content type="html">&#x3C;h2>いつも応援してくださってる皆様へ&#x3C;/h2>
 &#x3C;figure class="fig-img">
 &#x3C;img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20240502/20240502223734.jpg" alt="Petit Qooboのしっぽと婚姻届" width="1000" height="750">
 &#x3C;figcaption>画像はイメージです&#x3C;br>This image is an image&#x3C;/figcaption>
