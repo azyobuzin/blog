@@ -1,4 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2024-09-08T02:18:47+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2024-12-29T22:14:40+09:00</updated><entry><category term="日記" label="日記" /><content type="html">&#x3C;p>&#x3C;a href="https://blog.azyobuzi.net/2024/01/01/01-akeome/">新年の挨拶&#x3C;/a>で、もっとブログ書く宣言をしたにも関わらず、今年もぜんぜん書きませんでした！ 懺悔も込めて、たまには年内に振り返り記事でも書いてみようと思います。まぁ旅行先のホテルでの暇つぶしなんですが。&#x3C;/p>
+&#x3C;h2>労働&#x3C;/h2>
+&#x3C;p>なんだかんだ社会人3年目に突入してしまい、社内でも古参寄りになってきている節があります。&#x3C;/p>
+&#x3C;p>社内での所属は、Webエンジニアからモバイルエンジニア（iOSメイン）に変わりました。なのでスマホアプリガンガン開発していくぞ～～～というと、そういうわけでもなくて、世に言う「プロダクトエンジニア」として、プラットフォームに関わらずプロダクトグロースに貢献するという役職です。社内のエンジニア比率があまりにもWebに寄りすぎているものの、ターゲットのユーザー層にはスマホのほうが響くはずなので、あえてモバイルに乗り込んでいきました。&#x3C;/p>
+&#x3C;p>なお所属は公然の秘密なので、詳しい話は適当に連れ出して聞いてください。&#x3C;/p>
+&#x3C;h2>新婚生活&#x3C;/h2>
+&#x3C;p>&#x3C;a href="https://blog.azyobuzi.net/2024/05/03/01-petit-qoobo/">ご報告&#x3C;/a>したとおり、3月に結婚しました。といっても、去年に埼玉に引っ越してからずっと同棲していたので、生活は大きく変わっていません。&#x3C;/p>
+&#x3C;p>結婚式は両家両親のみで行いました。明治神宮でやったのですが、めっちゃよかったです。教会にこだわりがない方（というより、そもそも教会なんていかねーよ、神社やお寺のほうが身近だよと思う人）にはおすすめです。&#x3C;/p>
+&#x3C;p>披露宴の余興のために、夫婦でそれぞれ動画をつくりました。そのためにAfter Effectsを使ってみたのですが、扱いやすいし、JavaScriptで計算させられるし、結構良いですね。まぁCreative Cloudを年間契約するのはちょっと高すぎるし、サードパーティエフェクトを買い始めたら破産しそうなので、継続契約はしません。&#x3C;/p>
+&#x3C;h2>登山&#x3C;/h2>
+&#x3C;p>今年は、結婚式の準備があるな～と思ってずるずる引きこもりをしていたので、去年ほど行けませんでした。詳細は&#x3C;a href="https://yamap.com/look-back/2024/3105587">妻のYAMAP&#x3C;/a>を見てください。&#x3C;/p>
+&#x3C;p>日光白根山に登って、久々に森林限界を突破したのが特によかったです。スタート地点ですでに標高2000mで、600m上がるだけなので、難易度はそこまで高くないです。&#x3C;/p>
+&#x3C;h2>おわり&#x3C;/h2>
+&#x3C;p>あんまり書くことがなかった……。人生を労働に振りすぎているので、もうちょっとゆっくりしたいですね。そのために今ゆったり旅行（移動しすぎてゆったりしてない説）をしているので、来年も頑張りましょう。&#x3C;/p>
+&#x3C;p>よいお年を～～～&#x3C;/p></content><id>https://blog.azyobuzi.net/2024/12/29/01-yoitoshi/</id><link href="https://blog.azyobuzi.net/2024/12/29/01-yoitoshi/" rel="alternate" type="text/html" /><published>2024-12-29T22:15:00+09:00</published><title type="html">2024年振り返り</title><updated>2024-12-29T22:14:40+09:00</updated></entry><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。&#x3C;/p>
 &#x3C;p>SwiftでiOSアプリを書いているとよく &#x3C;code>@MainActor&#x3C;/code> というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。&#x3C;/p>
 &#x3C;h2>Actorとは何か&#x3C;/h2>
 &#x3C;p>&#x3C;code>@MainActor&#x3C;/code>アノテーションの説明の前に、actorというもの自体の説明をしましょう。&#x3C;/p>
