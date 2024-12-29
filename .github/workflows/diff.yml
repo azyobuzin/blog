@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: src/.tool-versions
           cache: npm
           cache-dependency-path: src/package-lock.json
       - name: apt-get install
