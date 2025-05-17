@@ -1,6 +1,6 @@
-import { Root } from "hast"
+import type { Root } from "hast"
 import type { Element as HastElement } from "hast"
-import { Plugin } from "unified"
+import type { Plugin } from "unified"
 import { SKIP, visit } from "unist-util-visit"
 import InsBlock from "./InsBlock"
 

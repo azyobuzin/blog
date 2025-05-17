@@ -1,6 +1,6 @@
 import { formatDate } from "../lib/date"
-import { VFC, h } from "../lib/jsx"
-import { Post } from "../lib/posts"
+import { type VFC, h } from "../lib/jsx"
+import type { Post } from "../lib/posts"
 import LinkToPost from "./LinkToPost"
 import LinkToTag from "./LinkToTag"
 
@@ -11,9 +11,9 @@ export interface PostHeaderProps {
 }
 
 const PostHeader: VFC<PostHeaderProps> = ({ post, titleLink, showHistory }) => {
-  let dateDetails = "公開: " + formatDate(post.pubdate, true)
+  let dateDetails = `公開: ${formatDate(post.pubdate, true)}`
   if (post.revdate != null)
-    dateDetails += "\n最終更新: " + formatDate(post.revdate, true)
+    dateDetails += `\n最終更新: ${formatDate(post.revdate, true)}`
 
   const historyUrl =
     showHistory === true && post.commitHash != null

@@ -1,5 +1,5 @@
 import { formatDate } from "../lib/date"
-import { FC, h } from "../lib/jsx"
+import { type FC, h } from "../lib/jsx"
 
 const InsBlock: FC<{ dateTime: string }> = ({ dateTime, children }) => {
   if (dateTime == null) throw new TypeError("dateTime is required")

@@ -20,7 +20,5 @@ jobs:
         run: sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: npm ci
         run: npm ci --production=false
-      - name: tsc
-        run: npm run -w generator check
-      - name: jest
-        run: npm test -w generator
+      - name: npm test
+        run: npm test

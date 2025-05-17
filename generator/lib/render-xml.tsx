@@ -1,5 +1,5 @@
-import { writeFile } from "fs/promises"
-import { Element, Root } from "xast"
+import { writeFile } from "node:fs/promises"
+import type { Element, Root } from "xast"
 import { toXml } from "xast-util-to-xml"
 
 export async function renderXml(
@@ -7,6 +7,7 @@ export async function renderXml(
   outPath: string,
 ): Promise<void> {
   if (tree.type !== "root") {
+    // biome-ignore lint/style/noParameterAssign: rootではないときだけ書き換える
     tree = {
       type: "root",
       children: [

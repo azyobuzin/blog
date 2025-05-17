@@ -2,8 +2,8 @@ import Layout from "../components/Layout"
 import PostList from "../components/PostList"
 import StyleTags from "../components/StyleTags"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
-import { VFC, h } from "../lib/jsx"
-import { Post } from "../lib/posts"
+import { type VFC, h } from "../lib/jsx"
+import type { Post } from "../lib/posts"
 import { tagUrl } from "../lib/url"
 
 const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
@@ -20,7 +20,7 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
           <meta property="og:url" content={canonical} />
           <link
             rel="alternate"
-            href={tagUrl(tag) + "feed.atom"}
+            href={`${tagUrl(tag)}feed.atom`}
             type="application/atom+xml"
           />
           <StyleTags styles={posts.map((x) => x.style)} />
@@ -36,8 +36,7 @@ const TagPage: VFC<{ tag: string; posts: Post[] }> = ({ tag, posts }) => {
             </span>
             {" > "}
             <span role="listitem" aria-current="page">
-              <i className="fa fa-tag" title="タグ" />
-              {" " + tag}
+              <i className="fa fa-tag" title="タグ" /> {tag}
             </span>
           </p>
         </header>

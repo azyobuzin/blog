@@ -1,4 +1,4 @@
-import { FC, h } from "../lib/jsx"
+import { type FC, h } from "../lib/jsx"
 
 const LinkToPost: FC<{ slug: string }> = ({ slug, children, ...rest }) => {
   return (
