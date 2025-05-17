@@ -51,7 +51,7 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 </ol>
 <p>実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 <a href="#img-px-noninterlace">図 1</a> に示すように、予測する画素 X の左上、上、左です。</p>
 <figure id="img-px-noninterlace" class="fig-img" data-num="図">
-<img src="px_noninterlace.svg" height="75" alt="" width="73.6842105263158">
+<img src="px_noninterlace.svg" height="75" alt="" width="74">
 <figcaption>図 1: 非インターレース方式で参照する周辺画素</figcaption>
 </figure>
 <p>予測値は、 L+T-TL, L, T の中央値です。 X-予測値 が実際に符号化される値になります。</p>
@@ -89,16 +89,16 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>予測器はズームレベルが偶数か奇数かで少し挙動が変わります。なぜなら周囲の画素の復号化状況が異なるからです。偶数では行を復号化するため、下側の画素を参照することができますが、右側を参照することはできません。奇数では列を復号化するため、逆に右側を参照することできますが、下側を参照することができません。</p>
 <p>実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。</p>
 <figure id="img-px-interlace" class="fig-img" data-num="図">
-<img src="px_interlace.svg" height="150" alt="" width="148.66071428571428">
+<img src="px_interlace.svg" height="150" alt="" width="149">
 <figcaption>図 2: インターレース方式で参照する周辺画素</figcaption>
 </figure>
 <p>次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。</p>
 <figure id="img-px-horizontal" class="fig-img" data-num="図">
-<img src="px_horizontal.svg" height="150" alt="" width="148.66071428571428">
+<img src="px_horizontal.svg" height="150" alt="" width="149">
 <figcaption>図 3: 偶数ズームレベルにおける周辺画素</figcaption>
 </figure>
 <figure id="img-px-vertical" class="fig-img" data-num="図">
-<img src="px_vertical.svg" height="150" alt="" width="148.66071428571428">
+<img src="px_vertical.svg" height="150" alt="" width="149">
 <figcaption>図 4: 奇数ズームレベルにおける周辺画素</figcaption>
 </figure>
 <p>また、画像の端っこの画素を処理するときには、参照できない周辺画素があります。その場合は、偶数ズームレベルでは必ず T があり、奇数ズームレベルでは L があるので、その値を代用します。</p>
@@ -261,22 +261,22 @@ FLIF は、すでに ImageMagick で実装されており、すぐに試すこ�
 <p>さらに踏み込んで見てみます。もし最初から <a href="#img-ctx-summary">図 5</a> のように使用する確率表が決まるとすると、それぞれの確率表の初期値はどのように決まるのでしょうか？ 確率表それぞれが別々に適応を行っていくので、すべての確率表を仕様で定められた確率で初期化したら、適応によって確率表が温まるまでの間に全画素についての処理が終わってしまいます。そこで FLIF の決定木にはカウンターという機能が盛り込まれています。</p>
 <p>カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。</p>
 <figure id="img-ctx-counter1" class="fig-img" data-num="図">
-<img src="ctx_counter_1.svg" height="200" alt="" width="392.42424242424244">
+<img src="ctx_counter_1.svg" height="200" alt="" width="392">
 <figcaption>図 6: 決定木の初期状態</figcaption>
 </figure>
 <p>この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。</p>
 <figure id="img-ctx-counter2" class="fig-img" data-num="図">
-<img src="ctx_counter_2.svg" height="200" alt="" width="392.42424242424244">
+<img src="ctx_counter_2.svg" height="200" alt="" width="392">
 <figcaption>図 7: カウンターがデクリメントされる</figcaption>
 </figure>
 <p>次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。</p>
 <figure id="img-ctx-counter3" class="fig-img" data-num="図">
-<img src="ctx_counter_3.svg" height="200" alt="" width="392.42424242424244">
+<img src="ctx_counter_3.svg" height="200" alt="" width="392">
 <figcaption>図 8: カウンターが0になると子に確率表がコピーされる</figcaption>
 </figure>
 <p>いま、確率表2と確率表3は、確率表1と同じ内容になっています。</p>
 <figure id="img-ctx-counter4" class="fig-img" data-num="図">
-<img src="ctx_counter_4.svg" height="200" alt="" width="392.42424242424244">
+<img src="ctx_counter_4.svg" height="200" alt="" width="392">
 <figcaption>図 9: カウンターが0になると条件分岐が行われる</figcaption>
 </figure>
 <p>次の画素を復号化します。まず決定木の根に注目します。するとカウンターの値は 0 です。注目したノードのカウンターが 0 のとき、そのノードの条件を評価します。ここではプロパティAの値はX以下だったとします。決定木にしたがって分岐を行い、左側の子ノードに注目します。このノードは葉ノードなので、この確率表を使って復号化します。このとき適応によって確率表2が更新されます。</p>
