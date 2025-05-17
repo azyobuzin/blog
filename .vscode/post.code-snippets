@@ -6,8 +6,8 @@
       "<figure class=\"fig-img\">",
       "<img src=\"${1:src}\" alt=\"\" />",
       "<figcaption>${2:caption}</figcaption>",
-      "</figure>",
-    ],
+      "</figure>"
+    ]
   },
   "fig-img with numbering": {
     "scope": "markdown",
@@ -16,8 +16,8 @@
       "<figure id=\"${1:id}\" class=\"fig-img\" data-num=\"図\">",
       "<img src=\"${2:src}\" alt=\"\" />",
       "<figcaption>${3:caption}</figcaption>",
-      "</figure>",
-    ],
+      "</figure>"
+    ]
   },
   "fig-code": {
     "scope": "markdown",
@@ -30,8 +30,8 @@
       "$0",
       "```",
       "",
-      "</figure>",
-    ],
+      "</figure>"
+    ]
   },
   "fig-quote": {
     "scope": "markdown",
@@ -42,7 +42,7 @@
       "$0",
       "</blockquote>",
       "<figcaption>${2:caption}</figcaption>",
-      "</figure>",
-    ],
-  },
+      "</figure>"
+    ]
+  }
 }

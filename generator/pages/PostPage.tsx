@@ -3,8 +3,8 @@ import Layout from "../components/Layout"
 import PostHeader from "../components/PostHeader"
 import StyleTags from "../components/StyleTags"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
-import { VFC, h } from "../lib/jsx"
-import { Post } from "../lib/posts"
+import { type VFC, h } from "../lib/jsx"
+import type { Post } from "../lib/posts"
 
 const PostPage: VFC<{ post: Post }> = ({ post }) => {
   const titleText = toText(post.title)

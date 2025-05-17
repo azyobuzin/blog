@@ -2,7 +2,7 @@ import { toHtml } from "hast-util-to-html"
 import type { Element, Root } from "xast"
 import { x as h } from "xastscript"
 import { SITE_URL } from "./constants"
-import { Post, removeRelativeLink } from "./posts"
+import { type Post, removeRelativeLink } from "./posts"
 
 export function createAtom(
   title: string,
@@ -38,22 +38,24 @@ export function createAtom(
     )
   }) as Element[]
 
-  const root = (
-    // FIXME: TS2322: Type '{ "__@children@21625": (XResult | Element[])[]; xmlns: string; "xml:lang": string; }' is not assignable to type 'XAttributes | { [children]?: XChild; }'.
-    // @ts-expect-error
-    <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP">
-      <author>
-        <name>azyobuzin</name>
-        <uri>https://twitter.com/azyobuzin</uri>
-      </author>
-      <id>{feedUrl}</id>
-      <link href={feedUrl} rel="self" type="application/atom+xml" />
-      <link href={url} rel="alternate" type="text/html" />
-      <title>{title}</title>
-      <updated>{feedUpdated(posts)}</updated>
-      {entries}
-    </feed>
-  ) as Element
+  const root =
+    (
+      // biome-ignore format: ts-expect-errorが勝手に移動される
+      // FIXME: TS2322: Type '{ "__@children@21625": (XResult | Element[])[]; xmlns: string; "xml:lang": string; }' is not assignable to type 'XAttributes | { [children]?: XChild; }'.
+      // @ts-expect-error
+      <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP">
+        <author>
+          <name>azyobuzin</name>
+          <uri>https://twitter.com/azyobuzin</uri>
+        </author>
+        <id>{feedUrl}</id>
+        <link href={feedUrl} rel="self" type="application/atom+xml" />
+        <link href={url} rel="alternate" type="text/html" />
+        <title>{title}</title>
+        <updated>{feedUpdated(posts)}</updated>
+        {entries}
+      </feed>
+    ) as Element
 
   return {
     type: "root",
@@ -90,7 +92,7 @@ function feedUpdated(posts: Post[]): string {
 // https://validator.w3.org/feed/docs/error/InvalidRFC3339Date.html
 function fixDateString(s: string): string {
   // 時刻がない
-  if (!s.includes("T")) return s + "T00:00:00+09:00"
+  if (!s.includes("T")) return `${s}T00:00:00+09:00`
 
   // 秒がない
   return s.replace(/T\d{2}:\d{2}(?!:)/g, "$&:00")

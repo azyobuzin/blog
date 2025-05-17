@@ -1,6 +1,6 @@
-import { execFile } from "child_process"
-import { stat } from "fs/promises"
-import * as path from "path"
+import { execFile } from "node:child_process"
+import { stat } from "node:fs/promises"
+import * as path from "node:path"
 import canvas from "canvas"
 import chalk from "chalk"
 import { glob } from "glob"
@@ -27,7 +27,7 @@ import remarkMath from "remark-math"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
 import { read as readVFile } from "to-vfile"
-import { FrozenProcessor, Plugin, unified } from "unified"
+import { type FrozenProcessor, type Plugin, unified } from "unified"
 import { map } from "unist-util-map"
 import { parents } from "unist-util-parents"
 import { SKIP, visit } from "unist-util-visit"
@@ -125,7 +125,7 @@ const extractTitle: Plugin<[], MdastRoot> = () => {
           // タイトルを HTML に変換
           const titleHtml = toHast(node) as Element
           if (titleHtml.tagName !== "h1")
-            throw new Error("Unexpected node " + JSON.stringify(titleHtml))
+            throw new Error(`Unexpected node ${JSON.stringify(titleHtml)}`)
           file.data.title = { type: "root", children: titleHtml.children }
 
           // ツリーから h1 を取り除く
@@ -171,16 +171,16 @@ const sectionNumbering: Plugin<[], HastRoot> = () => {
       let sectnum = ""
       for (let i = 1; i <= prevDepth; i++) {
         const x = currentSection[i]
-        if (x != null) sectnum += x.toString() + "."
+        if (x != null) sectnum += `${x}.`
       }
 
       if (enabled) {
-        node.children.unshift({ type: "text", value: sectnum + " " })
+        node.children.unshift({ type: "text", value: `${sectnum} ` })
       }
 
       const id = node.properties?.id
       if (id != null) {
-        sectionById.set(id as string, "Section " + sectnum.slice(0, -1))
+        sectionById.set(id as string, `Section ${sectnum.slice(0, -1)}`)
       }
 
       return SKIP
@@ -300,12 +300,14 @@ const assignImgSize: Plugin<[], HastRoot> = () => {
                 props.width = img.naturalWidth
                 props.height = img.naturalHeight
               } else {
-                props.width =
-                  img.naturalWidth * (Number(props.height) / img.naturalHeight)
+                props.width = Math.round(
+                  img.naturalWidth * (Number(props.height) / img.naturalHeight),
+                )
               }
             } else {
-              props.height =
-                img.naturalHeight * (Number(props.width) / img.naturalWidth)
+              props.height = Math.round(
+                img.naturalHeight * (Number(props.width) / img.naturalWidth),
+              )
             }
           } catch (err) {
             file.message(err as Error, el.position)
@@ -445,8 +447,8 @@ async function getGitCommit(
       "git",
       ["log", "-1", "--pretty=format:%H%n%aI", "--", path],
       (error, stdout) => {
-        let commitHash
-        let revdate
+        let commitHash: string | undefined
+        let revdate: string | undefined
 
         if (error != null) {
           if (
@@ -479,7 +481,8 @@ export function removeRelativeLink<T extends HastNode>(
       (isHastElement as (node: any) => node is Element)(node) &&
       node.properties != null
     ) {
-      const newProps = { ...node.properties }
+      // id属性を削除する
+      const { id, ...newProps } = node.properties
 
       // リンクを絶対URLにする
       for (const key of ["href", "src"]) {
@@ -488,9 +491,6 @@ export function removeRelativeLink<T extends HastNode>(
           newProps[key] = new URL(href, baseUrl).href
         }
       }
-
-      // id 属性を削除する
-      delete newProps.id
 
       return { ...node, properties: newProps }
     }

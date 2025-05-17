@@ -1,4 +1,4 @@
-import { VFC, h } from "../lib/jsx"
+import { type VFC, h } from "../lib/jsx"
 
 const StyleTags: VFC<{ styles: readonly (string | null | undefined)[] }> = ({
   styles,

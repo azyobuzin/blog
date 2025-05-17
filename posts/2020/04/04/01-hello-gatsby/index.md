@@ -88,7 +88,7 @@ Gatsby の基本的な設計は、[ライフサイクルの図](https://www.gats
 さて、この取得・解釈パイプラインにおいて、ひとつのデータについて、ひとつの解釈とは限りません。複数のプラグインが同じデータを異なる方法で解釈することもあります。つまり、まっすぐなパイプラインにはなりません。そこで Gatsby が採用した、共通の入力データ形式は「オブジェクトの森」でした。あるデータに対する解釈は、そのデータの子オブジェクトになる、と表現します（[](#image-forest-example)）。このような表現を用いることで、非常に柔軟に入力データを扱うことができるようになりました。
 
 <figure id="image-forest-example" class="fig-img" data-num="図">
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" alt="" loading="lazy" width="500" height="243.5" />
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20200403/20200403235038.png" alt="" loading="lazy" width="500" height="244" />
 <figcaption>データと、データの解釈結果オブジェクト</figcaption>
 </figure>
 

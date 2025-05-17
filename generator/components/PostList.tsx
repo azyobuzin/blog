@@ -1,5 +1,5 @@
-import { VFC, h } from "../lib/jsx"
-import { Post } from "../lib/posts"
+import { type VFC, h } from "../lib/jsx"
+import type { Post } from "../lib/posts"
 import LinkToPost from "./LinkToPost"
 import PostHeader from "./PostHeader"
 

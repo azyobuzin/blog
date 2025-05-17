@@ -1,13 +1,13 @@
-import { mkdir } from "fs/promises"
-import { resolve } from "path"
+import { mkdir } from "node:fs/promises"
+import { resolve } from "node:path"
 import type { Root as HastRoot } from "hast"
 import { select } from "hast-util-select"
 import katex from "katex"
 import rehypeStringify from "rehype-stringify"
 import { write } from "to-vfile"
-import { Plugin, unified } from "unified"
+import { type Plugin, unified } from "unified"
 import { VFile } from "vfile"
-import { Element, h } from "./jsx"
+import { type Element, h } from "./jsx"
 
 export async function renderHtml(
   tree: Element,
@@ -38,12 +38,12 @@ const mathStyle: Plugin<[], HastRoot> = () => {
     head.children.push(
       <link
         rel="stylesheet"
-        href={katexDist + "katex.min.css"}
+        href={`${katexDist}katex.min.css`}
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
       />,
       <script
-        src={katexDist + "contrib/copy-tex.min.js"}
+        src={`${katexDist}contrib/copy-tex.min.js`}
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
         async

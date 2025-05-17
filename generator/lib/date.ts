@@ -5,7 +5,7 @@ export function formatDate(isoDate: string, includeTime: boolean): string {
   ).replaceAll("-", "/")
 
   if (includeTime && timeIndex >= 0) {
-    result += " " + isoDate.slice(timeIndex + 1, timeIndex + 6)
+    result += ` ${isoDate.slice(timeIndex + 1, timeIndex + 6)}`
   }
 
   return result

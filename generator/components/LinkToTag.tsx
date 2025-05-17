@@ -1,4 +1,4 @@
-import { FC, h } from "../lib/jsx"
+import { type FC, h } from "../lib/jsx"
 import { tagUrl } from "../lib/url"
 
 const LinkToTag: FC<{

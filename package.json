@@ -9,17 +9,16 @@
     "highlight.js": "^11.6.0"
   },
   "devDependencies": {
-    "html-validate": "^8.18.2",
-    "parcel": "^2.12.0",
-    "prettier": "^3.3.3",
-    "serve": "^14.2.3"
+    "@biomejs/biome": "1.9.4",
+    "html-validate": "9.5.3",
+    "parcel": "^2.15.1",
+    "serve": "^14.2.4"
   },
   "scripts": {
     "build": "npm start -w generator && parcel build --dist-dir public --no-source-maps styles/global.css && html-validate public",
     "serve": "serve public",
-    "fix": "npm run fix --workspaces; prettier --ignore-path .gitignore --write . !package-lock.json"
+    "fix": "biome check --write",
+    "test": "biome ci && npm run -w generator check && npm test -w generator"
   },
-  "workspaces": [
-    "generator"
-  ]
+  "workspaces": ["generator"]
 }
