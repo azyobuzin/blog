@@ -21,9 +21,6 @@ jobs:
           node-version-file: .tool-versions
           cache: npm
 
-      - name: apt-get install
-        run: sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-
       - run: npm ci --production=false
       - run: npm run build
 
