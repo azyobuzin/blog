@@ -300,12 +300,14 @@ const assignImgSize: Plugin<[], HastRoot> = () => {
                 props.width = img.naturalWidth
                 props.height = img.naturalHeight
               } else {
-                props.width =
-                  img.naturalWidth * (Number(props.height) / img.naturalHeight)
+                props.width = Math.round(
+                  img.naturalWidth * (Number(props.height) / img.naturalHeight),
+                )
               }
             } else {
-              props.height =
-                img.naturalHeight * (Number(props.width) / img.naturalWidth)
+              props.height = Math.round(
+                img.naturalHeight * (Number(props.width) / img.naturalWidth),
+              )
             }
           } catch (err) {
             file.message(err as Error, el.position)
