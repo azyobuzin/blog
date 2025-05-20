@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "canvas": "^2.11.2",
-    "chalk": ">=4.1.2 <5.1",
+    "chalk": "^5.4.1",
     "glob": ">=10.3.12 <12",
     "hast-util-classnames": "^3.0.0",
     "hast-util-has-property": "^3.0.0",
