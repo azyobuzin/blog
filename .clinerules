@@ -1,0 +1,65 @@
+# このリポジトリは何？
+
+このリポジトリは、「[あじょろぐ](https://blog.azyobuzi.net/)」というブログを管理しています。ブログ記事と静的サイトジェネレータのコードが含まれています。
+
+# ディレクトリ構成
+
+## npmパッケージ
+
+このリポジトリは二つのnpmパッケージで構成されています。
+
+- `@azyobuzin-blog/generator`: 静的サイトジェネレータのコードです。generatorディレクトリ下にあります。
+- `@azyobuzin-blog/main`: リポジトリのルートのディレクトリです。このパッケージは次の要素を含んでいます。
+    - postsディレクトリ: ブログ記事の本文
+    - package.json: ブログを生成するためのコマンドがscriptsに書かれています
+
+## postsディレクトリ
+
+postsディレクトリ下は、次の命名規則でディレクトリが作成されます。
+
+yyyy/MM/dd/slug
+
+slugは、その日のブログの連番と、タイトルを簡単に表す英語で構成されます。
+
+<example>
+2020/04/04/01-hello-gatsby
+</example>
+
+slugディレクトリ下には、本文のindex.mdと、本文から参照されるファイルが配置されます。
+slugディレクトリは、リポジトリルートにある `mkpost` コマンドで作成することができます。
+
+<example>
+```sh
+./mkpost 01-hello-gatsby
+```
+</example>
+
+index.mdの文法についてはリポジトリルートのREADME.mdを参照してください。ドキュメントに過不足があれば修正を提案してくれても良いです。
+
+# npmコマンドの呼び出し時の注意
+
+このリポジトリには複数のリポジトリがありますが、依存パッケージはすべてリポジトリルートの `package-lock.json` に記録されています。
+
+注意1: npmコマンドは必ずリポジトリルートで実行してください。
+
+<example>
+DO: generator/pacakge.jsonを変更し、リポジトリルートで `npm install` コマンドを実行
+DO NOT: generator/package.jsonを変更したので、generatorディレクトリで `npm install` コマンドを実行
+</example>
+
+注意2: generator/package.jsonのscriptsを呼び出すときは、リポジトリルートから `-w generator` オプションを利用して実行してください。
+
+<example>
+DO: リポジトリルートから `npm test -w generator` を実行
+DO NOT: generatorディレクトリから `npm test` を実行
+</example>
+
+# 動作確認
+
+変更を加えたら、次の方法でエラーがないか確認してください。
+
+1. TypeScriptの型チェック: `npm run -w generator check`
+2. 単体テスト: `npm test -w generator`
+3. 静的サイトジェネレータを実行: `npm run build`
+
+コードを git commit する前には、必ず `npm run fix` を実行してください。
