@@ -255,7 +255,7 @@ function assignTextToAnchor(
   tree: HastRoot,
   nameById: Map<string, string>,
 ): void {
-  for (const el of selectAll("a[href^=#]:empty", tree)) {
+  for (const el of selectAll('a[href^="#"]:empty', tree)) {
     const figNumStr = nameById.get((el.properties!.href as string).slice(1))
     if (figNumStr != null) {
       const textNode: HastText = { type: "text", value: figNumStr }

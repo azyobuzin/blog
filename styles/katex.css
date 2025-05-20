@@ -1,5 +1,3 @@
-@import "../node_modules/katex/dist/contrib/copy-tex.css";
-
 /* 改行を許可 */
 /* https://katex.org/docs/issues.html */
 .katex-display > .katex {
