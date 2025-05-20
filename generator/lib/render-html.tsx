@@ -32,7 +32,7 @@ const mathStyle: Plugin<[], HastRoot> = () => {
     if (select(".math", tree) == null) return
 
     const head = select("head", tree)!
-    const katexVersion: string = (katex as any).version
+    const katexVersion = (katex as unknown as { version: string }).version
     const katexDist = `https://unpkg.com/katex@${katexVersion}/dist/`
 
     head.children.push(

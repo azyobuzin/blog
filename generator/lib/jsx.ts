@@ -35,13 +35,15 @@ export function h(
 
 export function h(
   selector: VFC | string | null | undefined,
-  // @eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  // biome-ignore lint/suspicious/noExplicitAny: オーバーロードで具体的な型を指定しているため
   properties?: any,
+  // biome-ignore lint/suspicious/noExplicitAny: オーバーロードで具体的な型を指定しているため
   ...children: any[]
 ): Element {
   return typeof selector === "function"
     ? selector({ children, ...properties })
     : hastscript(
+        // biome-ignore lint/suspicious/noExplicitAny: hastscriptのオーバーロードを解決できないためanyを指定
         selector as any,
         properties,
         children.filter((x) => x != null && x !== true && x !== false),
@@ -49,12 +51,13 @@ export function h(
 }
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface ElementChildrenAttribute {
+      // biome-ignore lint/suspicious/noExplicitAny: JSXの型チェックはしない
       children: any
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: JSXの型チェックはしない
     type IntrinsicElements = Record<string, any>
   }
 }

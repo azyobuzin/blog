@@ -105,7 +105,6 @@ async function readPost(postDir: string): Promise<Post> {
 
   for (const msg of resultFile.messages) {
     if (msg.fatal === true) throw msg
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     console.warn(chalk.yellow(msg.toString()))
   }
 
