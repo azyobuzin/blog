@@ -29,7 +29,6 @@ import remarkRehype from "remark-rehype"
 import { read as readVFile } from "to-vfile"
 import { type Plugin, type Processor, unified } from "unified"
 import { map } from "unist-util-map"
-import { type Proxy as ParentProxy, parents } from "unist-util-parents"
 import { SKIP, visit } from "unist-util-visit"
 import type { VFile } from "vfile"
 import yaml from "yaml"
@@ -348,21 +347,6 @@ const tableWrapper: Plugin<[], HastRoot> = () => {
   }
 }
 
-/** equation 環境をレスポンシブにする */
-const flexEquation: Plugin<[], HastRoot> = () => {
-  return (tree: HastRoot) => {
-    for (const el of selectAll(
-      ".katex-display>.katex>.katex-html>.tag",
-      parents(tree) as unknown as typeof tree,
-    )) {
-      classnames(
-        (el as unknown as ParentProxy).parent as Element,
-        "ab-equation",
-      )
-    }
-  }
-}
-
 /** `<figure>` に class が指定されていなかったら警告 */
 const lintFigureClass: Plugin<[], HastRoot> = () => {
   const allowedClasses = [
@@ -446,7 +430,6 @@ const processor = unified()
   .use(tableWrapper)
   .use(rehypeCustomElements)
   .use(rehypeKatex)
-  .use(flexEquation)
   .use(lintFigureClass)
   .use(toPost as unknown as Plugin<[], HastRoot, Post>) // NOTE: first-partyプラグインでもd.tsで型を強引に変更している
   .freeze()
