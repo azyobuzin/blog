@@ -28,9 +28,6 @@
         "noNonNullAssertion": "off",
         "useNodeAssertStrict": "error",
         "useThrowNewError": "error"
-      },
-      "suspicious": {
-        "noExplicitAny": "info"
       }
     }
   },

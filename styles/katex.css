@@ -1,5 +1,3 @@
-@import "../node_modules/katex/dist/contrib/copy-tex.css";
-
 /* 改行を許可 */
 /* https://katex.org/docs/issues.html */
 .katex-display > .katex {
@@ -7,18 +5,18 @@
 }
 
 /* equation のレスポンシブ化 */
-.ab-equation {
+.katex-display > .katex > .katex-html:has(> .tag) {
   display: flex !important;
   width: 100%;
 }
 
-.ab-equation > .base {
+.katex-display > .katex > .katex-html:has(> .tag) > .base {
   display: block !important;
   flex: 1;
   overflow: auto hidden;
 }
 
-.ab-equation > .tag {
+.katex-display > .katex > .katex-html > .tag {
   position: static !important;
-  margin-left: 1.5rem;
+  margin-left: 1rem;
 }

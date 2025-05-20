@@ -27,9 +27,8 @@ import remarkMath from "remark-math"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
 import { read as readVFile } from "to-vfile"
-import { type FrozenProcessor, type Plugin, unified } from "unified"
+import { type Plugin, type Processor, unified } from "unified"
 import { map } from "unist-util-map"
-import { parents } from "unist-util-parents"
 import { SKIP, visit } from "unist-util-visit"
 import type { VFile } from "vfile"
 import yaml from "yaml"
@@ -66,6 +65,14 @@ interface Frontmatter {
   style?: string
 }
 
+// Compilerの出力は、CompileResultMapにあるフィールドの型のいずれかしか許されない
+// https://github.com/unifiedjs/unified/blob/11.0.5/readme.md#compileresultmap
+declare module "unified" {
+  interface CompileResultMap {
+    Post: Post
+  }
+}
+
 export async function readPosts(postsDir: string): Promise<Post[]> {
   const dirs = await glob("????/??/??/*", {
     cwd: postsDir,
@@ -97,11 +104,10 @@ async function readPost(postDir: string): Promise<Post> {
 
   for (const msg of resultFile.messages) {
     if (msg.fatal === true) throw msg
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     console.warn(chalk.yellow(msg.toString()))
   }
 
-  return resultFile.result
+  return resultFile.result as Post
 }
 
 /** h1 をタイトルとして扱う */
@@ -248,7 +254,7 @@ function assignTextToAnchor(
   tree: HastRoot,
   nameById: Map<string, string>,
 ): void {
-  for (const el of selectAll("a[href^=#]:empty", tree)) {
+  for (const el of selectAll('a[href^="#"]:empty', tree)) {
     const figNumStr = nameById.get((el.properties!.href as string).slice(1))
     if (figNumStr != null) {
       const textNode: HastText = { type: "text", value: figNumStr }
@@ -341,18 +347,6 @@ const tableWrapper: Plugin<[], HastRoot> = () => {
   }
 }
 
-/** equation 環境をレスポンシブにする */
-const flexEquation: Plugin<[], HastRoot> = () => {
-  return (tree: HastRoot) => {
-    for (const el of selectAll(
-      ".katex-display>.katex>.katex-html>.tag",
-      parents(tree) as typeof tree,
-    )) {
-      classnames((el as any).parent as Element, "ab-equation")
-    }
-  }
-}
-
 /** `<figure>` に class が指定されていなかったら警告 */
 const lintFigureClass: Plugin<[], HastRoot> = () => {
   const allowedClasses = [
@@ -372,8 +366,10 @@ const lintFigureClass: Plugin<[], HastRoot> = () => {
   }
 }
 
-const toPost: Plugin<[], HastRoot> = function () {
-  this.Compiler = (tree: HastRoot, file: VFile): Post => {
+function toPost(
+  this: Processor<undefined, undefined, undefined, HastRoot, Post>,
+) {
+  this.compiler = (tree: HastRoot, file: VFile): Post => {
     const slug = path
       .resolve(file.cwd, file.path, "..")
       .split(path.sep)
@@ -427,17 +423,16 @@ const processor = unified()
   .use(rehypeRaw)
   .use(sectionNumbering)
   .use(sampElement)
+  .use(rehypeKatex)
   .use(rehypeHighlight)
   .use(removeHljsClass)
   .use(figureNumbering)
   .use(assignImgSize)
   .use(tableWrapper)
   .use(rehypeCustomElements)
-  .use(rehypeKatex)
-  .use(flexEquation)
   .use(lintFigureClass)
-  .use(toPost)
-  .freeze() as FrozenProcessor<MdastRoot, HastRoot, HastRoot, Post>
+  .use(toPost as unknown as Plugin<[], HastRoot, Post>) // NOTE: first-partyプラグインでもd.tsで型を強引に変更している
+  .freeze()
 
 async function getGitCommit(
   path: string,
@@ -478,7 +473,7 @@ export function removeRelativeLink<T extends HastNode>(
 ): T {
   return map(node, (node) => {
     if (
-      (isHastElement as (node: any) => node is Element)(node) &&
+      (isHastElement as (node: unknown) => node is Element)(node) &&
       node.properties != null
     ) {
       // id属性を削除する
@@ -495,5 +490,5 @@ export function removeRelativeLink<T extends HastNode>(
       return { ...node, properties: newProps }
     }
     return { ...node }
-  })
+  }) as T
 }

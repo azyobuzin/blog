@@ -29,10 +29,10 @@ const fromElement: Plugin<[], HastRoot> = function () {
 /** 必要に応じて KaTeX のスタイルを適用 */
 const mathStyle: Plugin<[], HastRoot> = () => {
   return (tree: HastRoot) => {
-    if (select(".math", tree) == null) return
+    if (select(".katex", tree) == null) return
 
     const head = select("head", tree)!
-    const katexVersion: string = (katex as any).version
+    const katexVersion = (katex as unknown as { version: string }).version
     const katexDist = `https://unpkg.com/katex@${katexVersion}/dist/`
 
     head.children.push(
