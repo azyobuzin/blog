@@ -77,7 +77,7 @@ work1
 <pre><code class="language-swift"><span class="hljs-keyword">import</span> Foundation
 
 <span class="hljs-comment">// ジョブとロックを管理するオブジェクト。ThreadとExecutorで共有する。</span>
-<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutorQueue</span>: @<span class="hljs-title class_">unchecked</span> <span class="hljs-title class_">Sendable</span> {
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutorQueue</span>: @unchecked <span class="hljs-title class_ inherited__">Sendable</span> {
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">var</span> queue: [<span class="hljs-type">UnownedJob</span>] <span class="hljs-operator">=</span> []
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> cond <span class="hljs-operator">=</span> <span class="hljs-type">NSCondition</span>()
   <span class="hljs-keyword">private(set)</span> <span class="hljs-keyword">var</span> isQuitted <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>
@@ -107,7 +107,7 @@ work1
 }
 
 <span class="hljs-comment">// ワーカースレッド</span>
-<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutorThread</span>: <span class="hljs-title class_">Thread</span> {
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyExecutorThread</span>: <span class="hljs-title class_ inherited__">Thread</span> {
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> queue: <span class="hljs-type">MyExecutorQueue</span>
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">let</span> executor: <span class="hljs-type">UnownedSerialExecutor</span>
 
@@ -144,7 +144,7 @@ work1
 }
 
 <span class="hljs-comment">// SerialExecutorプロトコルの実装</span>
-<span class="hljs-keyword">extension</span> <span class="hljs-title class_">MyExecutor</span>: <span class="hljs-title class_">SerialExecutor</span> {
+<span class="hljs-keyword">extension</span> <span class="hljs-title class_">MyExecutor</span>: <span class="hljs-title class_ inherited__">SerialExecutor</span> {
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">asUnownedSerialExecutor</span>() -> <span class="hljs-type">UnownedSerialExecutor</span> {
     <span class="hljs-type">UnownedSerialExecutor</span>(ordinary: <span class="hljs-keyword">self</span>)
   }
@@ -268,7 +268,7 @@ work3
 <p>次の例を見てください。<code>ObjcClass.foo</code>は<code>@MainActor</code>が指定されているので、必ずメインスレッドで実行されるはずです。しかし、<code>callObjC</code>の実行結果を見ると、ワーカースレッドがprintされています。このようにObjective-Cから呼び出されるときは、GlobalActorは効かないです。Swiftコンパイラにも守ってもらえなくなるので注意しましょう。</p>
 <pre><code class="language-swift"><span class="hljs-keyword">import</span> Foundation
 
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">ObjcClass</span>: <span class="hljs-title class_">NSObject</span> {
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ObjcClass</span>: <span class="hljs-title class_ inherited__">NSObject</span> {
   <span class="hljs-keyword">@objc</span> <span class="hljs-meta">@MainActor</span>
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">foo</span>() {
       <span class="hljs-built_in">print</span>(<span class="hljs-string">"foo"</span>)
