@@ -2,7 +2,7 @@ import Layout from "../components/Layout"
 import PostList from "../components/PostList"
 import StyleTags from "../components/StyleTags"
 import { SITE_TITLE, SITE_URL } from "../lib/constants"
-import { type VFC, h } from "../lib/jsx"
+import { h, type VFC } from "../lib/jsx"
 import type { Post } from "../lib/posts"
 import { tagUrl } from "../lib/url"
 

@@ -1,5 +1,5 @@
 import type { Element as HastElement, Root as HastRoot } from "hast"
-import { type Child, type Properties, h as hastscript } from "hastscript"
+import { type Child, h as hastscript, type Properties } from "hastscript"
 
 export type Node = Child
 export type Element = HastElement | HastRoot

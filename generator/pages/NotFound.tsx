@@ -1,6 +1,6 @@
 import Layout from "../components/Layout"
 import { SITE_TITLE } from "../lib/constants"
-import { type VFC, h } from "../lib/jsx"
+import { h, type VFC } from "../lib/jsx"
 
 const NotFound: VFC = () => {
   return (

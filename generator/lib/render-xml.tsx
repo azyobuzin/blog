@@ -7,7 +7,6 @@ export async function renderXml(
   outPath: string,
 ): Promise<void> {
   if (tree.type !== "root") {
-    // biome-ignore lint/style/noParameterAssign: rootではないときだけ書き換える
     tree = {
       type: "root",
       children: [

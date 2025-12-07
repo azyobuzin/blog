@@ -1,5 +1,5 @@
 import { SITE_TITLE } from "../lib/constants"
-import { type FC, type Node, h } from "../lib/jsx"
+import { type FC, h, type Node } from "../lib/jsx"
 
 const Layout: FC<{ head?: Node }> = (props) => {
   return {

@@ -242,6 +242,7 @@ figure.fig-quote {
 }
 
 figure.fig-quote::before {
+  /* biome-ignore lint/a11y/useGenericFontNames: アイコンを表示するため */
   font: normal normal normal 1.75rem / 1 ForkAwesome;
   content: "\f10d";
   color: var(--ab-accent);
