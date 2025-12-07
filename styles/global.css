@@ -59,24 +59,6 @@ article header {
   margin-bottom: 1.5em;
 }
 
-.article-tags {
-  display: inline;
-  margin: 0;
-  padding: 0;
-}
-
-.article-tags > li {
-  display: inline;
-}
-
-.article-tags > li::before {
-  content: " / ";
-}
-
-.article-tags > li:first-child::before {
-  content: " ";
-}
-
 hr,
 .article-list-item,
 footer {
@@ -106,6 +88,24 @@ footer nav li {
 
 footer nav ul :last-child {
   border-right-style: none;
+}
+
+.article-tags {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+.article-tags > li {
+  display: inline;
+}
+
+.article-tags > li::before {
+  content: " / ";
+}
+
+.article-tags > li:first-child::before {
+  content: " ";
 }
 
 /*
@@ -199,6 +199,54 @@ pre {
   padding: 0.5em 1em;
   overflow-x: auto;
   line-height: 1.6;
+}
+
+/*
+ * 囲み
+ */
+
+.note {
+  margin: 1.5em 1em;
+  background-color: var(--ab-note);
+}
+
+.note-heading {
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: sans-serif;
+  background-color: var(--ab-accent);
+  color: #fffffe;
+  margin: 0;
+  padding: 0.25em 1em;
+}
+
+.note-content {
+  padding: 1em;
+}
+
+.note-content > *:first-child {
+  margin-top: 0;
+}
+
+.note-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.note-important {
+  --ab-accent: var(--ab-important);
+}
+
+.note-caution {
+  --ab-accent: var(--ab-caution);
+}
+
+.note-warning {
+  --ab-accent: var(--ab-warning);
+}
+
+.ins-block {
+  display: block;
+  text-decoration: none;
 }
 
 /*
@@ -309,52 +357,4 @@ thead th {
   margin: 0 -1.5rem;
   width: calc(100% + 3rem);
   overflow-x: auto;
-}
-
-/*
- * 囲み
- */
-
-.note {
-  margin: 1.5em 1em;
-  background-color: var(--ab-note);
-}
-
-.note-heading {
-  font-size: 1rem;
-  font-weight: bold;
-  font-family: sans-serif;
-  background-color: var(--ab-accent);
-  color: #fffffe;
-  margin: 0;
-  padding: 0.25em 1em;
-}
-
-.note-content {
-  padding: 1em;
-}
-
-.note-content > *:first-child {
-  margin-top: 0;
-}
-
-.note-content > *:last-child {
-  margin-bottom: 0;
-}
-
-.note-important {
-  --ab-accent: var(--ab-important);
-}
-
-.note-caution {
-  --ab-accent: var(--ab-caution);
-}
-
-.note-warning {
-  --ab-accent: var(--ab-warning);
-}
-
-.ins-block {
-  display: block;
-  text-decoration: none;
 }
