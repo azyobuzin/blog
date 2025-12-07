@@ -13,7 +13,7 @@ const Layout: FC<{ head?: Node }> = (props) => {
           <meta name="generator" content="https://github.com/azyobuzin/blog" />
           <link
             rel="stylesheet"
-            href="https://unpkg.com/fork-awesome@~1.2.0/css/fork-awesome.min.css"
+            href="https://unpkg.com/fork-awesome@1.2.0/css/fork-awesome.min.css"
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
           />
@@ -21,6 +21,8 @@ const Layout: FC<{ head?: Node }> = (props) => {
           <meta property="og:site_name" content={SITE_TITLE} />
           <meta name="twitter:card" content="summary" />
           <meta name="twitter:creator" content="@azyobuzin" />
+          {/* はてなブックマークのページオーナー https://b.hatena.ne.jp/help/entry/pageowner */}
+          <link rel="author" href="https://www.hatena.ne.jp/azyobuzin/" />
           {props.head}
         </head>
         <body>{props.children}</body>
