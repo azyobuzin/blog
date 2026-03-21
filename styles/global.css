@@ -168,7 +168,7 @@ h4::before,
 h5::before,
 h6::before {
   color: var(--ab-accent);
-  font-family: "Arial";
+  font-family: "Arial", sans-serif;
   padding-right: 0.5em;
 }
 
