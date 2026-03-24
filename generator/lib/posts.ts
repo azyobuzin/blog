@@ -79,20 +79,16 @@ export async function readPosts(postsDir: string): Promise<Post[]> {
     absolute: true,
   })
 
-  let posts = await Promise.all(
-    dirs.map(async (dir) => {
-      if (!(await stat(path.join(dir, CONTENT_FILE_NAME))).isFile()) return null
-      return await readPost(dir)
-    }),
-  )
+  const postPromises = dirs.map(async (dir) => {
+    if (!(await stat(path.join(dir, CONTENT_FILE_NAME))).isFile()) return null
+    return await readPost(dir)
+  })
 
-  posts = posts.filter((x) => x != null)
+  const posts = (await Promise.all(postPromises)).filter((x) => x != null)
 
   // https://stackoverflow.com/a/40355107
   // @ts-expect-error 暗黙の型変換を利用
-  posts.sort((x, y) => (y.slug > x.slug) - (y.slug < x.slug))
-
-  return posts as Post[]
+  return posts.sort((x, y) => (y.slug > x.slug) - (y.slug < x.slug))
 }
 
 async function readPost(postDir: string): Promise<Post> {
