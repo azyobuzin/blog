@@ -273,7 +273,7 @@ figure.fig-code > pre {
   margin: 0;
 }
 
-figure.fig-img > img {
+figure.fig-img > img, figure.fig-img > video {
   max-width: 100%;
   height: auto;
 }
