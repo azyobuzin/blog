@@ -74,7 +74,7 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 [](#img-px-noninterlace) に示すように、予測する画素 X の左上、上、左です。
 
 <figure id="img-px-noninterlace" class="fig-img" data-num="図">
-<img src="px_noninterlace.svg" height="75" alt="" />
+<img src="px_noninterlace.svg" width="74" height="75" alt="" />
 <figcaption>非インターレース方式で参照する周辺画素</figcaption>
 </figure>
 
@@ -123,19 +123,19 @@ FLIF ファイルは、大きく次のように構成されます。区切り方
 実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。
 
 <figure id="img-px-interlace" class="fig-img" data-num="図">
-<img src="px_interlace.svg" height="150" alt="" />
+<img src="px_interlace.svg" width="149" height="150" alt="" />
 <figcaption>インターレース方式で参照する周辺画素</figcaption>
 </figure>
 
 次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。
 
 <figure id="img-px-horizontal" class="fig-img" data-num="図">
-<img src="px_horizontal.svg" height="150" alt="" />
+<img src="px_horizontal.svg" width="149" height="150" alt="" />
 <figcaption>偶数ズームレベルにおける周辺画素</figcaption>
 </figure>
 
 <figure id="img-px-vertical" class="fig-img" data-num="図">
-<img src="px_vertical.svg" height="150" alt="" />
+<img src="px_vertical.svg" width="149" height="150" alt="" />
 <figcaption>奇数ズームレベルにおける周辺画素</figcaption>
 </figure>
 
@@ -347,28 +347,28 @@ FLIF では、各画素について、予測値からの誤差（整数）を記
 カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。
 
 <figure id="img-ctx-counter1" class="fig-img" data-num="図">
-<img src="ctx_counter_1.svg" height="200" alt="" />
+<img src="ctx_counter_1.svg" width="392" height="200" alt="" />
 <figcaption>決定木の初期状態</figcaption>
 </figure>
 
 この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。
 
 <figure id="img-ctx-counter2" class="fig-img" data-num="図">
-<img src="ctx_counter_2.svg" height="200" alt="" />
+<img src="ctx_counter_2.svg" width="392" height="200" alt="" />
 <figcaption>カウンターがデクリメントされる</figcaption>
 </figure>
 
 次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。
 
 <figure id="img-ctx-counter3" class="fig-img" data-num="図">
-<img src="ctx_counter_3.svg" height="200" alt="" />
+<img src="ctx_counter_3.svg" width="392" height="200" alt="" />
 <figcaption>カウンターが0になると子に確率表がコピーされる</figcaption>
 </figure>
 
 いま、確率表2と確率表3は、確率表1と同じ内容になっています。
 
 <figure id="img-ctx-counter4" class="fig-img" data-num="図">
-<img src="ctx_counter_4.svg" height="200" alt="" />
+<img src="ctx_counter_4.svg" width="392" height="200" alt="" />
 <figcaption>カウンターが0になると条件分岐が行われる</figcaption>
 </figure>
 

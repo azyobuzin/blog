@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.2.0",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "dependencies": {
     "highlight.js": "~11.11.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.8",
+    "@biomejs/biome": "2.4.16",
     "html-validate": "9.5.3",
     "parcel": "^2.15.1",
     "serve": "^14.2.4"

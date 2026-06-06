@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "canvas": "^2.11.2",
+    "canvas": "^3.2.3",
     "chalk": "^5.4.1",
     "glob": ">=10.3.12 <12",
     "hast-util-classnames": "^3.0.0",
