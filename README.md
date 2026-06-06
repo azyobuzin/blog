@@ -11,3 +11,9 @@ https://blog.azyobuzi.net/
 ## 構文リファレンス
 
 [docs/syntax-reference.md](docs/syntax-reference.md) を参照してください。
+
+## GitHub Actionsのアップデート
+
+```
+pinact run -min-age 7 -update
+```
