@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="ja" prefix="og: http://ogp.me/ns#"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="https://github.com/azyobuzin/blog"><link rel="stylesheet" href="https://unpkg.com/fork-awesome@1.2.0/css/fork-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="/global.css"><meta property="og:site_name" content="あじょろぐ"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@azyobuzin"><link rel="author" href="https://www.hatena.ne.jp/azyobuzin/"><title>ForgejoにAnubisを導入した | あじょろぐ</title><link rel="canonical" href="https://blog.azyobuzi.net/2026/06/06/01-anubis/"><meta property="og:title" content="ForgejoにAnubisを導入した"><meta property="og:type" content="article"><meta property="og:url" content="https://blog.azyobuzi.net/2026/06/06/01-anubis/"><meta property="og:description" content="悪名高いAnubisだが、さすがにサーバー負荷高すぎて操作不能なのでやむなし……。
+
+Anubisによるbotチェック画面。無駄にハッシュ計算させられるなど、なかなか邪悪。
+
+相変わらずPleromaサーバーの運営を続けているわけですが、そのソースコードを管理するためにForgejoサーバーを立てています。一時期はAWS上で動いていましたが、絶えず続くスクレイパーからのリクエストで結構な金額がかかっていました。そこで自宅のノートPCに移行してみたのですが、自分の作業のために使うにも重すぎて、使い物になりませんでした。
+
+ここで、スクレイパーに対する僕の立場を表明しておきます。
+
+robots.txtは設定済み。特にインデックスしても面白いものはないので、全部Disallowしてあります。
+AIに学習されることは何ら構いません。
+でも、重いリクエストを無駄に投げられることは勘弁。
+
+まずはリバースプロキシとして使っているnginxだけで何とかできないか考えましたが、limit_reqやlimit_connだけでは、通常の人間の操作まで邪魔してしまう設定しかできずに断念しました。というのも、スクレイパーによる被害は、リクエスト数が多いことではなく、重いエンドポイント（昔のコミットを見たり、blameしたり、リポジトリ全体アーカイブzipをダウンロードしたり）へのアクセスでした。例えば1分間に2リクエストまで許可する、みたいな制限をかけたとしても、2回リポジトリ全体ダウンロードをやられたらたまったもんじゃないです。さらに、同時にやってくるスクレイパーは数種類いるっぽく、IPアドレス単位で制限してもすり抜けられます。
+
+というわけで、嫌いで仕方なかったAnubisに手を出すことにしました。"><meta property="og:article:published_time" content="2026-01-18T15:48+09:00"><meta property="og:article:modified_time" content="2026-06-07T00:03:37+09:00"><meta property="og:article:tag" content="tech"><meta property="og:article:tag" content="Web"></head><body><div class="container"><main><article><header><h1>ForgejoにAnubisを導入した</h1><div class="article-meta"><i class="fa fa-pencil-square-o" title="公開日"></i> <time datetime="2026-01-18T15:48+09:00" title="公開: 2026/01/18 15:48
+最終更新: 2026/06/07 00:03">2026/01/18</time> ― <a href="https://github.com/azyobuzin/blog/commits/cc51f33914004b77849aee7b3e23314c58b5e61e/posts/2026/06/06/01-anubis" rel="external">History</a></div><div class="article-meta"><i class="fa fa-tags" title="タグ"></i><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li><li><a rel="tag" class="article-tag" href="/tags/Web/">Web</a></li></ul></div></header><div class="article-content"><p>悪名高いAnubisだが、さすがにサーバー負荷高すぎて操作不能なのでやむなし……。</p>
+<figure class="fig-img">
+<img src="what-is-anubis.png" alt="" height="500" width="546">
+<figcaption>Anubisによるbotチェック画面。無駄にハッシュ計算させられるなど、なかなか邪悪。</figcaption>
+</figure>
+<p>相変わらずPleromaサーバーの運営を続けているわけですが、そのソースコードを管理するためにForgejoサーバーを立てています。一時期はAWS上で動いていましたが、絶えず続くスクレイパーからのリクエストで結構な金額がかかっていました。そこで自宅のノートPCに移行してみたのですが、自分の作業のために使うにも重すぎて、使い物になりませんでした。</p>
+<p>ここで、スクレイパーに対する僕の立場を表明しておきます。</p>
+<ul>
+<li>robots.txtは設定済み。特にインデックスしても面白いものはないので、全部Disallowしてあります。</li>
+<li>AIに学習されることは何ら構いません。</li>
+<li>でも、重いリクエストを無駄に投げられることは勘弁。</li>
+</ul>
+<p>まずはリバースプロキシとして使っているnginxだけで何とかできないか考えましたが、limit_reqやlimit_connだけでは、通常の人間の操作まで邪魔してしまう設定しかできずに断念しました。というのも、スクレイパーによる被害は、リクエスト数が多いことではなく、重いエンドポイント（昔のコミットを見たり、blameしたり、リポジトリ全体アーカイブzipをダウンロードしたり）へのアクセスでした。例えば1分間に2リクエストまで許可する、みたいな制限をかけたとしても、2回リポジトリ全体ダウンロードをやられたらたまったもんじゃないです。さらに、同時にやってくるスクレイパーは数種類いるっぽく、IPアドレス単位で制限してもすり抜けられます。</p>
+<p>というわけで、嫌いで仕方なかったAnubisに手を出すことにしました。</p>
+<h2>別にハッシュ計算させなくていい</h2>
+<p>Anubisといえば、アクセスするたびにハッシュ計算を求めてくる環境に悪い邪悪なプロキシで、これのせいでAI Agentから読めないドキュメント (OpenWrt Wiki、お前のことだぞ) もあって、結構ブチ切れていました。</p>
+<p>しかし、Anubisのドキュメントを読んでみると、ハッシュ計算させる以外にも</p>
+<ul>
+<li><code>&#x3C;meta http-equiv="Refresh" /></code> によるリダイレクトを挟む (metarefresh)</li>
+<li>JavaScriptでチャレンジエンドポイントにPOSTする (Preact)</li>
+</ul>
+<p>という設定があることがわかりました (<a href="https://anubis.techaro.lol/docs/admin/configuration/challenges/">Challenge Methods | Anubis</a>)。</p>
+<p>今回の目的では、aタグを手あたり次第アクセスしてくるスクレイパーをブロックできれば良いので、Preactかつ表示時間を最小にすれば良さそうです。これなら一瞬で表示されるし、体験も悪くないぞ！</p>
+<h2>botPolicies.yamlを書く</h2>
+<p>Anubisはリバースプロキシとして動くので、アプリケーションの前段にDockerコンテナとして設置するだけで簡単に導入できます。ただ、デフォルト設定はAI・スクレイパー断固拒否！みたいな強気の設定です。今回の目的は重いページへのリクエスト前にスクレイパーチェックが走ればよいだけなので、緩めの設定を考えます。</p>
+<p>最小構成では、botsセクションとthresholdsセクションを置くと良いです。botsセクションのルールを上から順番に評価し、それまでにactionがあればそのactionが実行される。そうでなければ重みに応じたactionを実行する、という構成ですね。</p>
+<figure class="fig-code">
+<figcaption>最小構成のbotPolicies.yaml</figcaption>
+<pre><code class="language-yaml"><span class="hljs-attr">bots:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ルール1</span>
+    <span class="hljs-string">条件</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">ALLOW</span>
+
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ルール2</span>
+    <span class="hljs-string">条件</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">WEIGH</span>
+    <span class="hljs-attr">weight:</span>
+      <span class="hljs-attr">adjust:</span> <span class="hljs-number">1</span>
+
+<span class="hljs-attr">thresholds:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">minimal-suspicion</span>
+    <span class="hljs-attr">expression:</span> <span class="hljs-string">weight</span> <span class="hljs-string">&#x3C;=</span> <span class="hljs-number">0</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">ALLOW</span>
+
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">moderate-suspicion</span>
+    <span class="hljs-attr">expression:</span> <span class="hljs-string">weight</span> <span class="hljs-string">></span> <span class="hljs-number">0</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">CHALLENGE</span>
+    <span class="hljs-string">チャレンジの設定</span>
+</code></pre>
+</figure>
+<p>botsセクション側にCHALLENGEを書いてもよいのですが、今後CHALLENGEさせたい条件が増えたときに面倒になるので、重みに寄せておくと便利なはずです。</p>
+<p>さて、Forgejoではどのようなルールを設定すべきでしょうか。今までのアクセスログで1リクエストの時間が長くて重いリクエストは、大体リポジトリのarchive, blame, commit, commits, srcあたりのパスでした。なので、このあたりをCHALLENGE対象にしておきましょう。逆に、フロントエンドアセットのダウンロード、認証されたAPIアクセス、Git HTTP ProtocolにAnubisが介入されると困るので、このへんは重みをつける前にALLOWしておきます。</p>
+<p>現在運用している設定はこうなりました。</p>
+<figure class="fig-code">
+<figcaption>運用中のbotPolicies.yaml</figcaption>
+<pre><code class="language-yaml"><span class="hljs-attr">bots:</span>
+  <span class="hljs-comment"># 静的アセットは通す</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">forgejo-assets</span>
+    <span class="hljs-attr">path_regex:</span> <span class="hljs-string">(^/assets/|^/favicon\.ico$|^/robots\.txt$|^/.well-known/)</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">ALLOW</span>
+
+  <span class="hljs-comment"># Git HTTP / API token / Basic 認証っぽいものは通す</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">forgejo-authorization</span>
+    <span class="hljs-attr">headers_regex:</span>
+      <span class="hljs-attr">Authorization:</span> <span class="hljs-string">.+</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">ALLOW</span>
+
+  <span class="hljs-comment"># Git HTTP Protocolは通す https://git-scm.com/docs/http-protocol</span>
+  <span class="hljs-comment"># 公開 repo の clone/fetch は Authorization なしで来る可能性があるため</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">forgejo-git-http</span>
+    <span class="hljs-attr">path_regex:</span> <span class="hljs-string">^/[^/]+/[^/]+/(info/refs|objects/|git-upload-pack|git-receive-pack)</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">ALLOW</span>
+
+  <span class="hljs-comment"># 重いリクエストはウェイトを設定</span>
+  <span class="hljs-comment"># archiveはPOSTをブロックするとフロントエンドからアーカイブダウンロードができなくなるので、GETに限定している</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">forgejo-heavy-path</span>
+    <span class="hljs-attr">expression:</span>
+      <span class="hljs-attr">all:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">method</span> <span class="hljs-string">==</span> <span class="hljs-string">"GET"</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">path.matches("^/[^/]+/[^/]+/(archive|blame|commit|commits|src)/")</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">WEIGH</span>
+    <span class="hljs-attr">weight:</span>
+      <span class="hljs-attr">adjust:</span> <span class="hljs-number">1</span>
+
+<span class="hljs-attr">thresholds:</span>
+  <span class="hljs-comment"># 重みなしなら何もしない</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">minimal-suspicion</span>
+    <span class="hljs-attr">expression:</span> <span class="hljs-string">weight</span> <span class="hljs-string">&#x3C;=</span> <span class="hljs-number">0</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">ALLOW</span>
+
+  <span class="hljs-comment"># 重みが設定されたら、1秒だけAnubisの画面を表示</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">moderate-suspicion</span>
+    <span class="hljs-attr">expression:</span> <span class="hljs-string">weight</span> <span class="hljs-string">></span> <span class="hljs-number">0</span>
+    <span class="hljs-attr">action:</span> <span class="hljs-string">CHALLENGE</span>
+    <span class="hljs-attr">challenge:</span>
+      <span class="hljs-attr">algorithm:</span> <span class="hljs-string">preact</span>
+      <span class="hljs-attr">difficulty:</span> <span class="hljs-number">1</span>
+</code></pre>
+</figure>
+<p>Cookieにセッションが入ってたらALLOWみたいな設定を入れると、ログインしていればAnubisとは一切無縁になれるのでなお良いかもしれません。今回の設定では、動いてることをデバッグしやすいように、あえてその設定は入れませんでした。</p>
+<h2>結果</h2>
+<p>次の動画のように、一瞬でページ遷移され、ほぼストレスなく利用できるように設定できました。</p>
+<figure class="fig-img">
+<video controls src="commits.mp4"></video>
+<figcaption>ForgejoでAnubisが動作している様子</figcaption>
+</figure>
+<p>導入後、スクレイパーによって動作が重くなることもなく、快適に使えています。</p>
+<p>というわけで、みなさん、初期設定で使わないで、めちゃくちゃ簡易な設定で試してみてください。効果は絶大、体験はめちゃくちゃいいです。あと静的コンテンツのサーバーはAnubisを入れる前にキャッシュでなんとかしてくれ頼む。AIにドキュメントを読まさせてくれ！</p></div></article></main><footer><nav><ul><li><a href="/">あじょろぐ</a></li><li><a href="https://twitter.com/azyobuzin" rel="author external">@azyobuzin</a></li></ul></nav></footer></div></body></html>
