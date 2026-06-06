@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/tech/feed.atom</id><link href="https://blog.azyobuzi.net/tags/tech/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/tech/" rel="alternate" type="text/html" /><title>tech | あじょろぐ</title><updated>2025-05-17T23:13:06+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/tags/tech/feed.atom</id><link href="https://blog.azyobuzi.net/tags/tech/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/tags/tech/" rel="alternate" type="text/html" /><title>tech | あじょろぐ</title><updated>2026-06-06T22:56:28+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>最近、本業の組織変更でスマホアプリとWebのハイブリッド担当になりました。というわけでSwiftを書く機会が多くなってきたものの、仕様を理解しきれてない部分があったのでメモです。&#x3C;/p>
 &#x3C;p>SwiftでiOSアプリを書いているとよく &#x3C;code>@MainActor&#x3C;/code> というコードを書くことがあります。このアノテーションを指定した型や関数はメインスレッドで動きます。と、いうところまでは簡単なのですが、このようなアノテーションを指定することで、具体的にどういう動作をするのか、どのような制約が生まれるのか、が若干複雑だったので整理していきます。&#x3C;/p>
 &#x3C;h2>Actorとは何か&#x3C;/h2>
 &#x3C;p>&#x3C;code>@MainActor&#x3C;/code>アノテーションの説明の前に、actorというもの自体の説明をしましょう。&#x3C;/p>
@@ -1003,7 +1003,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;p>実際に符号化する画素値は、予測された画素値との誤差になります。予測に使用する画素は、 &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-px-noninterlace">図 1&#x3C;/a> に示すように、予測する画素 X の左上、上、左です。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_noninterlace.svg" height="75" alt="" width="74">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_noninterlace.svg" width="74" height="75" alt="">
 &#x3C;figcaption>図 1: 非インターレース方式で参照する周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>予測値は、 L+T-TL, L, T の中央値です。 X-予測値 が実際に符号化される値になります。&#x3C;/p>
@@ -1041,16 +1041,16 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>予測器はズームレベルが偶数か奇数かで少し挙動が変わります。なぜなら周囲の画素の復号化状況が異なるからです。偶数では行を復号化するため、下側の画素を参照することができますが、右側を参照することはできません。奇数では列を復号化するため、逆に右側を参照することできますが、下側を参照することができません。&#x3C;/p>
 &#x3C;p>実際の予測器を見てみましょう。予測する画素 X の周辺画素に次のように名前を付けておきます。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_interlace.svg" height="150" alt="" width="149">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_interlace.svg" width="149" height="150" alt="">
 &#x3C;figcaption>図 2: インターレース方式で参照する周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次に示す図は、画素 X を復号化するときの、周辺画素の復号化状況です。背景がグレーになっている画素は前のズームレベルまでに復号化された画素、背景が白の画素は今のズームレベルで復号化する画素です。「?」となっている部分はまだ復号化されていません。この通り、ズームレベル偶数では R を参照することはできず、奇数では B を参照することができません。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_horizontal.svg" height="150" alt="" width="149">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_horizontal.svg" width="149" height="150" alt="">
 &#x3C;figcaption>図 3: 偶数ズームレベルにおける周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_vertical.svg" height="150" alt="" width="149">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/px_vertical.svg" width="149" height="150" alt="">
 &#x3C;figcaption>図 4: 奇数ズームレベルにおける周辺画素&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>また、画像の端っこの画素を処理するときには、参照できない周辺画素があります。その場合は、偶数ズームレベルでは必ず T があり、奇数ズームレベルでは L があるので、その値を代用します。&#x3C;/p>
@@ -1206,29 +1206,29 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;p>ここまでで、各画素値を周囲の画素値を使って予測し、その予測誤差を確率表を使って適応的算術符号化して記録するということがわかりました。しかしまだ終わりではありません。 FLIF では確率表を状況に応じて使い分けます。つまり&#x3C;strong>確率表のコンテキスト&#x3C;/strong>を考えます。これが FLIF 用語での「コンテキスト」になります。&#x3C;/p>
 &#x3C;p>コンテキストについてざっくりいうと、符号化しようとしている画素に関する情報を条件とする決定木によって、使用する確率表が決定します（&#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-ctx-summary">図 5&#x3C;/a>）。条件には他のチャンネルの画素値や、周辺画素同士の差といった情報が使えます。条件に使用できる情報をそれぞれプロパティと呼び、非インターレース方式で10種類、インターレース方式で17種類のプロパティがあります。プロパティ値がある値より大きい場合と、ある値以下の場合で分岐します。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_summary.svg" alt="" width="530" height="273">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_summary.svg" alt="" width="530" height="272">
 &#x3C;figcaption>図 5: 確率表のコンテキストを選択する決定木&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;h4>4.4.2. カウンター&#x3C;/h4>
 &#x3C;p>さらに踏み込んで見てみます。もし最初から &#x3C;a href="https://blog.azyobuzi.net/2020/10/11/01-flif/#img-ctx-summary">図 5&#x3C;/a> のように使用する確率表が決まるとすると、それぞれの確率表の初期値はどのように決まるのでしょうか？ 確率表それぞれが別々に適応を行っていくので、すべての確率表を仕様で定められた確率で初期化したら、適応によって確率表が温まるまでの間に全画素についての処理が終わってしまいます。そこで FLIF の決定木にはカウンターという機能が盛り込まれています。&#x3C;/p>
 &#x3C;p>カウンターの説明のため、根と2つの葉だけの決定木を考えてみます。葉以外のノードは、条件とカウンターを持っています。この決定木を使って、画像を復号化することを例にカウンターの挙動を説明します。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_1.svg" height="200" alt="" width="392">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_1.svg" width="392" height="200" alt="">
 &#x3C;figcaption>図 6: 決定木の初期状態&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>この決定木を使って、画素をひとつ復号化してみましょう。まず決定木の根に注目します。するとカウンターの値は2です。注目したノードのカウンターが 0 より大きいとき、そのノードが持つ確率表を使って画素を復号化します。このとき、読み取ったビット列によって適応が行い、確率表1を更新します。そして、ノードのカウンターをデクリメントします。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_2.svg" height="200" alt="" width="392">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_2.svg" width="392" height="200" alt="">
 &#x3C;figcaption>図 7: カウンターがデクリメントされる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次の画素の復号化も同じように行います。すると根のカウンターが 0 になりました。もしノードのカウンターが 0 になったならば、そのノードの子ノードに確率表をコピーします。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_3.svg" height="200" alt="" width="392">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_3.svg" width="392" height="200" alt="">
 &#x3C;figcaption>図 8: カウンターが0になると子に確率表がコピーされる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>いま、確率表2と確率表3は、確率表1と同じ内容になっています。&#x3C;/p>
 &#x3C;figure class="fig-img" data-num="図">
-&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_4.svg" height="200" alt="" width="392">
+&#x3C;img src="https://blog.azyobuzi.net/2020/10/11/01-flif/ctx_counter_4.svg" width="392" height="200" alt="">
 &#x3C;figcaption>図 9: カウンターが0になると条件分岐が行われる&#x3C;/figcaption>
 &#x3C;/figure>
 &#x3C;p>次の画素を復号化します。まず決定木の根に注目します。するとカウンターの値は 0 です。注目したノードのカウンターが 0 のとき、そのノードの条件を評価します。ここではプロパティAの値はX以下だったとします。決定木にしたがって分岐を行い、左側の子ノードに注目します。このノードは葉ノードなので、この確率表を使って復号化します。このとき適応によって確率表2が更新されます。&#x3C;/p>
@@ -1296,7 +1296,7 @@ F mono-rt :   at System.Threading.ThreadHelper.ThreadStart () [0x00008] in &#x26
 &#x3C;/ol>
 &#x3C;/li>
 &#x3C;/ol>
-&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2022-02-05T01:27:03+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
+&#x3C;p>この記事が、画像の可逆圧縮アルゴリズムを調べている方の助けになればと思います。&#x3C;/p></content><id>https://blog.azyobuzi.net/2020/10/11/01-flif/</id><link href="https://blog.azyobuzi.net/2020/10/11/01-flif/" rel="alternate" type="text/html" /><link href="https://cdn-ak.f.st-hatena.com/images/fotolife/a/azyobuzin/20201011/20201011144205.png" rel="enclosure" /><published>2020-10-11T20:51:00+09:00</published><title type="html">画像可逆圧縮形式 FLIF についてのメモ</title><updated>2026-06-06T22:56:28+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="C#" label="C#" /><category term="Docker" label="Docker" /><content type="html">&#x3C;p>開発環境を Docker でいい感じにしてくれるやつとして、 Visual Studio では「コンテナー開発ツール」が、 Visual Studio Code には Remote 拡張があります。これらは Dockerfile や docker-compose.yml を用意すると、その中でアプリを動かすことができるやつです。しかし、同じものではないので、挙動はまったく異なります。それぞれメリット、デメリットがあるので、両方使えるとうれしいわけです。そこで、うまいこと両方で使える docker-compose.yml を書いてみようという試みをやっていきます。&#x3C;/p>
 &#x3C;h2>それぞれのメリット、デメリット&#x3C;/h2>
 &#x3C;p>コンテナ化、特に Docker Compose を使いたい理由として、クラサバ型データベースを開発環境に置きたいという欲求があります。適当にデバッグ実行したら適当なデータベースが動いていると便利です。というわけで、今回は PostgreSQL コンテナとアプリ開発環境が共存することを目標とします。&#x3C;/p>
 &#x3C;p>Visual Studio の Docker 連携は、コンテナにビルド結果とデバッガーの口をマウントして、コンテナ内でアプリを実行してくれます。メリットは、開発環境はホストにあるので、 Visual Studio をフルに使えることです。デメリットは、コンテナ内に入って何か操作するというのが面倒なところです。&#x3C;/p>

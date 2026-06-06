@@ -61,7 +61,7 @@
 <p>1件くらいいいじゃない？ それは <code>sources</code> 次第でしょう。</p>
 <p>というわけで、本題のバッファのない PropagatorBlock が欲しい、ということです。もし <code>resultBlock</code> にバッファがなければ、 <code>CreateSource</code> の戻り値を利用する（リンクする）とき、初めて <code>sources</code> からデータが取り出されます。やりたいですね。</p>
 <p><a href="/2021/03/23/01-dataflowblock-without-buffer/">続きを読む</a></p></div></div></article><article class="article-list-item"><div class="article-list-item-content"><header><h1><a href="/2020/10/11/01-flif/">画像可逆圧縮形式 FLIF についてのメモ</a></h1><div class="article-meta"><i class="fa fa-pencil-square-o" title="公開日"></i> <time datetime="2020-10-11T20:51+09:00" title="公開: 2020/10/11 20:51
-最終更新: 2022/02/05 01:27">2020/10/11</time></div><div class="article-meta"><i class="fa fa-tags" title="タグ"></i><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li></ul></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
+最終更新: 2026/06/06 22:56">2020/10/11</time></div><div class="article-meta"><i class="fa fa-tags" title="タグ"></i><ul class="article-tags"><li><a rel="tag" class="article-tag" href="/tags/tech/">tech</a></li></ul></div></header><div class="article-content"><p><a href="https://flif.info/"><dfn>FLIF</dfn> (Free Lossless Image Format)</a> は、実用されている可逆圧縮形式としておそらく現在最強の圧縮手法です。実際、画像圧縮手法に関する最近の研究では、 FLIF が比較対象となることが多いように思われます。このブログ記事では、 FLIF がどのように圧縮を行っているのか、理解できた範囲で記録していきます。</p>
 <p>ファイル形式としての特徴は、アルファチャンネル対応、 HDR (サブピクセルが8ビットより大きい) 対応、アニメーション対応と、現代的な画像形式として一般的な構成となっています。</p>
 <p>圧縮手法としての特徴は、次の2点が挙げられます。</p>
 <ol>
