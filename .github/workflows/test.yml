@@ -16,7 +16,6 @@ jobs:
         with:
           node-version-file: .tool-versions
           cache: npm
-      - name: npm ci
-        run: npm ci --production=false
-      - name: npm test
-        run: npm test
+      - run: npm ci --production=false
+      - run: npm test
+      - run: npm run build
