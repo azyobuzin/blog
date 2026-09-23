@@ -1,4 +1,82 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2026-06-07T00:10:02+09:00</updated><entry><category term="tech" label="tech" /><category term="Web" label="Web" /><content type="html">&#x3C;p>悪名高いAnubisだが、さすがにサーバー負荷高すぎて操作不能なのでやむなし……。&#x3C;/p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja-JP"><author><name>azyobuzin</name><uri>https://twitter.com/azyobuzin</uri></author><id>https://blog.azyobuzi.net/feed.atom</id><link href="https://blog.azyobuzi.net/feed.atom" rel="self" type="application/atom+xml" /><link href="https://blog.azyobuzi.net/" rel="alternate" type="text/html" /><title>あじょろぐ</title><updated>2026-09-23T16:04:00+09:00</updated><entry><category term="tech" label="tech" /><content type="html">&#x3C;p>ふらっとハードオフに行ったらメモリ16GBのPCが3万円で落ちてたので買ってしまいました。せっかくなので、Proxmox VEを入れて、&#x3C;a href="https://xxx.azyobuzi.net/">Pleromaサーバー「ご隠居」&#x3C;/a>をVPSから自宅に移行してみたので、その学びを書いていきます。&#x3C;/p>
+&#x3C;h2>構成 Before / After&#x3C;/h2>
+&#x3C;p>もともとご隠居はKAGOYA CLOUD VPSで動いていました。遡ってみると、KAGOYAに移行したのは3年半前ですね、長いこと使っていました。相変わらずケチケチな運用をしているので、メモリ4GBのVPS 1台でDockerとPostgreSQLを運用する形式をとっていました。VPS上にはHTTPをlistenする1つのnginxが動いており、nginxがご隠居を含めたすべてのサービスにリバースプロキシしていました。&#x3C;/p>
+&#x3C;p>新構成では、Proxmoxをテクニカルプレビューであるbtrfsでインストールした上で、Webサーバー用のVMと、DB用のCT(LXC)を用意しました。VMとCTで分かれているのは、同居しているForgejoの構成の都合です。&#x3C;/p>
+&#x3C;p>残念ながら自宅にはグローバルIPv4アドレスがないので、Cloudflare Tunnelでインターネットに公開しています（敗北感）。Cloudflare TunnelがHostの判定、TLS終端をしてくれるようになるので、nginxは廃止しました。ただし、メンテナンス中に503を配信したり、画像の配信をPleromaにやらせないようにする最適化を入れたりする必要があるので、サイドカーとしてCaddyを導入しました。&#x3C;/p>
+&#x3C;p>移行作業は、自宅の回線の様子を見ながら、微妙なら切り戻す判断ができるよう、2回の停止メンテで行いました。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>Webサーバーの移行。メンテナンスモードに入れてリクエストを受け入れない状態にした上で、旧環境へのDNSレコードを削除し、Cloudflare Tunnelの設定を有効化しました。Cloudflareでは、Tunnelで使うサブドメインのDNSレコードは事前に削除しないと中途半端な構成になって壊れます（検証環境で1敗）。旧環境はメンテナンスモードのまま放置し、新環境のメンテナンスモードを解除することで、DNSが浸透したユーザーから復旧するようにしました。DBは旧サーバーに残ったままで、新サーバーのVMから旧サーバーへTailscaleを使って接続しました。&#x3C;/li>
+&#x3C;li>DBの移行。もともとpgBackRestを使っていたので、pgBackRestのWALアーカイブを使ったレプリケーションを組みました。後で詳しく説明します。&#x3C;/li>
+&#x3C;/ol>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2026/09/23/01-xxx-migration/migration.png" alt="" width="700" height="350">
+&#x3C;figcaption>移行中の構成（ChatGPTで生成）&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;h2>Proxmoxのbtrfsサポート&#x3C;/h2>
+&#x3C;p>Proxmoxをデフォルト構成でインストールするとLVMになりますが、触ってみたところ微妙でした。LVM構成でインストールすると、システム用に1/4くらいのパーティションが切られて、残りがVMディスク用になります。マシンが積んでるSSDは256GBで、DBが80GBくらいあることを考えると、だいぶVM用ディスクがカツカツになることが予想されました。btrfsならばディスク全体をフラットに扱えるということで、btrfsにしてみました。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2026/09/23/01-xxx-migration/proxmox-diskoption.png" alt="Proxmox VE InstallerでHarddisk options画面を開いているスクリーンショット。Filesystemとして「btrfs (RAID1)」が選択されている。" width="700" height="438">
+&#x3C;figcaption>インストーラでbtrfsを選択。スクショは実機ではない。&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;h3>CTのディスクを普通のsubvolumeにする&#x3C;/h3>
+&#x3C;p>btrfsでVM・CTを作成すると、ディスクイメージは &#x3C;code>/var/lib/pve/local-btrfs/images/100/vm-100-disk-0/disk.raw&#x3C;/code> という単一のファイルに保存されます。スナップショットが取れるよう、このディレクトリはsubvolumeになっています。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;pre>/var/lib/pve/local-btrfs/images/100/vm-100-disk-0 ← btrfsのsubvolume
+└ disk.raw ← 指定したディスクサイズのファイル&#x3C;/pre>
+&#x3C;figcaption>通常のディスクイメージの配置&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>VMではそれはそうという感じですが、せっかくbtrfsなんだからCTでは普通にsubvolumeを切って、そこにCTのルートディレクトリが置かれて欲しいですよね。&#x3C;/p>
+&#x3C;p>Proxmoxのドキュメントを見てみると、CTを作成するときにディスクサイズを0にすると特別扱いしてくれる、とあります[&#x3C;a href="https://pve.proxmox.com/pve-docs/pct.1.html#_storage_backed_mount_points">pct(1)&#x3C;/a>]。残念ながらGUI上からはディスクサイズを0にすることはできません。 &#x3C;code>pct create&#x3C;/code> コマンドでCTを作成する必要があります。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-sh">pct create 100 local-btrfs:vztmpl/TEMPLATE --rootfs local-btrfs:0 ...他のオプション
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>こんな感じでコマンドから &#x3C;code>--rootfs local-btrfs:0&#x3C;/code> オプションをつけてCTを作成すると、ディスクイメージは次のように、普通のディレクトリになります。&#x3C;/p>
+&#x3C;figure class="fig-code">
+&#x3C;pre>/var/lib/pve/local-btrfs/images/100/subvol-100-disk-0.subvol ← btrfsのsubvolume
+├ bin
+├ boot
+└ ...&#x3C;/pre>
+&#x3C;figcaption>ディスクサイズを0にしたときのディスクイメージの配置&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>これでdisk.rawという単独ファイルを回避することができ、ディレクトリ単位でCoWを無効化したり、他のCTのイメージとdedupしやすくなったりするはずです。&#x3C;/p>
+&#x3C;p>ただしひとつ罠があります。CT内から見るとルートディレクトリのパーミッションが740になっています。これだとrootユーザー以外はあらゆるディレクトリにアクセスすることができません。実際、ネットワークがupしませんでした。そのため、 &#x3C;code>--rootfs local-btrfs:0&#x3C;/code> を指定してCTを起動したら、まずはじめに &#x3C;code>chmod 755 /&#x3C;/code> を実行して再起動する必要があります。&#x3C;/p>
+&#x3C;h2>AnsibleでProxmoxのCTにアクセスする&#x3C;/h2>
+&#x3C;p>Ansibleで構成管理をしています。AnsibleはSSHがあればどこでも接続できますが、CTそれぞれすべてにSSHの経路を用意するのもなぁと思っていたところ、ProxmoxのホストへのSSH経路だけ用意すればCTを操作してくれるAnsibleのプラグインがありました。&#x3C;/p>
+&#x3C;p>使い方は簡単で、インベントリファイル（hosts.yml）に次のようにホストを追加するだけです。&#x3C;/p>
+&#x3C;pre>&#x3C;code class="language-yaml">&#x3C;span class="hljs-attr">foo_group:&#x3C;/span>
+  &#x3C;span class="hljs-attr">hosts:&#x3C;/span>
+    &#x3C;span class="hljs-attr">ct103:&#x3C;/span>
+      &#x3C;span class="hljs-attr">ansible_host:&#x3C;/span> &#x3C;span class="hljs-string">SSH接続できるProxmoxのホスト&#x3C;/span>
+      &#x3C;span class="hljs-attr">ansible_user:&#x3C;/span> &#x3C;span class="hljs-string">root&#x3C;/span> &#x3C;span class="hljs-comment"># Proxmoxホスト側のユーザー&#x3C;/span>
+      &#x3C;span class="hljs-attr">ansible_connection:&#x3C;/span> &#x3C;span class="hljs-string">community.proxmox.proxmox_pct_remote&#x3C;/span>
+      &#x3C;span class="hljs-attr">proxmox_vmid:&#x3C;/span> &#x3C;span class="hljs-number">103&#x3C;/span> &#x3C;span class="hljs-comment"># CT ID&#x3C;/span>
+&#x3C;/code>&#x3C;/pre>
+&#x3C;p>「community.proxmox」はcommunity collectionなので、通常のAnsibleに含まれています。明示的にインストールする場合はansible-galaxyでインストールできます。&#x3C;/p>
+&#x3C;p>このコネクションプラグインは、内部ではProxmoxホストへSSHで接続して &#x3C;code>pct exec&#x3C;/code> を実行します。したがってAnsibleの操作は、becomeを指定しない限りCT内のrootユーザーで実行されます。&#x3C;/p>
+&#x3C;h2>pgBackRestを使ったDB移行&#x3C;/h2>
+&#x3C;p>ご隠居サーバーのPostgreSQLのバックアップには以前からpgBackRestを使ってきました（&#x3C;a href="https://blog.azyobuzi.net/2022/12/31/01-pgrman/">以前紹介したpg_rman&#x3C;/a>から移行しました）。定期的なフルバックアップとWALアーカイブをBackblaze B2にアップロードしており、基本的には障害が起きても失われるデータは数分程度となっています。&#x3C;/p>
+&#x3C;p>さて、DBを移行するにあたって、愚直にバックアップ→リストアを実行すると、回線速度依存ではありますが、2時間くらいダウンタイムが生じる予定でした。そこでふと、WALアーカイブがあるんだから非同期レプリケーションすればダウンタイムを短くできるのでは？と思い調べてみたところ、pgBackRestのrestoreコマンドのオプションに &#x3C;code>--type=standby&#x3C;/code> というドンピシャの機能がありました。&#x3C;/p>
+&#x3C;p>standbyというオプションが何をしてくれるかというと、まず普通にバックアップからPGDATAディレクトリを復元した後、 &#x3C;code>restore_command = 'pgbackrest archive-get %f "%p"'&#x3C;/code> と書かれたコンフィグファイルと、 &#x3C;code>standby.signal&#x3C;/code> というファイルを残します。これらのファイルが残った状態でPostgreSQLを起動すると、5秒おきに&#x3C;var>restore_command&#x3C;/var>に書かれたコマンドを実行して、成功したらそのWALアーカイブを適用するという動作をし続けます。つまりほぼ最新のWALアーカイブを読み込み続けてくれるわけです。&#x3C;/p>
+&#x3C;figure class="fig-img">
+&#x3C;img src="https://blog.azyobuzi.net/2026/09/23/01-xxx-migration/wal.png" alt="pgBackRestを使ったDB移行時の非同期レプリケーションを示すシーケンス図。登場要素は、移行元DB（VPS）、移行元pgBackRest、移行先DB（自宅）、移行先pgBackRest、Backblaze B2。上段では、WALセグメント分割のたびに移行元DBからpgBackRestへWALアーカイブを渡し、pgBackRestがBackblaze B2へアップロードする。下段では、5秒ごとに移行先DBがpgBackRestへWAL取得を要求し、pgBackRestがBackblaze B2からWALをダウンロードして移行先DBへ渡し、DBがWALを適用する流れを示している。" width="700" height="423">
+&#x3C;figcaption>pgBackRestを使った非同期レプリケーションのシーケンス図（ChatGPTで生成）&#x3C;/figcaption>
+&#x3C;/figure>
+&#x3C;p>これを利用すれば、停止メンテに入る前にほとんどのデータが新環境のDBにコピーできている状態にできます。停止メンテでは、新環境に最新のWALアーカイブが適用されたことを確認した後 &#x3C;code>SELECT pg_promote();&#x3C;/code> を実行することで、リストアを終了します。&#x3C;/p>
+&#x3C;p>移行作業の実際の手順書は、こんな感じでした。&#x3C;/p>
+&#x3C;ol>
+&#x3C;li>定期バックアップを停止する&#x3C;/li>
+&#x3C;li>メンテナンスモードに入れる&#x3C;/li>
+&#x3C;li>アプリコンテナを停止する&#x3C;/li>
+&#x3C;li>移行元DBで &#x3C;code>SELECT pg_current_wal_lsn();&#x3C;/code> でLSNを確認 → &#x3C;code>56B/C0EE000&#x3C;/code> （WALアーカイブの最後）&#x3C;/li>
+&#x3C;li>移行元DBで &#x3C;code>SELECT pg_switch_wal();&#x3C;/code> を実行 → &#x3C;code>56B/C0F8B80&#x3C;/code> （WALアーカイブの最初）&#x3C;/li>
+&#x3C;li>移行先DBで &#x3C;code>SELECT pg_last_wal_replay_lsn();&#x3C;/code> し、移行元のLSN以上であることを確認 → &#x3C;code>56B/E000000&#x3C;/code>&#x3C;/li>
+&#x3C;li>移行元DBを停止 &#x3C;code>sudo pg_ctlcluster stop 18 main&#x3C;/code>&#x3C;/li>
+&#x3C;li>移行先DBで &#x3C;code>SELECT pg_promote();&#x3C;/code>&#x3C;/li>
+&#x3C;li>composeの環境変数を変更&#x3C;/li>
+&#x3C;li>アプリコンテナを起動して動作確認&#x3C;/li>
+&#x3C;/ol>
+&#x3C;h2>おわり&#x3C;/h2>
+&#x3C;p>そんなこんなで30分程度の停止メンテ2回で、無事ご隠居サーバーを自宅に移行することができました。初めてPostgreSQLでちょっとしたレプリケーションをやってみましたが、思ったより簡単でした。pgBackRest便利ですね。&#x3C;/p>
+&#x3C;p>ところで、この記事を書いてる間にメインPCのSSDがお亡くなりになって、非常に困っています。つらい。&#x3C;/p></content><id>https://blog.azyobuzi.net/2026/09/23/01-xxx-migration/</id><link href="https://blog.azyobuzi.net/2026/09/23/01-xxx-migration/" rel="alternate" type="text/html" /><link href="https://blog.azyobuzi.net/2026/09/23/01-xxx-migration/migration.png" rel="enclosure" /><published>2026-09-23T16:03:00+09:00</published><title type="html">ご隠居を自宅サーバーに移行した</title><updated>2026-09-23T16:04:00+09:00</updated></entry><entry><category term="tech" label="tech" /><category term="Web" label="Web" /><content type="html">&#x3C;p>悪名高いAnubisだが、さすがにサーバー負荷高すぎて操作不能なのでやむなし……。&#x3C;/p>
 &#x3C;figure class="fig-img">
 &#x3C;img src="https://blog.azyobuzi.net/2026/06/06/01-anubis/what-is-anubis.png" alt="" height="500" width="546">
 &#x3C;figcaption>Anubisによるbotチェック画面。無駄にハッシュ計算させられるなど、なかなか邪悪。&#x3C;/figcaption>
